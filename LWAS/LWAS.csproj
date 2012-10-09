@@ -1,0 +1,399 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{86AC8A24-4162-4B90-8C84-167EBF7816F0}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>LWAS</RootNamespace>
+    <AssemblyName>LWAS</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AjaxControlToolkit">
+      <HintPath>..\_lib\AjaxControlToolkit.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CustomControls\Breadcrumb.cs" />
+    <Compile Include="CustomControls\DataControls\Container.cs" />
+    <Compile Include="CustomControls\DataControls\DataTableDataSource.cs" />
+    <Compile Include="CustomControls\DataControls\DataTableDataSourceView.cs" />
+    <Compile Include="CustomControls\DataControls\Events\DeleteEventArgs.cs" />
+    <Compile Include="CustomControls\DataControls\Events\InsertEventArgs.cs" />
+    <Compile Include="CustomControls\DataControls\Events\MilestoneEventArgs.cs" />
+    <Compile Include="CustomControls\DataControls\Events\RecoverEventArgs.cs" />
+    <Compile Include="CustomControls\DataControls\Events\UpdateEventArgs.cs" />
+    <Compile Include="CustomControls\DataControls\Form.cs" />
+    <Compile Include="CustomControls\DataControls\Grid.cs" />
+    <Compile Include="CustomControls\DataControls\Report.cs" />
+    <Compile Include="CustomControls\DataControls\Selector.cs" />
+    <Compile Include="CustomControls\DataControls\SqlDataBridge.cs" />
+    <Compile Include="CustomControls\DataGridView.cs" />
+    <Compile Include="CustomControls\DateBoundField.cs" />
+    <Compile Include="CustomControls\DateTextBox.cs" />
+    <Compile Include="CustomControls\DropDownListField.cs" />
+    <Compile Include="CustomControls\Link.cs" />
+    <Compile Include="CustomControls\LinkButtonEx.cs" />
+    <Compile Include="CustomControls\Lookup.cs" />
+    <Compile Include="CustomControls\MaskedCalendar.cs" />
+    <Compile Include="CustomControls\Menu.cs" />
+    <Compile Include="CustomControls\NumberTextBox.cs" />
+    <Compile Include="CustomControls\NumberType.cs" />
+    <Compile Include="CustomControls\OneClickButton.cs" />
+    <Compile Include="CustomControls\Paginater.cs" />
+    <Compile Include="CustomControls\Popup.cs" />
+    <Compile Include="CustomControls\PopupText.cs" />
+    <Compile Include="CustomControls\RedirectButton.cs" />
+    <Compile Include="CustomControls\StatelessDropDownList.cs" />
+    <Compile Include="CustomControls\StyledTextBox.cs" />
+    <Compile Include="CustomControls\StyledWebPartZone.cs" />
+    <Compile Include="CustomControls\TemplateHelper.cs" />
+    <Compile Include="CustomControls\UpdatePanelDynamic.cs" />
+    <Compile Include="CustomControls\Uploader.cs" />
+    <Compile Include="Database\Field.cs" />
+    <Compile Include="Database\FieldsCollection.cs" />
+    <Compile Include="Database\Filter.cs" />
+    <Compile Include="Database\FiltersCollection.cs" />
+    <Compile Include="Database\Relation.cs" />
+    <Compile Include="Database\RelationsCollection.cs" />
+    <Compile Include="Database\ScreenDriven\Container.cs" />
+    <Compile Include="Database\ScreenDriven\Field.cs" />
+    <Compile Include="Database\ScreenDriven\Screen.cs" />
+    <Compile Include="Database\Table.cs" />
+    <Compile Include="Database\TablesCollection.cs" />
+    <Compile Include="Database\View.cs" />
+    <Compile Include="Database\ViewsCollection.cs" />
+    <Compile Include="Database\ViewsManager.cs" />
+    <Compile Include="Database\ViewsToken.cs" />
+    <Compile Include="Drivers\ComponentElement.cs" />
+    <Compile Include="Drivers\ComponentElementCollection.cs" />
+    <Compile Include="Drivers\DuplicableComponentElementCollection.cs" />
+    <Compile Include="Drivers\Initializer.cs" />
+    <Compile Include="Drivers\InitializerSection.cs" />
+    <Compile Include="Drivers\PropertyElement.cs" />
+    <Compile Include="Drivers\PropertyElementCollection.cs" />
+    <Compile Include="Drivers\StartUpSection.cs" />
+    <Compile Include="Expressions\All.cs" />
+    <Compile Include="Expressions\Any.cs" />
+    <Compile Include="Expressions\BasicToken.cs" />
+    <Compile Include="Expressions\Contains.cs" />
+    <Compile Include="Expressions\Equals.cs" />
+    <Compile Include="Expressions\Exists.cs" />
+    <Compile Include="Expressions\Expression.cs" />
+    <Compile Include="Expressions\ExpressionResult.cs" />
+    <Compile Include="Expressions\ExpressionsManager.cs" />
+    <Compile Include="Expressions\Extensions\SqlExtensions.cs" />
+    <Compile Include="Expressions\Extensions\XmlExtensions.cs" />
+    <Compile Include="Expressions\Greater.cs" />
+    <Compile Include="Expressions\Less.cs" />
+    <Compile Include="Expressions\NotContains.cs" />
+    <Compile Include="Expressions\NotEquals.cs" />
+    <Compile Include="Expressions\NotExists.cs" />
+    <Compile Include="Expressions\Token.cs" />
+    <Compile Include="Expressions\TokensCollection.cs" />
+    <Compile Include="Expressions\When.cs" />
+    <Compile Include="Extensible\Exceptions\ConfigurationException.cs" />
+    <Compile Include="Extensible\Exceptions\ConnectionException.cs" />
+    <Compile Include="Extensible\Exceptions\EditorException.cs" />
+    <Compile Include="Extensible\Exceptions\EmptyConfigurationException.cs" />
+    <Compile Include="Extensible\Exceptions\InitializationException.cs" />
+    <Compile Include="Extensible\Exceptions\ManagerException.cs" />
+    <Compile Include="Extensible\Exceptions\MissingBindingElementException.cs" />
+    <Compile Include="Extensible\Exceptions\MissingConfigurationException.cs" />
+    <Compile Include="Extensible\Exceptions\MissingConfigurationProviderException.cs" />
+    <Compile Include="Extensible\Exceptions\MissingEditingTargetException.cs" />
+    <Compile Include="Extensible\Exceptions\MissingProviderException.cs" />
+    <Compile Include="Extensible\Exceptions\NoAttributesException.cs" />
+    <Compile Include="Extensible\Exceptions\NoElementsException.cs" />
+    <Compile Include="Extensible\Exceptions\UninitializedProviderException.cs" />
+    <Compile Include="Extensible\Exceptions\WrongBindingItemTypeException.cs" />
+    <Compile Include="Extensible\Exceptions\WrongWebPartTypeException.cs" />
+    <Compile Include="Extensible\Interfaces\Configuration\IConfiguration.cs" />
+    <Compile Include="Extensible\Interfaces\Configuration\IConfigurationElement.cs" />
+    <Compile Include="Extensible\Interfaces\Configuration\IConfigurationElementAttribute.cs" />
+    <Compile Include="Extensible\Interfaces\Configuration\IConfigurationElementAttributesCollection.cs" />
+    <Compile Include="Extensible\Interfaces\Configuration\IConfigurationElementsCollection.cs" />
+    <Compile Include="Extensible\Interfaces\Configuration\IConfigurationSection.cs" />
+    <Compile Include="Extensible\Interfaces\Configuration\IConfigurationSectionsCollection.cs" />
+    <Compile Include="Extensible\Interfaces\Configuration\IConfigurationType.cs" />
+    <Compile Include="Extensible\Interfaces\DataBinding\IBinder.cs" />
+    <Compile Include="Extensible\Interfaces\DataBinding\IBindingItem.cs" />
+    <Compile Include="Extensible\Interfaces\DataBinding\IBindingItemsCollection.cs" />
+    <Compile Include="Extensible\Interfaces\DataSources\IDataSourceProvider.cs" />
+    <Compile Include="Extensible\Interfaces\Editors\EditorEventHandler.cs" />
+    <Compile Include="Extensible\Interfaces\Editors\IEditingResult.cs" />
+    <Compile Include="Extensible\Interfaces\Editors\IEditor.cs" />
+    <Compile Include="Extensible\Interfaces\Editors\IEditorEventArgs.cs" />
+    <Compile Include="Extensible\Interfaces\Expressions\IBasicToken.cs" />
+    <Compile Include="Extensible\Interfaces\Expressions\IExpression.cs" />
+    <Compile Include="Extensible\Interfaces\Expressions\IExpressionsManager.cs" />
+    <Compile Include="Extensible\Interfaces\Expressions\IToken.cs" />
+    <Compile Include="Extensible\Interfaces\Expressions\ITokensCollection.cs" />
+    <Compile Include="Extensible\Interfaces\IAuthorizer.cs" />
+    <Compile Include="Extensible\Interfaces\IDriver.cs" />
+    <Compile Include="Extensible\Interfaces\IInitializable.cs" />
+    <Compile Include="Extensible\Interfaces\ILifetime.cs" />
+    <Compile Include="Extensible\Interfaces\IPageComponent.cs" />
+    <Compile Include="Extensible\Interfaces\IProvider.cs" />
+    <Compile Include="Extensible\Interfaces\IResult.cs" />
+    <Compile Include="Extensible\Interfaces\IWatchdog.cs" />
+    <Compile Include="Extensible\Interfaces\IWatchdogSubscriber.cs" />
+    <Compile Include="Extensible\Interfaces\IZonesProvider.cs" />
+    <Compile Include="Extensible\Interfaces\Monitoring\EVENT_TYPE.cs" />
+    <Compile Include="Extensible\Interfaces\Monitoring\IEvent.cs" />
+    <Compile Include="Extensible\Interfaces\Monitoring\IMonitor.cs" />
+    <Compile Include="Extensible\Interfaces\Monitoring\IRecord.cs" />
+    <Compile Include="Extensible\Interfaces\Monitoring\IRecordsCollection.cs" />
+    <Compile Include="Extensible\Interfaces\Monitoring\IReporter.cs" />
+    <Compile Include="Extensible\Interfaces\Parsers\IParser.cs" />
+    <Compile Include="Extensible\Interfaces\Reporting\IEntity.cs" />
+    <Compile Include="Extensible\Interfaces\Reporting\IRegistry.cs" />
+    <Compile Include="Extensible\Interfaces\RequestInitializationCallback.cs" />
+    <Compile Include="Extensible\Interfaces\ResultStatus.cs" />
+    <Compile Include="Extensible\Interfaces\Storage\IStorageAgent.cs" />
+    <Compile Include="Extensible\Interfaces\Storage\IStorageContainer.cs" />
+    <Compile Include="Extensible\Interfaces\Translation\ITranslatable.cs" />
+    <Compile Include="Extensible\Interfaces\Translation\ITranslationResult.cs" />
+    <Compile Include="Extensible\Interfaces\Translation\ITranslator.cs" />
+    <Compile Include="Extensible\Interfaces\Validation\IExpressionHandler.cs" />
+    <Compile Include="Extensible\Interfaces\Validation\IValidationHandler.cs" />
+    <Compile Include="Extensible\Interfaces\Validation\IValidationManager.cs" />
+    <Compile Include="Extensible\Interfaces\Validation\IValidationTask.cs" />
+    <Compile Include="Extensible\Interfaces\Versioning\IVersioningProvider.cs" />
+    <Compile Include="Extensible\Interfaces\WebParts\IBindableWebPart.cs" />
+    <Compile Include="Extensible\Interfaces\WebParts\IConfigurableWebPart.cs" />
+    <Compile Include="Extensible\Interfaces\WebParts\IContainerWebPart.cs" />
+    <Compile Include="Extensible\Interfaces\WebParts\IEditableWebPart.cs" />
+    <Compile Include="Extensible\Interfaces\WebParts\IProxyWebPart.cs" />
+    <Compile Include="Extensible\Interfaces\WebParts\ISymbolWebPart.cs" />
+    <Compile Include="Extensible\Interfaces\WebParts\ITemplatable.cs" />
+    <Compile Include="Extensible\Interfaces\WebParts\ITemplatingItem.cs" />
+    <Compile Include="Extensible\Interfaces\WebParts\ITemplatingItemsCollection.cs" />
+    <Compile Include="Extensible\Interfaces\WebParts\ITemplatingProvider.cs" />
+    <Compile Include="Extensible\Interfaces\WorkFlow\ConditionsCollectionType.cs" />
+    <Compile Include="Extensible\Interfaces\WorkFlow\IChronicler.cs" />
+    <Compile Include="Extensible\Interfaces\WorkFlow\ICondition.cs" />
+    <Compile Include="Extensible\Interfaces\WorkFlow\IConditionsCollection.cs" />
+    <Compile Include="Extensible\Interfaces\WorkFlow\IJob.cs" />
+    <Compile Include="Extensible\Interfaces\WorkFlow\IJobsCollection.cs" />
+    <Compile Include="Extensible\Interfaces\WorkFlow\IStatePersistence.cs" />
+    <Compile Include="Extensible\Interfaces\WorkFlow\ITransit.cs" />
+    <Compile Include="Extensible\Interfaces\WorkFlow\ITransitPoint.cs" />
+    <Compile Include="Extensible\Interfaces\WorkFlow\ITransitsCollection.cs" />
+    <Compile Include="Extensible\Interfaces\WorkFlow\ITrigger.cs" />
+    <Compile Include="Extensible\Interfaces\WorkFlow\ITriggerable.cs" />
+    <Compile Include="Extensible\Interfaces\WorkFlow\IWorkFlow.cs" />
+    <Compile Include="Extensible\Interfaces\WorkFlow\IWorkFlowsCollection.cs" />
+    <Compile Include="Extensible\Interfaces\WorkFlow\MilestoneEventHandler.cs" />
+    <Compile Include="Infrastructure\Configuration\Configuration.cs" />
+    <Compile Include="Infrastructure\Configuration\ConfigurationElement.cs" />
+    <Compile Include="Infrastructure\Configuration\ConfigurationElementAttribute.cs" />
+    <Compile Include="Infrastructure\Configuration\ConfigurationElementAttributesCollection.cs" />
+    <Compile Include="Infrastructure\Configuration\ConfigurationElementsCollection.cs" />
+    <Compile Include="Infrastructure\Configuration\ConfigurationSection.cs" />
+    <Compile Include="Infrastructure\Configuration\ConfigurationSectionsCollection.cs" />
+    <Compile Include="Infrastructure\Configuration\ConfigurationType.cs" />
+    <Compile Include="Infrastructure\Configuration\ConfigurationTypeConverter.cs" />
+    <Compile Include="Infrastructure\Manager.cs" />
+    <Compile Include="Infrastructure\ManagerItems.cs" />
+    <Compile Include="Infrastructure\Monitoring\EntriesList.cs" />
+    <Compile Include="Infrastructure\Monitoring\Event.cs" />
+    <Compile Include="Infrastructure\Monitoring\Monitor.cs" />
+    <Compile Include="Infrastructure\Monitoring\Record.cs" />
+    <Compile Include="Infrastructure\Monitoring\RecordsCollection.cs" />
+    <Compile Include="Infrastructure\Personalization\DictionaryPersonalizationState.cs" />
+    <Compile Include="Infrastructure\Personalization\PersonalizationStorage.cs" />
+    <Compile Include="Infrastructure\Personalization\XmlPersonalizationProvider.cs" />
+    <Compile Include="Infrastructure\ReflectionServices.cs" />
+    <Compile Include="Infrastructure\Security\AccessVerifier.cs" />
+    <Compile Include="Infrastructure\Security\Authenticator.cs" />
+    <Compile Include="Infrastructure\Security\Authorizer.cs" />
+    <Compile Include="Infrastructure\Security\DeveloperAccessVerifier.cs" />
+    <Compile Include="Infrastructure\Security\RoleManager.cs" />
+    <Compile Include="Infrastructure\Security\SiteAccessVerifier.cs" />
+    <Compile Include="Infrastructure\Security\User.cs" />
+    <Compile Include="Infrastructure\Security\UserData.cs" />
+    <Compile Include="Infrastructure\SerializationServices.cs" />
+    <Compile Include="Infrastructure\Storage\BaseAgent.cs" />
+    <Compile Include="Infrastructure\Storage\BaseContainer.cs" />
+    <Compile Include="Infrastructure\Storage\DirectoryContainer.cs" />
+    <Compile Include="Infrastructure\Storage\FileAgent.cs" />
+    <Compile Include="Infrastructure\Storage\UserDataAgent.cs" />
+    <Compile Include="Infrastructure\Translation\StringsStorage.cs" />
+    <Compile Include="Infrastructure\Translation\StringsStorageEntry.cs" />
+    <Compile Include="Infrastructure\Translation\TranslationResult.cs" />
+    <Compile Include="Infrastructure\Translation\Translator.cs" />
+    <Compile Include="Infrastructure\Watchdog.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WebParts\BindableWebPart.cs" />
+    <Compile Include="WebParts\BreadcrumbWebPart.cs" />
+    <Compile Include="WebParts\ChroniclerWebPart.cs" />
+    <Compile Include="WebParts\ConfigurableWebPart.cs" />
+    <Compile Include="WebParts\ContainerEmptyConfiguration.cs" />
+    <Compile Include="WebParts\ContainerWebPart.cs" />
+    <Compile Include="WebParts\ContextWebPart.cs" />
+    <Compile Include="WebParts\DataBinding\Binder.cs" />
+    <Compile Include="WebParts\DataBinding\BindingItem.cs" />
+    <Compile Include="WebParts\DataBinding\BindingItemsCollection.cs" />
+    <Compile Include="WebParts\DataBinding\BindingResult.cs" />
+    <Compile Include="WebParts\DataSourceProviderWebPart.cs" />
+    <Compile Include="WebParts\EditableWebPart.cs" />
+    <Compile Include="WebParts\Editors\AccessDataSource.cs" />
+    <Compile Include="WebParts\Editors\AccessRolesView.cs" />
+    <Compile Include="WebParts\Editors\AccessView.cs" />
+    <Compile Include="WebParts\Editors\ApplicationsView.cs" />
+    <Compile Include="WebParts\Editors\BuildManager.cs" />
+    <Compile Include="WebParts\Editors\ConfigurationDataSource.cs" />
+    <Compile Include="WebParts\Editors\ConfigurationDataSourceView.cs" />
+    <Compile Include="WebParts\Editors\CRUDDataSourceView.cs" />
+    <Compile Include="WebParts\Editors\EditingResult.cs" />
+    <Compile Include="WebParts\Editors\EditorEventArgs.cs" />
+    <Compile Include="WebParts\Editors\NoEditView.cs" />
+    <Compile Include="WebParts\Editors\PersonalizationCrawler.cs" />
+    <Compile Include="WebParts\Editors\PortfolioDataSource.cs" />
+    <Compile Include="WebParts\Editors\RolesDataSource.cs" />
+    <Compile Include="WebParts\Editors\RolesView.cs" />
+    <Compile Include="WebParts\Editors\RoleUsersView.cs" />
+    <Compile Include="WebParts\Editors\ScreenConfiguration.cs" />
+    <Compile Include="WebParts\Editors\ScreensView.cs" />
+    <Compile Include="WebParts\Editors\ScreensWithAccessView.cs" />
+    <Compile Include="WebParts\Editors\TranslationDataSource.cs" />
+    <Compile Include="WebParts\Editors\UndoManager.cs" />
+    <Compile Include="WebParts\Editors\UsersDataSource.cs" />
+    <Compile Include="WebParts\Editors\UsersView.cs" />
+    <Compile Include="WebParts\EmptyConfiguration.cs" />
+    <Compile Include="WebParts\FormViewWebPart.cs" />
+    <Compile Include="WebParts\GridViewWebPart.cs" />
+    <Compile Include="WebParts\InitializableWebPart.cs" />
+    <Compile Include="WebParts\Parsers\ConfigurationParser.cs" />
+    <Compile Include="WebParts\Parsers\ContainerConfigurationParser.cs" />
+    <Compile Include="WebParts\Parsers\DataTableBuilder.cs" />
+    <Compile Include="WebParts\Parsers\FormViewBuilder.cs" />
+    <Compile Include="WebParts\Parsers\GridViewBuilder.cs" />
+    <Compile Include="WebParts\Parsers\SelectorConfigurationParser.cs" />
+    <Compile Include="WebParts\Parsers\SqlDataBridgeConfigurationParser.cs" />
+    <Compile Include="WebParts\Parsers\SqlDataSourceConfigurationParser.cs" />
+    <Compile Include="WebParts\Parsers\WorkFlowManagerConfigurationParser.cs" />
+    <Compile Include="WebParts\PopupTextWebPart.cs" />
+    <Compile Include="WebParts\ReportViewWebPart.cs" />
+    <Compile Include="WebParts\SelectorEmptyConfiguration.cs" />
+    <Compile Include="WebParts\SelectorWebPart.cs" />
+    <Compile Include="WebParts\SqlDataBridgeWebPart.cs" />
+    <Compile Include="WebParts\SqlDataSourceEmptyConfiguration.cs" />
+    <Compile Include="WebParts\SqlDataSourceWebPart.cs" />
+    <Compile Include="WebParts\Templating\CommandersTemplate.cs" />
+    <Compile Include="WebParts\Templating\ControlFactory.cs" />
+    <Compile Include="WebParts\Templating\FiltersTemplate.cs" />
+    <Compile Include="WebParts\Templating\FooterTemplate.cs" />
+    <Compile Include="WebParts\Templating\GroupingTemplate.cs" />
+    <Compile Include="WebParts\Templating\HeaderTemplate.cs" />
+    <Compile Include="WebParts\Templating\ItemTemplate.cs" />
+    <Compile Include="WebParts\Templating\SelectorsTemplate.cs" />
+    <Compile Include="WebParts\Templating\TableTemplateBase.cs" />
+    <Compile Include="WebParts\Templating\TemplatingItem.cs" />
+    <Compile Include="WebParts\Templating\TemplatingItemsCollection.cs" />
+    <Compile Include="WebParts\Templating\TemplatingProvider.cs" />
+    <Compile Include="WebParts\Templating\TotalsTemplate.cs" />
+    <Compile Include="WebParts\TranslatableWebPart.cs" />
+    <Compile Include="WebParts\Validation\Date.cs" />
+    <Compile Include="WebParts\Validation\ExpressionHandler.cs" />
+    <Compile Include="WebParts\Validation\Number.cs" />
+    <Compile Include="WebParts\Validation\Required.cs" />
+    <Compile Include="WebParts\Validation\ValidationHandler.cs" />
+    <Compile Include="WebParts\Validation\ValidationManager.cs" />
+    <Compile Include="WebParts\Validation\ValidationResult.cs" />
+    <Compile Include="WebParts\Validation\ValidationTask.cs" />
+    <Compile Include="WebParts\ViewsWebPart.cs" />
+    <Compile Include="WebParts\WorkFlowManagerWebPart.cs" />
+    <Compile Include="WebParts\WrapperWebPart.cs" />
+    <Compile Include="WebParts\XmlDataSourceWebPart.cs" />
+    <Compile Include="WebParts\Zones\BaseChrome.cs" />
+    <Compile Include="WebParts\Zones\BaseZone.cs" />
+    <Compile Include="WebParts\Zones\CustomChromeZone.cs" />
+    <Compile Include="WebParts\Zones\DivChrome.cs" />
+    <Compile Include="WebParts\Zones\DynamicZonesProvider.cs" />
+    <Compile Include="WebParts\Zones\RenderlessTable.cs" />
+    <Compile Include="WebParts\Zones\SymbolWebPart.cs" />
+    <Compile Include="WebParts\Zones\TableZone.cs" />
+    <Compile Include="WebParts\Zones\TableZoneEventArgs.cs" />
+    <Compile Include="WebParts\Zones\TableZonePersonalizationProvider.cs" />
+    <Compile Include="WebParts\Zones\TabZone.cs" />
+    <Compile Include="WebParts\Zones\VerbLink.cs" />
+    <Compile Include="Workflow\ConditionsCollection.cs" />
+    <Compile Include="Workflow\Conditions\Condition.cs" />
+    <Compile Include="Workflow\Conditions\WaitForCondition.cs" />
+    <Compile Include="Workflow\Job.cs" />
+    <Compile Include="Workflow\JobsCollection.cs" />
+    <Compile Include="Workflow\Recipes\AbsoluteValue.cs" />
+    <Compile Include="Workflow\Recipes\CompositeRecipe.cs" />
+    <Compile Include="Workflow\Recipes\FixedRecipeComponent.cs" />
+    <Compile Include="Workflow\Recipes\Recipe.cs" />
+    <Compile Include="Workflow\Recipes\RecipeComponent.cs" />
+    <Compile Include="Workflow\Recipes\RecipeComponentsCollection.cs" />
+    <Compile Include="Workflow\Recipes\RecipePart.cs" />
+    <Compile Include="Workflow\Recipes\RecipePartMember.cs" />
+    <Compile Include="Workflow\Recipes\RecipesCollection.cs" />
+    <Compile Include="Workflow\Recipes\RecipesManager.cs" />
+    <Compile Include="Workflow\Recipes\RecipeText.cs" />
+    <Compile Include="Workflow\Recipes\TemplatedCondition.cs" />
+    <Compile Include="Workflow\Recipes\TemplatedConditionCollection.cs" />
+    <Compile Include="Workflow\Recipes\TemplatedFlow.cs" />
+    <Compile Include="Workflow\Recipes\TemplatedFlowCollection.cs" />
+    <Compile Include="Workflow\Recipes\TemplatedJob.cs" />
+    <Compile Include="Workflow\Recipes\TemplatedText.cs" />
+    <Compile Include="Workflow\Recipes\TemplatedTransit.cs" />
+    <Compile Include="Workflow\Recipes\TemplatedTransitCollection.cs" />
+    <Compile Include="Workflow\Recipes\VariableRecipeComponent.cs" />
+    <Compile Include="Workflow\StatePersistence.cs" />
+    <Compile Include="Workflow\Transit.cs" />
+    <Compile Include="Workflow\TransitPoint.cs" />
+    <Compile Include="Workflow\TransitsCollection.cs" />
+    <Compile Include="Workflow\WorkFlow.cs" />
+    <Compile Include="Workflow\WorkFlowsCollection.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Expressions\CustomControls\" />
+    <Folder Include="Expressions\Database\" />
+    <Folder Include="Expressions\Drivers\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
