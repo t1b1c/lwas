@@ -26,6 +26,7 @@ namespace LWAS.Extensible.Interfaces.Configuration
 			get;
 			set;
 		}
+        IConfigurationSection Clone();
 		IConfigurationElement AddElement(string key);
 		IConfigurationElement GetElementReference(string element);
 		IConfigurationElementAttribute GetAttributeReference(string element, string attribute);

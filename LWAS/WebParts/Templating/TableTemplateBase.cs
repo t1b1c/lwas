@@ -83,7 +83,7 @@ namespace LWAS.WebParts.Templating
 				index
 			});
 			tr.Attributes["key"] = element.ConfigKey;
-			tr.MergeStyle(style);
+			tr.ApplyStyle(style);
 			foreach (IConfigurationElementAttribute attribute in element.Attributes.Values)
 			{
 				if ("span" != attribute.ConfigKey && "rowspan" != attribute.ConfigKey)

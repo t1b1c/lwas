@@ -25,12 +25,15 @@ namespace LWAS.Workflow.Recipes
     public class RecipePartMember : RecipePart
     {
         public string Member { get; set; }
+        public string Part { get; set; }
         public bool IsValueFromReference { get; set; }
 
         public string ValuePart
         {
             get
             {
+                if (String.IsNullOrEmpty(this.Value))
+                    return null;
                 string[] pathparts = this.Value.Split('.');
                 return pathparts[0];
             }
@@ -50,6 +53,8 @@ namespace LWAS.Workflow.Recipes
         {
             get
             {
+                if (String.IsNullOrEmpty(this.Value))
+                    return null;
                 string val = this.Value.Replace(this.ValuePart, "").Replace(this.Member, "").TrimStart('.');
                 return val;
             }
@@ -66,6 +71,7 @@ namespace LWAS.Workflow.Recipes
         {
             base.WriteAttributes(writer);
             writer.WriteAttributeString("member", this.Member);
+            writer.WriteAttributeString("part", this.Part);
             writer.WriteAttributeString("isValueFromReference", this.IsValueFromReference.ToString());
         }
 
@@ -73,6 +79,8 @@ namespace LWAS.Workflow.Recipes
         {
             base.FromXml(element);
             this.Member = element.Attribute("member").Value;
+            if (null != element.Attribute("part"))
+                this.Part = element.Attribute("part").Value;
             bool isVfR = false;
             bool.TryParse(element.Attribute("isValueFromReference").Value, out isVfR);
             this.IsValueFromReference = isVfR;

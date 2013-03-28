@@ -554,19 +554,30 @@ namespace LWAS.Database.ScreenDriven
                 sql_search += sql_search_criteria;
                 sql_search += sql_search_criteria_refs;
 
-                if (flag != 3 && flag != 4)
+                if (flag == 5)
                 {
-                    sql = sql_table + rn + "GO";
-                    sql += rn + sql_insert + rn + "GO";
+                    sql = sql_insert + rn + "GO";
                     sql += rn + sql_update + rn + "GO";
                     sql += rn + sql_delete + rn + "GO";
                     sql += rn + sql_load + rn + "GO";
-                }
-                if (flag != 4)
-                    sql += rn + sql_loadBy + rn + "GO";
-
-                if (flag != 2 && flag != 3)
                     sql += rn + sql_search + rn + "GO";
+                }
+                else
+                {
+                    if (flag != 3 && flag != 4)
+                    {
+                        sql = sql_table + rn + "GO";
+                        sql += rn + sql_insert + rn + "GO";
+                        sql += rn + sql_update + rn + "GO";
+                        sql += rn + sql_delete + rn + "GO";
+                        sql += rn + sql_load + rn + "GO";
+                    }
+                    if (flag != 4)
+                        sql += rn + sql_loadBy + rn + "GO";
+
+                    if (flag != 2 && flag != 3)
+                        sql += rn + sql_search + rn + "GO";
+                }
             }
 
             return sql;

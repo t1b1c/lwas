@@ -27,20 +27,22 @@ using LWAS.Extensible.Interfaces.Expressions;
 
 namespace LWAS.Workflow.Recipes
 {
-    public class RecipesManager
+    public abstract class RecipesManager
     {
         string configFile;
         IStorageAgent agent;
 
+        public bool ExpandTree { get; set; }
         public RecipesCollection Recipes { get; set; }
 
-        public RecipesManager(string aConfigFile, IStorageAgent anAgent)
+        public RecipesManager(string aConfigFile, IStorageAgent anAgent, bool expandRecipesTree)
         {
             if (String.IsNullOrEmpty(aConfigFile)) throw new ArgumentNullException("aConfigFile");
             if (null == anAgent) throw new ArgumentNullException("anAgent");
 
             configFile = aConfigFile;
             agent = anAgent;
+            this.ExpandTree = expandRecipesTree;
 
             this.Recipes = new RecipesCollection(this);
 

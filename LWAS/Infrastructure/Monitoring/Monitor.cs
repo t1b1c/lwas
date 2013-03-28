@@ -28,72 +28,63 @@ namespace LWAS.Infrastructure.Monitoring
 	public class Monitor : IMonitor, IXmlSerializable
 	{
 		private bool _isDisabled = false;
-		public EntriesList Entries = new EntriesList();
-		private IRecordsCollection _records;
-		private bool isMonitoring = false;
-		public bool IsDisabled
+        public bool IsDisabled
+        {
+            get { return _isDisabled; }
+            set { _isDisabled = value; }
+        }
+
+        private IRecordsCollection _records;
+        public IRecordsCollection Records
+        {
+            get
+            {
+                if (null == _records)
+                    _records = new RecordsCollection();
+                return _records;
+            }
+        }
+
+        public EntriesList Entries { get; set; }
+        public bool IsMonitoring { get; set; }
+
+        public Monitor()
 		{
-			get
-			{
-				return this._isDisabled;
-			}
-			set
-			{
-				this._isDisabled = value;
-			}
+			bool.TryParse(ConfigurationManager.AppSettings["DISABLE_MONITOR"], out _isDisabled);
+            this.Entries = new EntriesList();
+            this.IsMonitoring = false;
 		}
-		public IRecordsCollection Records
-		{
-			get
-			{
-				if (null == this._records)
-				{
-					this._records = new RecordsCollection();
-				}
-				return this._records;
-			}
-		}
-		public Monitor()
-		{
-			bool.TryParse(ConfigurationManager.AppSettings["DISABLE_MONITOR"], out this._isDisabled);
-		}
+
 		public void Start()
 		{
-			if (!this._isDisabled)
-			{
-				this.isMonitoring = true;
-			}
+			if (!_isDisabled)
+				this.IsMonitoring = true;
 		}
+
 		public void Register(IReporter reporter, IEvent e)
 		{
-			if (!this._isDisabled)
-			{
-				if (!this.isMonitoring)
-				{
-					throw new InvalidOperationException("not monitoring");
-				}
-				if (null == reporter)
-				{
-					throw new ArgumentNullException("reporter");
-				}
-				if (null == e)
-				{
-					throw new ArgumentNullException("e");
-				}
-				this.Records.Add(new Record(reporter, e, this.Records.Count));
-			}
+            if (_isDisabled)
+                return;
+
+			if (!this.IsMonitoring) throw new InvalidOperationException("not monitoring");
+			if (null == reporter) throw new ArgumentNullException("reporter");
+			if (null == e) throw new ArgumentNullException("e");
+
+			this.Records.Add(new Record(reporter, e, this.Records.Count));
 		}
+
 		public void Stop()
 		{
-			if (!this._isDisabled)
-			{
-				this.isMonitoring = false;
-				this.Dump();
-			}
+            if (_isDisabled)
+                return;
+
+            this.IsMonitoring = false;
+			Dump();
 		}
+
 		protected void Dump()
 		{
-			if (!this._isDisabled && this.Records.Count > 0)
+			if (!_isDisabled && this.Records.Count > 0)
 			{
 				StringBuilder dump = new StringBuilder();
 				using (XmlWriter writer = XmlWriter.Create(dump, new XmlWriterSettings
@@ -107,47 +98,42 @@ namespace LWAS.Infrastructure.Monitoring
 				this.Entries[timestamp] = dump.ToString();
 			}
 		}
+
 		public string Dump(bool current)
 		{
 			string result;
-			if (this._isDisabled)
-			{
+			if (_isDisabled)
 				result = string.Empty;
-			}
 			else
 			{
 				if (current)
-				{
 					this.Dump();
-				}
 				result = this.Entries.LastEntry();
 			}
 			return result;
 		}
+
 		public IEvent NewEventInstance(string key, EVENT_TYPE eventType)
 		{
-			if (string.IsNullOrEmpty(key))
-			{
-				throw new ArgumentNullException("key");
-			}
+			if (string.IsNullOrEmpty(key)) throw new ArgumentNullException("key");
+
 			return new Event(key, eventType);
 		}
+
 		public IEvent NewEventInstance(string key, IEvent parent, EVENT_TYPE eventType)
 		{
-			if (string.IsNullOrEmpty(key))
-			{
-				throw new ArgumentNullException("key");
-			}
+			if (string.IsNullOrEmpty(key)) throw new ArgumentNullException("key");
+
 			return new Event(key, parent, eventType);
 		}
+
 		public IEvent NewEventInstance(string key, IEvent parent, object data, EVENT_TYPE eventType)
 		{
-			if (string.IsNullOrEmpty(key))
-			{
-				throw new ArgumentNullException("key");
-			}
+			if (string.IsNullOrEmpty(key)) throw new ArgumentNullException("key");
+
 			return new Event(key, parent, data, eventType);
 		}
+
 		public bool HasErrors()
 		{
 			bool result;
@@ -162,23 +148,22 @@ namespace LWAS.Infrastructure.Monitoring
 			result = false;
 			return result;
 		}
-		public XmlSchema GetSchema()
+
+        public XmlSchema GetSchema()
 		{
 			return null;
 		}
-		public void ReadXml(XmlReader reader)
+
+        public void ReadXml(XmlReader reader)
 		{
-			if (this._isDisabled)
-			{
+			if (_isDisabled)
 				return;
-			}
 		}
-		public void WriteXml(XmlWriter writer)
+
+        public void WriteXml(XmlWriter writer)
 		{
-			if (!this._isDisabled)
-			{
+			if (!_isDisabled)
 				this.Records.WriteXml(writer);
-			}
 		}
 	}
 }

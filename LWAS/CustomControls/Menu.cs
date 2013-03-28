@@ -22,89 +22,66 @@ using AjaxControlToolkit;
 
 namespace LWAS.CustomControls
 {
-	public class Menu : CompositeControl
+	public class Menu : CompositeControl, IButtonControl
 	{
         WebControl label;
-        Classic.BulletedList commandsList;
+        Panel labelWrapper;
+        Classic.BulletedList commandsList = new Classic.BulletedList();
         DropDownExtender dropDownExtender;
 
-        public string Label
-        {
-            get 
-            {
-                EnsureChildControls();
-                if (label is Label)
-                    return ((Label)label).Text;
-                else if (label is LinkButton)
-                    return ((LinkButton)label).Text;
-                return null;
-            }
-            set 
-            {
-                EnsureChildControls();
-                if (label is Label)
-                    ((Label)label).Text = value;
-                else if (label is LinkButton)
-                    ((LinkButton)label).Text = value;
-            }
-        }
         public ListItemCollection Commands
         {
-            get 
-            {
-                EnsureChildControls();
-                return commandsList.Items; 
-            }
-        }
-        public new bool Enabled
-        {
-            get 
-            {
-                EnsureChildControls();
-                return dropDownExtender.Enabled; 
-            }
-            set 
-            {
-                EnsureChildControls();
-                dropDownExtender.Enabled = value; 
-            }
-        }
-
-        public override Unit Width
-        {
-            get
-            {
-                EnsureChildControls();
-                return label.Width;
-            }
-            set
-            {
-                EnsureChildControls();
-                label.Width = value;
-            }
-        }
-
-        public override Unit Height
-        {
-            get
-            {
-                EnsureChildControls();
-                return label.Height;
-            }
-            set
-            {
-                EnsureChildControls();
-                label.Height = value;
-            }
+            get { return commandsList.Items; }
         }
 
         public BulletedListDisplayMode DisplayMode { get; set; }
         public event EventHandler<MenuEventArgs> MenuClick;
+
+        public event EventHandler Click;
+        public event CommandEventHandler Command;
+
+        public string CommandArgument { get; set; }
+        public string CommandName
+        {
+            get { return this.Text; }
+            set { this.Text = value; }
+        }
+        public string PostBackUrl { get; set; }
+        string _text;
+        public string Text 
+        {
+            get { return _text; }
+            set
+            {
+                _text = value;
+                if (this.ChildControlsCreated)
+                {
+                    if (label is ITextControl)
+                        ((ITextControl)label).Text = _text;
+                    else if (label is LinkButton)
+                        ((LinkButton)label).Text = _text;
+                }
+            }
+        }
+        public string ValidationGroup { get; set; }
+        public bool CausesValidation { get; set; }
+
+        public string Label
+        {
+            get { return this.Text; }
+            set { this.Text = value; }
+        }
+
         public string Argument { get; set; }
+        public bool BubblesMilestones { get; set; }
+        public bool ActiveLabel { get; set; }
+        public Unit LabelWidth { get; set; }
+        public Unit LabelHeight { get; set; }
 
         public Menu()
         {
             this.DisplayMode = BulletedListDisplayMode.HyperLink;
+            this.BubblesMilestones = false;
         }
 
         protected override void OnInit(EventArgs e)
@@ -118,11 +95,19 @@ namespace LWAS.CustomControls
         {
             base.CreateChildControls();
 
-            if (this.DisplayMode == BulletedListDisplayMode.HyperLink)
+            labelWrapper = new Panel();
+            labelWrapper.ID = "labelWrapper";
+            labelWrapper.CssClass = "menu_label_wrapper";
+            labelWrapper.Width = this.Width;
+            labelWrapper.Height = this.Height;
+            this.Controls.Add(labelWrapper);
+
+            if (this.DisplayMode == BulletedListDisplayMode.HyperLink || !this.ActiveLabel)
             {
                 label = new Label();
                 label.ID = "label";
                 label.CssClass = "menu_label";
+                ((Label)label).Text = this.Label;
             }
             else
             {
@@ -131,16 +116,23 @@ namespace LWAS.CustomControls
                 label.CssClass = "menu_link";
                 ((LinkButton)label).Click += (s, e) =>
                     {
-                        MenuClick(this, new MenuEventArgs()
-                        {
-                            CommandValue = this.Argument,
-                            CommandText = ((LinkButton)label).Text
-                        });
+                        if (!this.BubblesMilestones)
+                            OnMenuClick(this.Label, this.Argument);
+                        else
+                            OnMenuClick(this.CommandName, this.CommandArgument);
                     };
+                ((LinkButton)label).Text = this.Label;
             }
-            this.Controls.Add(label);
+            if (null != this.LabelWidth)
+                label.Width = this.LabelWidth;
+            else
+                label.Width = this.Width;
+            if (null != this.LabelHeight)
+                label.Height = this.LabelHeight;
+            else
+                label.Height = this.Height;
+            labelWrapper.Controls.Add(label);
 
-            commandsList = new Classic.BulletedList();
             commandsList.ID = "commandsList";
             commandsList.CssClass = "menu_commands";
             commandsList.Style.Add("display", "none");
@@ -150,12 +142,13 @@ namespace LWAS.CustomControls
                 commandsList.Click += (s, e) =>
                     {
                         ListItem item = commandsList.Items[e.Index];
-                        if (null != this.MenuClick && null != item)
-                            MenuClick(this, new MenuEventArgs()
-                                            {
-                                                CommandValue = item.Value,
-                                                CommandText = item.Text
-                                            });
+                        if (null != item)
+                        {
+                            if (!this.BubblesMilestones)
+                                OnMenuClick(item.Text, item.Value);
+                            else
+                                OnMenuClick(item.Value, this.CommandArgument);
+                        }
                     };
             }
             this.Controls.Add(commandsList);
@@ -163,11 +156,26 @@ namespace LWAS.CustomControls
             dropDownExtender = new DropDownExtender();
             dropDownExtender.ID = "dropDownExtender";
             //dropDownExtender.BehaviorID = this.ID + "Behaviour";
-            dropDownExtender.TargetControlID = "label";
+            dropDownExtender.TargetControlID = "labelWrapper";
             dropDownExtender.DropDownControlID = "commandsList";
+            dropDownExtender.Enabled = this.Enabled;
             this.Controls.Add(dropDownExtender);
+            dropDownExtender.HighlightBackColor = System.Drawing.Color.Transparent;
         }
-	}
+
+        void OnMenuClick(string command, string argument)
+        {
+            if (null != this.Click)
+                Click(this, new CommandEventArgs(command, argument));
+            if (null != this.MenuClick)
+                MenuClick(this, new MenuEventArgs() { CommandText = command, CommandValue = argument });
+            if (null != this.Command)
+                Command(this, new CommandEventArgs(command, argument));
+            
+            if (this.BubblesMilestones)
+                RaiseBubbleEvent(this, new CommandEventArgs(command, argument));
+        }
+    }
 
     public class MenuEventArgs : EventArgs
     {

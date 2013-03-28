@@ -39,7 +39,16 @@ namespace LWAS.WebParts.Editors
             translationFile = file;
             this.Agent = new FileAgent();
 
-            if (!this.Agent.HasKey(translationFile)) throw new ArgumentException(String.Format("Can't find translation file at '{0}'", translationFile));
+            if (!this.Agent.HasKey(translationFile))
+                CreateEmptyConfig();
+        }
+
+        private void CreateEmptyConfig()
+        {
+            XDocument doc = new XDocument(new XDeclaration("1.0", null, null),
+                                          new XElement("translation")
+                                          );
+            SaveDocument(doc);
         }
 
         XDocument LoadDocument()

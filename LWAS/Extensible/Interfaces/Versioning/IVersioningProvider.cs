@@ -25,6 +25,7 @@ namespace LWAS.Extensible.Interfaces.Versioning
 
         void Refresh(string path);
         void Refresh(string path, string file);
+        void Ignore(string path, string what);
         void Add(string path, string file);
         void Remove(string path, string file);
         void Lock(string path, string file);

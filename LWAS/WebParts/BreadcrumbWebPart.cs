@@ -32,7 +32,18 @@ namespace LWAS.WebParts
     public class BreadcrumbWebPart : ChroniclerWebPart, IInitializable, IReporter
     {
         public Breadcrumb Breadcrumb;
-        readonly string root_storage_path;
+        
+        string root_storage_path;
+        public string RootStoragePath
+        {
+            get { return root_storage_path; }
+            set
+            {
+                root_storage_path = value;
+                if (!String.IsNullOrEmpty(_key))
+                    this.Key = _key;
+            }
+        }
 
         [Personalizable(true)]
         public string Separator
@@ -78,7 +89,13 @@ namespace LWAS.WebParts
 
         public string FullKey
         {
-            get { return HttpContext.Current.Server.MapPath(System.IO.Path.Combine(root_storage_path, _key + ".xml")); }
+            get 
+            {
+                string path = System.IO.Path.Combine(root_storage_path, _key + ".xml");
+                if (!System.IO.Path.IsPathRooted(path))
+                    path = HttpContext.Current.Server.MapPath(path);
+                return path;
+            }
         }
 
         public string Path

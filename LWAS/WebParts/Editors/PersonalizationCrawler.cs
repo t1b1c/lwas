@@ -111,10 +111,14 @@ namespace LWAS.WebParts.Editors
             XmlDocument doc = new XmlDocument();
             if (agent.HasKey(key))
             {
-                doc.LoadXml(agent.Read(key));
-                XmlNode versionNode = doc.SelectSingleNode("/personalization");
-                if (null != versionNode.Attributes["version"])
-                    version = versionNode.Attributes["version"].Value;
+                string content = agent.Read(key);
+                if (!String.IsNullOrEmpty(content))
+                {
+                    doc.LoadXml(agent.Read(key));
+                    XmlNode versionNode = doc.SelectSingleNode("/personalization");
+                    if (null != versionNode.Attributes["version"])
+                        version = versionNode.Attributes["version"].Value;
+                }
             }
 
             return version;

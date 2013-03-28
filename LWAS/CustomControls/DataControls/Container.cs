@@ -452,7 +452,7 @@ namespace LWAS.CustomControls.DataControls
 			Table messageTable = new Table();
 			TableRow messageRow = new TableRow();
 			TableCell messageCell = new TableCell();
-			messageCell.MergeStyle(this.MessageStyle);
+			messageCell.ApplyStyle(this.MessageStyle);
 			this._message = new Label();
 			messageCell.Controls.Add(this._message);
 			messageRow.Cells.Add(messageCell);

@@ -178,10 +178,14 @@
     <Compile Include="Extensible\Interfaces\Monitoring\IRecordsCollection.cs" />
     <Compile Include="Extensible\Interfaces\Monitoring\IReporter.cs" />
     <Compile Include="Extensible\Interfaces\Parsers\IParser.cs" />
-    <Compile Include="Extensible\Interfaces\Reporting\IEntity.cs" />
-    <Compile Include="Extensible\Interfaces\Reporting\IRegistry.cs" />
     <Compile Include="Extensible\Interfaces\RequestInitializationCallback.cs" />
     <Compile Include="Extensible\Interfaces\ResultStatus.cs" />
+    <Compile Include="Extensible\Interfaces\Routing\IComposedRoute.cs" />
+    <Compile Include="Extensible\Interfaces\Routing\IRoute.cs" />
+    <Compile Include="Extensible\Interfaces\Routing\IRoutesCollection.cs" />
+    <Compile Include="Extensible\Interfaces\Routing\IRoutingAgent.cs" />
+    <Compile Include="Extensible\Interfaces\Routing\IRoutingAgentsCollection.cs" />
+    <Compile Include="Extensible\Interfaces\Routing\IRoutingManager.cs" />
     <Compile Include="Extensible\Interfaces\Storage\IStorageAgent.cs" />
     <Compile Include="Extensible\Interfaces\Storage\IStorageContainer.cs" />
     <Compile Include="Extensible\Interfaces\Translation\ITranslatable.cs" />
@@ -237,6 +241,16 @@
     <Compile Include="Infrastructure\Personalization\PersonalizationStorage.cs" />
     <Compile Include="Infrastructure\Personalization\XmlPersonalizationProvider.cs" />
     <Compile Include="Infrastructure\ReflectionServices.cs" />
+    <Compile Include="Infrastructure\Routing\BaseAgent.cs" />
+    <Compile Include="Infrastructure\Routing\BaseRoute.cs" />
+    <Compile Include="Infrastructure\Routing\ComposedRoute.cs" />
+    <Compile Include="Infrastructure\Routing\RoutesCollection.cs" />
+    <Compile Include="Infrastructure\Routing\RoutingAgentsCollection.cs" />
+    <Compile Include="Infrastructure\Routing\RoutingManager.cs" />
+    <Compile Include="Infrastructure\Routing\Screens\ScreenRoute.cs" />
+    <Compile Include="Infrastructure\Routing\Screens\ScreensRoutingAgent.cs" />
+    <Compile Include="Infrastructure\Routing\Web\WebRoute.cs" />
+    <Compile Include="Infrastructure\Routing\Web\WebSettingsAgent.cs" />
     <Compile Include="Infrastructure\Security\AccessVerifier.cs" />
     <Compile Include="Infrastructure\Security\Authenticator.cs" />
     <Compile Include="Infrastructure\Security\Authorizer.cs" />
@@ -359,6 +373,7 @@
     <Compile Include="Workflow\Recipes\AbsoluteValue.cs" />
     <Compile Include="Workflow\Recipes\CompositeRecipe.cs" />
     <Compile Include="Workflow\Recipes\FixedRecipeComponent.cs" />
+    <Compile Include="Workflow\Recipes\LibraryRecipesManager.cs" />
     <Compile Include="Workflow\Recipes\Recipe.cs" />
     <Compile Include="Workflow\Recipes\RecipeComponent.cs" />
     <Compile Include="Workflow\Recipes\RecipeComponentsCollection.cs" />
@@ -367,6 +382,7 @@
     <Compile Include="Workflow\Recipes\RecipesCollection.cs" />
     <Compile Include="Workflow\Recipes\RecipesManager.cs" />
     <Compile Include="Workflow\Recipes\RecipeText.cs" />
+    <Compile Include="Workflow\Recipes\ScreenRecipesManager.cs" />
     <Compile Include="Workflow\Recipes\TemplatedCondition.cs" />
     <Compile Include="Workflow\Recipes\TemplatedConditionCollection.cs" />
     <Compile Include="Workflow\Recipes\TemplatedFlow.cs" />
@@ -383,11 +399,7 @@
     <Compile Include="Workflow\WorkFlow.cs" />
     <Compile Include="Workflow\WorkFlowsCollection.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Expressions\CustomControls\" />
-    <Folder Include="Expressions\Database\" />
-    <Folder Include="Expressions\Drivers\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

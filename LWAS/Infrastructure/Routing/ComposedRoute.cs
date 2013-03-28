@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2006-2012 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,16 +17,30 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using SIO = System.IO;
 
-namespace LWAS.Extensible.Interfaces.Configuration
+using LWAS.Extensible.Interfaces.Routing;
+
+namespace LWAS.Infrastructure.Routing
 {
-	public interface IConfigurationElementsCollection : IDictionary<string, IConfigurationElement>, ICollection<KeyValuePair<string, IConfigurationElement>>, IEnumerable<KeyValuePair<string, IConfigurationElement>>, IEnumerable
-	{
-		IConfigurationType Parent
-		{
-			get;
-		}
-        IConfigurationElementsCollection Clone(IConfigurationType parent);
-		void Replace(string oldKey, string newKey);
-	}
+    public class ComposedRoute : BaseRoute, IComposedRoute
+    {
+        public IRoute Root { get; set; }
+        public IRoute Route { get; set; }
+
+        public ComposedRoute(IRoute root, IRoute route)
+            : base(route.Key, route.OriginalPath)
+        {
+            this.Root = root;
+            this.Route = route;
+        }
+
+        public override void Resolve()
+        {
+            this.Root.Resolve();
+            _path = SIO.Path.Combine(this.Root.Path, this.Route.OriginalPath);
+            base.Resolve();
+        }
+    }
 }

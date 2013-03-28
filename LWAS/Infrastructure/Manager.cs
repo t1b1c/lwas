@@ -27,56 +27,44 @@ using LWAS.Extensible.Interfaces.Configuration;
 using LWAS.Extensible.Interfaces.Monitoring;
 using LWAS.Extensible.Interfaces.WebParts;
 using LWAS.Extensible.Interfaces.Expressions;
+using LWAS.Extensible.Interfaces.Routing;
 
 namespace LWAS.Infrastructure
 {
 	public class Manager : WebPartManager
 	{
-		private IDriver driver;
-		private IAuthorizer authorizer;
-		private bool _enableAuthorizer = true;
 		private ManagerItems items = new ManagerItems();
 		private bool Initialized = false;
-		private IMonitor _monitor;
-		public IDriver Driver
+        
+        IDriver driver;
+        public IDriver Driver
 		{
-			get
-			{
-				return this.driver;
-			}
+			get { return this.driver; }
 		}
-		public IAuthorizer Authorizer
+        
+        IAuthorizer authorizer;
+        public IAuthorizer Authorizer
 		{
-			get
-			{
-				return this.authorizer;
-			}
+			get { return this.authorizer; }
 		}
-		public bool EnableAuthorizer
+        
+        bool _enableAuthorizer = true;
+        public bool EnableAuthorizer
 		{
-			get
-			{
-				return this._enableAuthorizer;
-			}
-			set
-			{
-				this._enableAuthorizer = value;
-			}
+			get { return this._enableAuthorizer; }
+			set { this._enableAuthorizer = value; }
 		}
-		public IMonitor Monitor
+
+        private IMonitor _monitor;
+        public IMonitor Monitor
 		{
-			get
-			{
-				return this._monitor;
-			}
-			set
-			{
-				this._monitor = value;
-			}
+			get { return this._monitor; }
+			set { this._monitor = value; }
 		}
         
         public IExpressionsManager ExpressionsManager { get; set; }
         public IZonesProvider ZonesProvider { get; set; }
+        public IRoutingManager RoutingManager { get; set; }
 
 		public Manager()
 		{
@@ -150,6 +138,9 @@ namespace LWAS.Infrastructure
         void Page_Init(object sender, EventArgs e)
         {
             this.driver.Initialize(this);
+
+            if (null != this.RoutingManager)
+                this.RoutingManager.Load();
 
             if (null != this._monitor)
                 this._monitor.Start();

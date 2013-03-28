@@ -28,53 +28,49 @@ namespace LWAS.CustomControls
 		[Themeable(true)]
 		public Style NormalStyle
 		{
-			get
-			{
-				return this._normalStyle;
-			}
+			get { return this._normalStyle; }
 			set
 			{
 				this._normalStyle = value;
 				if (!this.ReadOnly)
-				{
-					base.MergeStyle(this._normalStyle);
-				}
+					base.ApplyStyle(this._normalStyle);
 			}
 		}
 		[Themeable(true)]
 		public Style ReadOnlyStyle
 		{
-			get
-			{
-				return this._readOnlyStyle;
-			}
+			get { return this._readOnlyStyle; }
 			set
 			{
 				this._readOnlyStyle = value;
 				if (this.ReadOnly)
-				{
-					base.MergeStyle(this._readOnlyStyle);
-				}
+					base.ApplyStyle(this._readOnlyStyle);
 			}
 		}
 		public override bool ReadOnly
 		{
-			get
-			{
-				return base.ReadOnly;
-			}
+			get { return base.ReadOnly; }
 			set
 			{
 				base.ReadOnly = value;
 				if (base.ReadOnly)
-				{
-					base.MergeStyle(this._readOnlyStyle);
-				}
+					base.ApplyStyle(this._readOnlyStyle);
 				else
-				{
-					base.MergeStyle(this._normalStyle);
-				}
+					base.ApplyStyle(this._normalStyle);
 			}
 		}
+
+        // there's a bug in TextBox which doesn't set back the posted value if it's ReadOnly
+        // regardless of submitdisabledcontrols setting on form
+        protected override bool LoadPostData(string postDataKey, System.Collections.Specialized.NameValueCollection postCollection)
+        {
+            string text = postCollection[postDataKey];
+            if (!this.Text.Equals(text, StringComparison.Ordinal))
+            {
+                this.Text = text;
+                return true;
+            }
+            return false;
+        }
 	}
 }

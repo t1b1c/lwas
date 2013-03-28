@@ -76,7 +76,8 @@ namespace LWAS.Database
             if (null == element) throw new ArgumentNullException("element");
 
             this.Name = element.Attribute("name").Value;
-            this.Description = element.Attribute("description").Value;
+            if (null != element.Attribute("description"))
+                this.Description = element.Attribute("description").Value;
 
             this.Fields.FromXml(element.Element("fields"));
 

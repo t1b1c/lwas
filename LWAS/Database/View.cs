@@ -41,6 +41,54 @@ namespace LWAS.Database
             this.Fields = new FieldsCollection();
         }
 
+        public IEnumerable<Table> RelatedTables()
+        {
+            if (this.Relationship.Count == 0)
+                return new Table[] { this.Source };
+
+            return this.Relationship
+                        .Select<Relation, Table>(rel => rel.MasterTable)
+                        .Union(this.Relationship
+                                    .Select<Relation, Table>(rel => rel.DetailsTable))
+                        .Distinct();
+        }
+
+        public IEnumerable<Table> RelatableTables()
+        {
+            ViewsManager vm = this.Manager;
+
+            if (this.Relationship.Count == 0)
+                return new Table[] { this.Source };
+
+            return vm.Tables
+                     .Values
+                     .Where(t =>
+                     {
+                         return vm.Relations
+                                  .Select<Relation, Table>(rel => rel.MasterTable)
+                                  .Union(vm.Relations
+                                           .Select<Relation, Table>(rel => rel.DetailsTable))
+                                  .Where(tb =>
+                                  {
+                                      return this.Relationship
+                                                 .Any(r =>
+                                                 {
+                                                     return r.DetailsTable == tb ||
+                                                            r.MasterTable == tb;
+                                                 })
+                                             ||
+                                             vm.Relations
+                                               .Any(r =>
+                                               {
+                                                   return ((r.MasterTable == tb && r.DetailsTable == this.Source) ||
+                                                           (r.DetailsTable == tb && r.MasterTable == this.Source));
+                                               });
+                                  })
+                                  .Contains(t);
+
+                     });
+        }
+
         public void ToXml(XmlTextWriter writer)
         {
             if (null == writer) throw new ArgumentNullException("writer");
@@ -62,7 +110,8 @@ namespace LWAS.Database
             writer.WriteEndElement();   // fields
 
             writer.WriteStartElement("source");
-            writer.WriteAttributeString("name", this.Source.Name);
+            if (null != this.Source)
+                writer.WriteAttributeString("name", this.Source.Name);
             writer.WriteEndElement();   // source
 
             writer.WriteStartElement("relationship");
@@ -101,9 +150,11 @@ namespace LWAS.Database
                 this.Fields.Add(field);
             }
 
-            string sourceName = element.Element("source").Attribute("name").Value;
-            if (!this.Manager.Tables.ContainsKey(sourceName)) throw new ApplicationException(String.Format("The source table '{0}' of the view '{1}' cannot be found", sourceName, this.Name));
-            this.Source = this.Manager.Tables[sourceName];
+            if (null != element.Element("source") && null != element.Element("source").Attribute("name"))
+            {
+                string sourceName = element.Element("source").Attribute("name").Value;
+                this.Source = this.Manager.Tables[sourceName];
+            }
 
             foreach (XElement relationElement in element.Element("relationship").Elements("relation"))
             {

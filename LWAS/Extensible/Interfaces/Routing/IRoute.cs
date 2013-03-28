@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2006-2012 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,17 +15,17 @@
 */
 
 using System;
-using System.Xml.Serialization;
+using System.Collections.Generic;
 
-namespace LWAS.Extensible.Interfaces.Configuration
+namespace LWAS.Extensible.Interfaces.Routing
 {
-	public interface IConfigurationElementAttribute : IConfigurationType, IXmlSerializable
-	{
-		object Value
-		{
-			get;
-			set;
-		}
-        IConfigurationElementAttribute Clone();
-	}
+    public interface IRoute
+    {
+        string Key { get; }
+        string OriginalPath { get; }
+        string Path { get; }
+        string Target { get; }
+        void Resolve();
+        IRoute ToTarget();
+    }
 }

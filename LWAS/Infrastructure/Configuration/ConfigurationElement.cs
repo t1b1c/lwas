@@ -69,6 +69,14 @@ namespace LWAS.Infrastructure.Configuration
 				this._elements = new ConfigurationElementsCollection(this);
 			}
 		}
+        public IConfigurationElement Clone()
+        {
+            ConfigurationElement clone = new ConfigurationElement(this.ConfigKey);
+            clone.ConfigKey = this.ConfigKey;
+            clone.Attributes = this.Attributes.Clone(clone);
+            clone.Elements = this.Elements.Clone(clone);
+            return clone;
+        }
 		public IConfigurationElementAttribute AddAttribute(string key)
 		{
 			if (string.IsNullOrEmpty(key))

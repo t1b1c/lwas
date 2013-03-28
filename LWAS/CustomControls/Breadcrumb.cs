@@ -56,6 +56,7 @@ namespace LWAS.CustomControls
             set { pathHidden.Value = value; }
         }
         public bool ShowRoot { get; set; }
+        public bool IgnoreRoot { get; set; }
 
         public XDocument Source { get; set; }
 
@@ -112,11 +113,17 @@ namespace LWAS.CustomControls
                 container.Controls.Clear();
                 XDocument doc = ConfigurationFromCache();
 
-                XElement root = doc.Element("root");
-                if (null == root) throw new InvalidOperationException("Root not found");
+                XElement root = null;
+                if (this.IgnoreRoot)
+                    root = doc.Elements().First();
+                else
+                    root = doc.Element("root");
+                
+                if (null == root)
+                    throw new InvalidOperationException("Breadcrumb root not found");
 
                 if (String.IsNullOrEmpty(this.Path))
-                    this.Path = "/root";
+                    this.Path = "/" + root.Name;
                 IEnumerable<XElement> elements = root.XPathSelectElement(this.Path)
                                                      .AncestorsAndSelf();
 
@@ -158,7 +165,7 @@ namespace LWAS.CustomControls
 
                     container.Controls.AddAt(0, menu);
 
-                    if ("root" == element.Name)
+                    if (root == element)
                         break;
 
                     container.Controls
@@ -190,13 +197,13 @@ namespace LWAS.CustomControls
 
             lock (SyncRoot)
             {
-                XDocument doc = cache[this.Key] as XDocument;
-                if (null == doc)
+                this.Source = cache[this.Key] as XDocument;
+                if (null == this.Source)
                 {
-                    doc = XDocument.Parse(this.Agent.Read(this.Key));
-                    ConfigurationToCache(doc);
+                    this.Source = XDocument.Parse(this.Agent.Read(this.Key));
+                    ConfigurationToCache(this.Source);
                 }
-                return doc;
+                return this.Source;
             }
         }
 

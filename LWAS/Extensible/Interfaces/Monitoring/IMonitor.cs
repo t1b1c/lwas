@@ -21,10 +21,8 @@ namespace LWAS.Extensible.Interfaces.Monitoring
 {
 	public interface IMonitor : IXmlSerializable
 	{
-		IRecordsCollection Records
-		{
-			get;
-		}
+		IRecordsCollection Records { get; }
+        bool IsMonitoring { get; set; }
 		void Start();
 		void Register(IReporter reporter, IEvent e);
 		void Stop();

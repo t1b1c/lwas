@@ -26,6 +26,7 @@ namespace LWAS.Extensible.Interfaces.Configuration
 		{
 			get;
 		}
+        IConfigurationSectionsCollection Clone(IConfiguration parent);
 		void Replace(string oldKey, string newKey);
 	}
 }

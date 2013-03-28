@@ -73,7 +73,8 @@ namespace LWAS.Database
             if (null == element) throw new ArgumentNullException("element");
 
             this.Name = element.Attribute("name").Value;
-            this.Description = element.Attribute("description").Value;
+            if (null != element.Attribute("description"))
+                this.Description = element.Attribute("description").Value;
             this.DBType = element.Attribute("dbtype").Value;
             bool isPrimaryKey = false;
             if (null != element.Attribute("isPrimaryKey") && bool.TryParse(element.Attribute("isPrimaryKey").Value, out isPrimaryKey))

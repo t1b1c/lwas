@@ -204,6 +204,10 @@ namespace LWAS.Infrastructure.Personalization
                                                 if (reader.HasValue)
                                                 {
                                                     Type type = Type.GetType(reader.Value);
+                                                    if (type == null)
+                                                    {
+                                                        var stop = 1;
+                                                    }
                                                     reader.MoveToContent();
                                                     value = SerializationServices.Deserialize(type, reader);
                                                 }

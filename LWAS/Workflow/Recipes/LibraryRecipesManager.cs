@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2006-2012 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,17 +15,20 @@
 */
 
 using System;
-using System.Xml.Serialization;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace LWAS.Extensible.Interfaces.Configuration
+using LWAS.Extensible.Interfaces.Storage;
+using LWAS.Extensible.Interfaces.Expressions;
+
+namespace LWAS.Workflow.Recipes
 {
-	public interface IConfigurationElementAttribute : IConfigurationType, IXmlSerializable
-	{
-		object Value
-		{
-			get;
-			set;
-		}
-        IConfigurationElementAttribute Clone();
-	}
+    public class LibraryRecipesManager : RecipesManager
+    {
+        public LibraryRecipesManager(string aConfigFile, IStorageAgent anAgent)
+            : base(aConfigFile, anAgent, false)
+        {
+        }
+    }
 }

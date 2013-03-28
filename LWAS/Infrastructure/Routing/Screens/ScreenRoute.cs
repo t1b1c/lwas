@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2006-2012 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,16 +17,28 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Web;
 
-namespace LWAS.Extensible.Interfaces.Configuration
+using LWAS.Extensible.Interfaces.Routing;
+
+namespace LWAS.Infrastructure.Routing.Screens
 {
-	public interface IConfigurationElementsCollection : IDictionary<string, IConfigurationElement>, ICollection<KeyValuePair<string, IConfigurationElement>>, IEnumerable<KeyValuePair<string, IConfigurationElement>>, IEnumerable
-	{
-		IConfigurationType Parent
-		{
-			get;
-		}
-        IConfigurationElementsCollection Clone(IConfigurationType parent);
-		void Replace(string oldKey, string newKey);
-	}
+    public class ScreenRoute : BaseRoute
+    {
+        public override string Target
+        {
+            get { return this.Key; }
+        }
+
+        public ScreenRoute(string key, string completePath)
+            : base(key, completePath)
+        {}
+
+        public override void Resolve()
+        {
+            _path = this.OriginalPath.Substring(0, this.OriginalPath.IndexOf("/" + this.Target));
+            base.Resolve();
+        }
+    }
 }

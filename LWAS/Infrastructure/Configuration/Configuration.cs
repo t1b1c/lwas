@@ -130,6 +130,12 @@ namespace LWAS.Infrastructure.Configuration
 				this._sections = new ConfigurationSectionsCollection(this);
 			}
 		}
+        public IConfiguration Clone()
+        {
+            Configuration clone = new Configuration(this.ConfigKey);
+            clone.Sections = this.Sections.Clone(clone);
+            return clone;
+        }
 		public IConfiguration NewConfigurationInstance(string key)
 		{
 			return new Configuration(key);

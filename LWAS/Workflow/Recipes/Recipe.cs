@@ -19,17 +19,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using System.Text;
+using System.IO;
 
 namespace LWAS.Workflow.Recipes
 {
     public class Recipe
     {
+        public class KeyChangeEventArgs : EventArgs
+        {
+            public string OldKey { get; set; }
+            public string NewKey { get; set; }
+        }
+
+        public string Key { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
 
         public virtual TemplatedFlowCollection Flows { get; set; }
         public virtual TemplatedFlowCollection AppliedFlows { get; set; }
         public TemplatedText Template { get; set; }
+
+        public event EventHandler<KeyChangeEventArgs> KeyChanged;
         
         public IEnumerable<RecipeComponent> Components 
         {
@@ -41,11 +52,11 @@ namespace LWAS.Workflow.Recipes
             get { return this.Template.Components; }
         }
 
-        public Recipe(string name)
+        public Recipe(string key)
         {
-            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
+            if (String.IsNullOrEmpty(key)) throw new ArgumentNullException("key");
 
-            this.Name = name;
+            this.Key = key;
             this.Template = new TemplatedText(this);
             this.Flows = new TemplatedFlowCollection();
             this.AppliedFlows = new TemplatedFlowCollection();
@@ -62,12 +73,57 @@ namespace LWAS.Workflow.Recipes
             return workflow;
         }
 
+        public virtual void Rename(string newname)
+        {
+            string oldkey = this.Key;
+            string suffix = "";
+            if (this.Key != this.Name)
+                suffix = this.Key.Substring(this.Name.Length);
+            this.Name = newname;
+            this.Key = this.Name + suffix;
+
+            if (null != this.KeyChanged)
+                KeyChanged(this, new KeyChangeEventArgs() { OldKey = oldkey, NewKey = this.Key });
+        }
+
+        public virtual Recipe Clone()
+        {
+            Recipe result = new Recipe(this.Key);
+            Clone(result);
+            return result;
+        }
+
+        protected void Clone(Recipe clone)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            using (StringWriter sw = new StringWriter(sb))
+            {
+                using (XmlTextWriter writer = new XmlTextWriter(sw))
+                {
+                    writer.Formatting = Formatting.Indented;
+                    ToXml(writer);
+                }
+            }
+
+            XElement element = XElement.Parse(sb.ToString(), LoadOptions.PreserveWhitespace);
+            clone.FromXml(element);
+        }
+
+        public bool HasAppliedKey(string key)
+        {
+            return null != this.AppliedFlows
+                               .OfType<TemplatedJob>()
+                               .FirstOrDefault(tj => tj.Key == key);
+        }
+
         public virtual void ToXml(XmlTextWriter writer)
         {
             if (null == writer) throw new ArgumentNullException("writer");
 
             writer.WriteStartElement("recipe");
 
+            writer.WriteAttributeString("key", this.Key);
             writer.WriteAttributeString("name", this.Name);
             writer.WriteAttributeString("description", this.Description);
 
@@ -84,6 +140,7 @@ namespace LWAS.Workflow.Recipes
         {
             if (null == element) throw new ArgumentNullException("element");
 
+            this.Name = element.Attribute("name").Value;
             this.Description = element.Attribute("description").Value;
 
             this.Template.FromXml(element.Element("text"));

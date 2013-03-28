@@ -32,6 +32,7 @@ using LWAS.Extensible.Interfaces.Expressions;
 using LWAS.Extensible.Interfaces.Monitoring;
 using LWAS.Extensible.Interfaces.Translation;
 using LWAS.Extensible.Interfaces.Storage;
+using LWAS.Extensible.Interfaces.Routing;
 
 using LWAS.Infrastructure;
 using LWAS.Database;
@@ -43,6 +44,7 @@ namespace LWAS.WebParts
         string views_config;
         public IExpressionsManager ExpressionsManager { get; set; }
         public IStorageAgent Agent { get; set; }
+        public IRoutingManager RoutingManager { get; set; }
         public ViewsManager ViewsManager { get; set; }
         public LWAS.Database.View CurrentView { get; set; }
         public string SelectView 
@@ -68,17 +70,18 @@ namespace LWAS.WebParts
         public ViewsWebPart()
         {
             this.Hidden = true;
-
-            views_config = HttpContext.Current.Server.MapPath(ConfigurationManager.AppSettings["VIEWS_CONFIG"]);
-            if (String.IsNullOrEmpty(views_config)) throw new ApplicationException("VIEWS_CONFIG not found or not set");
         }
 
         public override void Initialize()
         {
             if (null == this.ExpressionsManager) throw new MissingProviderException("ExpressionsManager");
             if (null == this.Agent) throw new MissingProviderException("Agent");
+            if (null == this.RoutingManager) throw new MissingProviderException("RoutingManager");
 
-            this.ViewsManager = new ViewsManager(views_config, this.Agent, this.ExpressionsManager);
+            views_config = this.RoutingManager.SettingsRoutes["VIEWS_CONFIG"].Path;
+            if (String.IsNullOrEmpty(views_config)) throw new ApplicationException("VIEWS_CONFIG not found or not set");
+            if (this.Agent.HasKey(views_config))
+                this.ViewsManager = new ViewsManager(views_config, this.Agent, this.ExpressionsManager);
 
             base.Initialize();
         }

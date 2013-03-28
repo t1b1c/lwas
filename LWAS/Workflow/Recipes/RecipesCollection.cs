@@ -48,7 +48,7 @@ namespace LWAS.Workflow.Recipes
         public void Add(Recipe recipe)
         {
             if (list.Contains(recipe)) return;
-            if (this.Contains(recipe.Name)) throw new ArgumentException(String.Format("There's a '{0}' recipe already in this collection", recipe.Name));
+            if (this.ContainsKey(recipe.Key)) throw new ArgumentException(String.Format("There's a '{0}' recipe already in this collection", recipe.Key));
 
             list.Add(recipe);
             RegisterRecipe(recipe);
@@ -57,7 +57,7 @@ namespace LWAS.Workflow.Recipes
         public void AddAt(Recipe recipe, int index)
         {
             if (list.Contains(recipe)) return;
-            if (this.Contains(recipe.Name)) throw new ArgumentException(String.Format("There's a '{0}' recipe already in this collection", recipe.Name));
+            if (this.ContainsKey(recipe.Key)) throw new ArgumentException(String.Format("There's a '{0}' recipe already in this collection", recipe.Key));
 
             list.Insert(index, recipe);
             RegisterRecipe(recipe);
@@ -76,15 +76,15 @@ namespace LWAS.Workflow.Recipes
             list.Clear();
         }
 
-        public bool Contains(string name)
+        public bool ContainsKey(string key)
         {
-            Recipe recipe = list.SingleOrDefault(r => r.Name == name);
+            Recipe recipe = list.SingleOrDefault(r => r.Key == key);
             return null != recipe;
         }
 
-        public Recipe this[string name]
+        public Recipe this[string key]
         {
-            get { return list.SingleOrDefault(r => r.Name == name); }
+            get { return list.SingleOrDefault(r => r.Key == key); }
         }
 
         public Recipe this[int index]
@@ -101,9 +101,12 @@ namespace LWAS.Workflow.Recipes
 
         void Components_ComponentChanged(object sender, EventArgs e)
         {
+            // don't sync siblings they could be multiplications (copies)
+            /*
             VariableRecipeComponent vrc = sender as VariableRecipeComponent;
             if (null != vrc)
                 SyncComponents(vrc);
+             */
             if (null != ComponentChanged)
                 ComponentChanged(sender, new EventArgs());
         }
@@ -122,6 +125,20 @@ namespace LWAS.Workflow.Recipes
             recipe.Template.Components.ComponentChanged -= new EventHandler(Components_ComponentChanged);
         }
 
+        public Recipe MultiplyRecipe(Recipe recipe)
+        {
+            if (null == recipe) throw new ArgumentNullException("recipe");
+            if (!list.Contains(recipe)) throw new ArgumentException(String.Format("This collection does not contain the recipe '{0}'", recipe.Key));
+
+            Recipe clone = recipe.Clone();
+            string suffix = clone.Key.Substring(clone.Name.Length).Trim();
+            int counter = 0;
+            Int32.TryParse(suffix, out counter);
+            clone.Key = clone.Name + " " + (++counter).ToString();
+            this.Add(clone);
+            return clone;
+        }
+
         public IEnumerator<Recipe> GetEnumerator()
         {
             return list.GetEnumerator();
@@ -137,16 +154,16 @@ namespace LWAS.Workflow.Recipes
             ToXml(writer, false);
         }
 
-        public void ToXml(XmlTextWriter writer, bool refereneOnly)
+        public void ToXml(XmlTextWriter writer, bool referenceOnly)
         {
             if (null == writer) throw new ArgumentNullException("writer");
 
             writer.WriteStartElement("recipes");
             foreach (Recipe recipe in this)
-                if (refereneOnly)
+                if (referenceOnly)
                 {
                     writer.WriteStartElement("recipe");
-                    writer.WriteAttributeString("name", recipe.Name);
+                    writer.WriteAttributeString("key", recipe.Key);
                     writer.WriteEndElement();   // recipe
                 }
                 else
@@ -165,10 +182,14 @@ namespace LWAS.Workflow.Recipes
 
             foreach (XElement recipeElement in element.Elements("recipe"))
             {
-                string name = recipeElement.Attribute("name").Value;
+                string key = null;
+                if (null != recipeElement.Attribute("key"))
+                    key = recipeElement.Attribute("key").Value;
+                if (String.IsNullOrEmpty(key))
+                    key = recipeElement.Attribute("name").Value;
                 Recipe recipe = null;
                 if (referenceOnly)
-                    recipe = this.Manager.Recipes[name];
+                    recipe = this.Manager.Recipes[key];
                 else
                 {
                     XAttribute compositeAttribute = recipeElement.Attribute("isComposite");
@@ -176,9 +197,9 @@ namespace LWAS.Workflow.Recipes
                     if (null != compositeAttribute)
                         bool.TryParse(compositeAttribute.Value, out isComposite);
                     if (isComposite)
-                        recipe = new CompositeRecipe(this.Manager, name);
+                        recipe = new CompositeRecipe(this.Manager, key);
                     else
-                        recipe = new Recipe(name);
+                        recipe = new Recipe(key);
                     recipe.FromXml(recipeElement);
                 }
                 this.Add(recipe);

@@ -40,6 +40,13 @@ namespace LWAS.Infrastructure.Configuration
 		{
 			this._parent = parent;
 		}
+        public IConfigurationSectionsCollection Clone(IConfiguration parent)
+        {
+            ConfigurationSectionsCollection clone = new ConfigurationSectionsCollection(parent);
+            foreach (IConfigurationSection section in this.Values)
+                clone.Add(section.ConfigKey, section.Clone());
+            return clone;
+        }
 		public void Replace(string oldKey, string newKey)
 		{
 			IConfigurationSection val = base[oldKey];

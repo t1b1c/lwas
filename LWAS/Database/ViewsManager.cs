@@ -56,11 +56,54 @@ namespace LWAS.Database
             LoadConfiguration();
         }
 
+        public ViewsManager(XmlReader reader, IExpressionsManager expressionsManager)
+        {
+            if (null == expressionsManager) throw new ArgumentNullException("expressionsManager");
+            if (null == reader) throw new ArgumentNullException("reader");
+
+            this.ExpressionsManager = expressionsManager;
+
+            this.Views = new ViewsCollection(this);
+            this.Tables = new TablesCollection(this);
+            this.Relations = new RelationsCollection(this);
+
+            XElement root = XDocument.ReadFrom(reader) as XElement;
+            if (null == root) throw new ArgumentException("Failed to load the root element");
+            FromXml(root);
+        }
+
         public void LoadConfiguration()
         {
+            if (!agent.HasKey(configFile))
+                CreateEmptyConfiguration();
+
             XDocument doc = XDocument.Parse(agent.Read(configFile));
             XElement root = doc.Element("config");
             FromXml(root);
+        }
+
+        private void CreateEmptyConfiguration()
+        {
+            XDocument doc = new XDocument(new XDeclaration("1.0", null, null),
+                                          new XElement("config",
+                                              new XElement("views"),
+                                              new XElement("tables"),
+                                              new XElement("relations")
+                                              )
+                                         );
+            try
+            {
+                agent.Write(configFile, "");
+                using (XmlTextWriter writer = new XmlTextWriter(agent.OpenStream(configFile), null))
+                {
+                    writer.Formatting = Formatting.Indented;
+                    doc.WriteTo(writer);
+                }
+            }
+            finally
+            {
+                agent.CloseStream(configFile);
+            }
         }
 
         public void SaveConfiguration()
@@ -78,7 +121,7 @@ namespace LWAS.Database
         {
             if (String.IsNullOrEmpty(a)) throw new ArgumentNullException("a");
 
-            this.Views.Clear();
+            //this.Views.Clear();
             this.Tables.Clear();
             this.Relations.Clear();
 

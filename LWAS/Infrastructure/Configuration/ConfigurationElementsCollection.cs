@@ -48,6 +48,13 @@ namespace LWAS.Infrastructure.Configuration
 			}
 			this._parent = parent;
 		}
+        public IConfigurationElementsCollection Clone(IConfigurationType parent)
+        {
+            ConfigurationElementsCollection clone = new ConfigurationElementsCollection(parent);
+            foreach (IConfigurationElement element in this.Values)
+                clone.Add(element.ConfigKey, element.Clone());
+            return clone;
+        }
 		public void Replace(string oldKey, string newKey)
 		{
 			IConfigurationElement val = base[oldKey];

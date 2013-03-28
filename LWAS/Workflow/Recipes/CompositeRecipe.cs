@@ -24,6 +24,8 @@ namespace LWAS.Workflow.Recipes
 {
     public class CompositeRecipe : Recipe
     {
+        bool expand_to_xml = false;
+
         public RecipesCollection Recipes { get; set; }
         public override TemplatedFlowCollection Flows
         {
@@ -48,9 +50,12 @@ namespace LWAS.Workflow.Recipes
             set { ;}
         }
 
-        public CompositeRecipe(RecipesManager manager, string name)
-            : base(name)
+        public RecipesManager Manager { get; set; }
+
+        public CompositeRecipe(RecipesManager manager, string key)
+            : base(key)
         {
+            this.Manager = manager;
             this.Recipes = new RecipesCollection(manager, true);
             this.Recipes.ComponentChanged += new EventHandler(Recipes_ComponentChanged);
             this.Template.Components.ComponentChanged += new EventHandler(Components_ComponentChanged);
@@ -79,6 +84,20 @@ namespace LWAS.Workflow.Recipes
             return workflow;
         }
 
+        public virtual void Expand()
+        {
+            expand_to_xml = true;
+            foreach (CompositeRecipe composite in this.Recipes.OfType<CompositeRecipe>())
+                composite.Expand();
+        }
+
+        public override Recipe Clone()
+        {
+            CompositeRecipe result = new CompositeRecipe(this.Manager, this.Key);
+            Clone(result);
+            return result;
+        }
+
         public override void ToXml(XmlTextWriter writer)
         {
             if (null == writer) throw new ArgumentNullException("writer");
@@ -86,11 +105,15 @@ namespace LWAS.Workflow.Recipes
             writer.WriteStartElement("recipe");
 
             writer.WriteAttributeString("isComposite", "true");
+            writer.WriteAttributeString("key", this.Key);
             writer.WriteAttributeString("name", this.Name);
             writer.WriteAttributeString("description", this.Description);
 
             this.Template.ToXml(writer);
-            this.Recipes.ToXml(writer, true);
+            if (expand_to_xml)
+                this.Recipes.ToXml(writer, false);
+            else
+                this.Recipes.ToXml(writer, !this.Manager.ExpandTree);
 
             writer.WriteEndElement();   // recipe
 
@@ -100,10 +123,11 @@ namespace LWAS.Workflow.Recipes
         {
             if (null == element) throw new ArgumentNullException("element");
 
+            this.Name = element.Attribute("name").Value;
             this.Description = element.Attribute("description").Value;
 
             this.Template.FromXml(element.Element("text"));
-            this.Recipes.FromXml(element.Element("recipes"), true);
+            this.Recipes.FromXml(element.Element("recipes"), !this.Manager.ExpandTree);
         }
     }
 }

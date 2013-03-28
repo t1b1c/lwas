@@ -298,7 +298,15 @@ namespace LWAS.WebParts.Templating
                                 {
                                     expression = sysmanager.ExpressionsManager.Token(expressionElement.GetAttributeReference("type").Value.ToString()) as IExpression;
                                     if (null != expression)
-                                        expression.Make(expressionElement, sysmanager.ExpressionsManager);
+                                    {
+                                        try
+                                        {
+                                            expression.Make(expressionElement, sysmanager.ExpressionsManager);
+                                        }
+                                        catch (ArgumentException ax)
+                                        {
+                                        }
+                                    }
                                 }
                             }
 
@@ -426,7 +434,7 @@ namespace LWAS.WebParts.Templating
                                     bindingItem.Expression = expression;
 									binder.BindingItems.Add(bindingItem);
 									if (item.InvalidMember == bindingItem.SourceProperty)
-										container.MergeStyle(invalidStyle);
+										container.ApplyStyle(invalidStyle);
 								}
                                 if (this.IsDesignEnabled && propertyName == this.KnownTypes[cellControlName].WatermarkProperty)
                                     container.Attributes.Add("watermark", pull);

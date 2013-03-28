@@ -23,7 +23,7 @@ using System.Xml.Linq;
 
 namespace LWAS.Workflow.Recipes
 {
-    public class RecipeComponentsCollection : IEnumerable<RecipeComponent>, IEnumerable<VariableRecipeComponent>
+    public class RecipeComponentsCollection : IEnumerable<RecipeComponent>, IEnumerable<VariableRecipeComponent>, IEnumerable<RecipePartMember>
     {
         List<RecipeComponent> list;
         bool unique_members = true;
@@ -83,9 +83,13 @@ namespace LWAS.Workflow.Recipes
         public void SyncComponents(string name, string value)
         {
             IEnumerable<VariableRecipeComponent> duplicates;
-            duplicates = this.Where<VariableRecipeComponent>(vrc => { return vrc.Name == name; });
+            duplicates = this.Where<VariableRecipeComponent>(vrc => vrc.Name == name);
             foreach (VariableRecipeComponent vrc in duplicates)
                 vrc.ChangeValue(value, false);
+            IEnumerable<RecipePartMember> links;
+            links = this.Where<RecipePartMember>(vrc => vrc.Part == name);
+            foreach (RecipePartMember rpm in links)
+                rpm.ValuePart = value;
         }
 
         public void AddAt(RecipeComponent component, int index)
@@ -152,6 +156,13 @@ namespace LWAS.Workflow.Recipes
             foreach (RecipeComponent component in list)
                 if (component is VariableRecipeComponent)
                     yield return component as VariableRecipeComponent;
+        }
+
+        IEnumerator<RecipePartMember> IEnumerable<RecipePartMember>.GetEnumerator()
+        {
+            foreach (RecipeComponent component in list)
+                if (component is RecipePartMember)
+                    yield return component as RecipePartMember;
         }
 
         IEnumerator IEnumerable.GetEnumerator()

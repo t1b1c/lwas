@@ -40,6 +40,13 @@ namespace LWAS.Infrastructure.Configuration
 		public ConfigurationElementAttribute(string key) : base(key)
 		{
 		}
+        public IConfigurationElementAttribute Clone()
+        {
+            ConfigurationElementAttribute clone = new ConfigurationElementAttribute(this.ConfigKey);
+            clone.ConfigKey = this.ConfigKey;
+            clone.Value = this.Value;
+            return clone;
+        }
 		public override void ReadXml(XmlReader reader)
 		{
 			if (null == reader)

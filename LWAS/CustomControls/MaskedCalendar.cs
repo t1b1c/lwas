@@ -152,11 +152,11 @@ namespace LWAS.CustomControls
 			this.txtDate.ReadOnly = this._readOnly;
 			if (this._readOnly)
 			{
-				this.txtDate.MergeStyle(this._readOnlyStyle);
+				this.txtDate.ApplyStyle(this._readOnlyStyle);
 			}
 			else
 			{
-				this.txtDate.MergeStyle(this._normalStyle);
+				this.txtDate.ApplyStyle(this._normalStyle);
 			}
 			this.Controls.Add(this.txtDate);
 			this.txtTime = new StyledTextBox();
@@ -166,11 +166,11 @@ namespace LWAS.CustomControls
 			this.txtTime.ReadOnly = this._readOnly;
 			if (this._readOnly)
 			{
-				this.txtTime.MergeStyle(this._readOnlyStyle);
+				this.txtTime.ApplyStyle(this._readOnlyStyle);
 			}
 			else
 			{
-				this.txtTime.MergeStyle(this._normalStyle);
+				this.txtTime.ApplyStyle(this._normalStyle);
 			}
 			this.Controls.Add(this.txtTime);
 			this.maskDate = new MaskedEditExtender();

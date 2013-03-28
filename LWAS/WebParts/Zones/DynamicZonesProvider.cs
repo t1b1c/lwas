@@ -21,11 +21,11 @@ using System.Web.UI;
 using System.Web.Caching;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls.WebParts;
-using System.Configuration;
 using System.Xml;
 
 using LWAS.Extensible.Interfaces;
 using LWAS.Extensible.Interfaces.Storage;
+using LWAS.Extensible.Interfaces.Routing;
 
 using LWAS.Infrastructure;
 
@@ -94,22 +94,25 @@ namespace LWAS.WebParts.Zones
             return null;
         }
 
-        public DynamicZonesProvider()
+        Manager _manager;
+        Manager Manager
         {
-            configFile = ConfigurationManager.AppSettings["ZONES_CONFIG"];
-            if (String.IsNullOrEmpty(configFile)) throw new ApplicationException("ZONES_CONFIG not defined in config file");
-            configFile = HttpContext.Current.Server.MapPath(configFile);
-            screenKey = ConfigurationManager.AppSettings["SCREEN"];
-            if (String.IsNullOrEmpty(screenKey)) throw new ApplicationException("SCREEN not defined in config file");
+            get
+            {
+                if (null == _manager)
+                    _manager = WebPartManager.GetCurrentWebPartManager(this.Page) as Manager;
+                return _manager;
+            }
         }
 
         private IDictionary<string, IList<WebPartZone>> LoadConfig()
         {
-            if (String.IsNullOrEmpty(configFile)) throw new InvalidOperationException("ZONES_CONFIG not defined in config file");
             if (null == this.Agent) throw new InvalidOperationException("Agent not set");
 
             Dictionary<string, IList<WebPartZone>> zones = new Dictionary<string, IList<WebPartZone>>();
             XmlDocument doc = new XmlDocument();
+            if (!this.Agent.HasKey(configFile))
+                CreateEmptyConfig();
             doc.LoadXml(this.Agent.Read(configFile));
             XmlNode rootNode = doc.SelectSingleNode("zones");
             if (null == rootNode) throw new ApplicationException(String.Format("The config file '{0}' has no zones element", configFile));
@@ -149,9 +152,34 @@ namespace LWAS.WebParts.Zones
             return zones;
         }
 
+        private void CreateEmptyConfig()
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.AppendChild(doc.CreateXmlDeclaration("1.0", null, null));
+            doc.AppendChild(doc.CreateElement("zones"));
+            try
+            {
+                this.Agent.Write(configFile, "");
+                using (XmlTextWriter writer = new XmlTextWriter(this.Agent.OpenStream(configFile), null))
+                {
+                    writer.Formatting = Formatting.Indented;
+                    doc.WriteTo(writer);
+                }
+            }
+            finally
+            {
+                this.Agent.CloseStream(configFile);
+            }
+        }
+
         public void RegisterZones()
         {
+            configFile = this.Manager.RoutingManager.SettingsRoutes["ZONES_CONFIG"].Path;
+            if (String.IsNullOrEmpty(configFile)) throw new ApplicationException("ZONES_CONFIG not defined in config file");
+            screenKey = this.Manager.RoutingManager.SettingsRoutes["SCREEN"].OriginalPath;
+            if (String.IsNullOrEmpty(screenKey)) throw new ApplicationException("SCREEN not defined in config file");
             if (null == this.Page) throw new InvalidOperationException("Page not set");
+
             string screen = this.Screen;
             if (String.IsNullOrEmpty(screen) || !this.Zones.ContainsKey(screen))
                 return;

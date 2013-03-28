@@ -21,11 +21,8 @@ namespace LWAS.Extensible.Interfaces.Configuration
 {
 	public interface IConfiguration : IProvider, IInitializable, ILifetime, IConfigurationType, IXmlSerializable
 	{
-		IConfigurationSectionsCollection Sections
-		{
-			get;
-			set;
-		}
+		IConfigurationSectionsCollection Sections { get; set; }
+        IConfiguration Clone();
 		IConfiguration NewConfigurationInstance(string key);
 		IConfigurationSection NewConfigurationSectionInstance(string key);
 		IConfigurationElement NewConfigurationElementInstance(string key);

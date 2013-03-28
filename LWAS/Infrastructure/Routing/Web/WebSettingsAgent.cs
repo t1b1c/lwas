@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2006-2012 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,16 +17,28 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Configuration;
 
-namespace LWAS.Extensible.Interfaces.Configuration
+using LWAS.Extensible.Interfaces.Routing;
+
+namespace LWAS.Infrastructure.Routing.Web
 {
-	public interface IConfigurationElementsCollection : IDictionary<string, IConfigurationElement>, ICollection<KeyValuePair<string, IConfigurationElement>>, IEnumerable<KeyValuePair<string, IConfigurationElement>>, IEnumerable
-	{
-		IConfigurationType Parent
-		{
-			get;
-		}
-        IConfigurationElementsCollection Clone(IConfigurationType parent);
-		void Replace(string oldKey, string newKey);
-	}
+    public class WebSettingsAgent : BaseAgent
+    {
+        public override void Load(IRoutingManager manager)
+        {
+            foreach (string setting in ConfigurationManager.AppSettings.AllKeys)
+            {
+                WebRoute route = new WebRoute(setting, ConfigurationManager.AppSettings[setting]);
+                manager.SettingsRoutes.Add(route);
+            }
+        }
+
+        public override void Save(IRoute route)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
