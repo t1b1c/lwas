@@ -28,53 +28,15 @@ using LWAS.Infrastructure;
 
 namespace LWAS.Database
 {
-    public class ViewsToken: IToken
+    public abstract class ViewsToken: IToken
     {
-        public string Key
-        {
-            get { return "views token"; }
-        }
+        public abstract string Key { get; }
 
         public object Value { get; set; }
-        public string TableName { get; set; }
-        public string FieldName { get; set; }
 
-        public ViewsToken() { }
-
-        public void Make(IConfigurationType config, IExpressionsManager manager)
-        {
-            if (null == config) throw new ArgumentNullException("config");
-            if (null == manager) throw new ArgumentNullException("manager");
-
-            IConfigurationElement tokenElement = config as IConfigurationElement;
-            if (null == tokenElement) throw new ArgumentException("config is not an IConfigurationElement");
-            if (!tokenElement.Elements.ContainsKey("source")) throw new ConfigurationException("Bad views token configuration: 'source' element not found");
-            IConfigurationElement sourceElement = tokenElement.GetElementReference("source");
-            if (!sourceElement.Attributes.ContainsKey("table")) throw new ConfigurationException("Bad views token configuration: 'source' element has no 'table' attribute");
-            this.TableName = sourceElement.GetAttributeReference("table").Value.ToString();
-            if (!sourceElement.Attributes.ContainsKey("field")) throw new ConfigurationException("Bad views token configuration: 'source' element has no 'field' attribute");
-            this.FieldName = sourceElement.GetAttributeReference("field").Value.ToString();
-        }
-
-        public IResult Evaluate()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void ToConfiguration(IConfigurationElement config)
-        {
-            if (null == config) throw new ArgumentNullException("config");
-
-            IConfigurationElement sourceElement = config.AddElement("source");
-            sourceElement.AddAttribute("table").Value = this.TableName;
-            sourceElement.AddAttribute("field").Value = this.FieldName;
-        }
-
-        public void ToSql(StringBuilder builder)
-        {
-            if (null == builder) throw new ArgumentNullException("builder");
-
-            builder.AppendFormat("[{0}].[{1}]", this.TableName, this.FieldName);
-        }
+        public abstract void Make(IConfigurationType config, IExpressionsManager manager);
+        public abstract IResult Evaluate();
+        public abstract void ToConfiguration(IConfigurationElement config);
+        public abstract void ToSql(StringBuilder builder);
     }
 }

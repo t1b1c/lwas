@@ -20,6 +20,8 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 
+using LWAS.Extensible.Interfaces.Expressions;
+
 namespace LWAS.Workflow.Recipes
 {
     public class CompositeRecipe : Recipe
@@ -31,7 +33,7 @@ namespace LWAS.Workflow.Recipes
         {
             get
             {
-                TemplatedFlowCollection result = new TemplatedFlowCollection();
+                TemplatedFlowCollection result = new TemplatedFlowCollection(this.ExpressionsManager);
                 foreach (Recipe recipe in this.Recipes)
                     result.Union(recipe.Flows);
                 return result;
@@ -42,7 +44,7 @@ namespace LWAS.Workflow.Recipes
         {
             get
             {
-                TemplatedFlowCollection result = new TemplatedFlowCollection();
+                TemplatedFlowCollection result = new TemplatedFlowCollection(this.ExpressionsManager);
                 foreach (Recipe recipe in this.Recipes)
                     result.Union(recipe.AppliedFlows);
                 return result;
@@ -52,11 +54,11 @@ namespace LWAS.Workflow.Recipes
 
         public RecipesManager Manager { get; set; }
 
-        public CompositeRecipe(RecipesManager manager, string key)
-            : base(key)
+        public CompositeRecipe(RecipesManager manager, string key, IExpressionsManager expressionsManager)
+            : base(key, expressionsManager)
         {
             this.Manager = manager;
-            this.Recipes = new RecipesCollection(manager, true);
+            this.Recipes = new RecipesCollection(manager, true, expressionsManager);
             this.Recipes.ComponentChanged += new EventHandler(Recipes_ComponentChanged);
             this.Template.Components.ComponentChanged += new EventHandler(Components_ComponentChanged);
         }
@@ -77,7 +79,7 @@ namespace LWAS.Workflow.Recipes
 
         public override TemplatedFlowCollection Make()
         {
-            TemplatedFlowCollection workflow = new TemplatedFlowCollection();
+            TemplatedFlowCollection workflow = new TemplatedFlowCollection(this.ExpressionsManager);
             foreach (Recipe recipe in this.Recipes)
                 workflow.Union(recipe.Make());
 
@@ -93,7 +95,7 @@ namespace LWAS.Workflow.Recipes
 
         public override Recipe Clone()
         {
-            CompositeRecipe result = new CompositeRecipe(this.Manager, this.Key);
+            CompositeRecipe result = new CompositeRecipe(this.Manager, this.Key, this.ExpressionsManager);
             Clone(result);
             return result;
         }

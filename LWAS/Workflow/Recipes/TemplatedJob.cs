@@ -21,6 +21,8 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 
+using LWAS.Extensible.Interfaces.Expressions;
+
 namespace LWAS.Workflow.Recipes
 {
     public class TemplatedJob : TemplatedFlow
@@ -28,19 +30,20 @@ namespace LWAS.Workflow.Recipes
         public TemplatedConditionCollection Conditions { get; set; }
         public TemplatedTransitCollection Transits { get; set; }
 
-        public TemplatedJob()
+        public TemplatedJob(IExpressionsManager expressionsManager)
+            : base(expressionsManager)
         {
-            this.Conditions = new TemplatedConditionCollection();
-            this.Transits = new TemplatedTransitCollection();
+            this.Conditions = new TemplatedConditionCollection(this.ExpressionsManager);
+            this.Transits = new TemplatedTransitCollection(this.ExpressionsManager);
         }
 
-        public override TemplatedFlow Make(Recipe recipe)
+        public override TemplatedFlow Make(Recipe recipe, MakePolicyType makePolicy)
         {
-            TemplatedJob job = new TemplatedJob();
+            TemplatedJob job = new TemplatedJob(this.ExpressionsManager);
             foreach (TemplatedCondition condition in this.Conditions)
-                job.Conditions.Add(condition.Make(recipe) as TemplatedCondition);
+                job.Conditions.Add(condition.Make(recipe, makePolicy) as TemplatedCondition);
             foreach (TemplatedTransit transit in this.Transits)
-                job.Transits.Add(transit.Make(recipe) as TemplatedTransit);
+                job.Transits.Add(transit.Make(recipe, makePolicy) as TemplatedTransit);
             return job;
         }
 

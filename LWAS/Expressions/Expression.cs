@@ -24,63 +24,47 @@ namespace LWAS.Expressions
 {
 	public class Expression : Token, IExpression, IToken
 	{
-		private ITokensCollection _operands;
 		public override string Key
 		{
-			get
-			{
-				return "expression";
-			}
+			get { return "expression"; }
 		}
-		public virtual ITokensCollection Operands
+
+        private ITokensCollection _operands;
+        public virtual ITokensCollection Operands
 		{
 			get
 			{
 				if (null == this._operands)
-				{
 					this._operands = new TokensCollection();
-				}
 				return this._operands;
 			}
-			set
-			{
-				this._operands = value;
-			}
+			set { this._operands = value; }
 		}
+
 		public override IResult Evaluate()
 		{
 			IResult result = base.Evaluate();
 			foreach (IToken child in this.Operands)
-			{
 				result.Concatenate(child.Evaluate());
-			}
-			return result;
+
+            return result;
 		}
+
 		public override void Make(IConfigurationType config, IExpressionsManager manager)
 		{
-			if (null == manager)
-			{
-				throw new ArgumentNullException("manager");
-			}
-			if (null == config)
-			{
-				throw new ArgumentNullException("config");
-			}
+			if (null == manager) throw new ArgumentNullException("manager");
+			if (null == config)throw new ArgumentNullException("config");
 			IConfigurationElement element = config as IConfigurationElement;
-			if (null == element)
-			{
-				throw new ArgumentException("config must be an IConfigurationElement");
-			}
+			if (null == element) throw new ArgumentException("config must be an IConfigurationElement");
+
 			if (element.Elements.ContainsKey("operands"))
 			{
 				foreach (IConfigurationElement operandElement in element.GetElementReference("operands").Elements.Values)
 				{
 					string type = operandElement.GetAttributeReference("type").Value.ToString();
 					IToken token = manager.Token(type);
-					if (null == token)
-					{
-						throw new InvalidOperationException(string.Format("Cannot make the type '{0}'", type));
-					}
+					if (null == token) throw new InvalidOperationException(string.Format("Cannot make the type '{0}'", type));
+
 					token.Make(operandElement, manager);
 					this.Operands.Add(token);
 				}

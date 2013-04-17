@@ -25,42 +25,43 @@ using LWAS.Extensible.Interfaces.Expressions;
 
 namespace LWAS.Workflow.Recipes
 {
-    public class TemplatedCondition : TemplatedFlow
+    public class TemplatedTransitDestination : TemplatedToken
     {
-        public TemplatedConditionToken Token { get; set; }
+        public override TransitTokenTypeEnum TokenType
+        {
+            get { return TransitTokenTypeEnum.Reference; }
+            set { ; }
+        }
 
-        public TemplatedCondition(IExpressionsManager expressionsManager)
+        public override string SerializedName
+        {
+            get
+            {
+                return "destination";
+            }
+        }
+
+        public TemplatedTransitDestination(IExpressionsManager expressionsManager)
             : base(expressionsManager)
         { }
 
         public override TemplatedFlow Make(Recipe recipe, MakePolicyType makePolicy)
         {
-            TemplatedCondition condition = new TemplatedCondition(this.ExpressionsManager);
-            condition.Token = (TemplatedConditionToken)this.Token.Make(recipe, makePolicy);
+            TemplatedTransitDestination result = new TemplatedTransitDestination(this.ExpressionsManager);
+            result.Id = this.Id;
+            result.Member = this.Member;
 
-            return condition;
-        }
+            Make(recipe, makePolicy, result);
 
-        public override void ToXml(XmlTextWriter writer)
-        {
-            if (null == writer) throw new ArgumentNullException("writer");
-
-            writer.WriteStartElement("condition");
-            writer.WriteAttributeString("key", this.Key);
-
-            this.Token.ToXml(writer);
-
-            writer.WriteEndElement();   // condition
+            return result;
         }
 
         public override void FromXml(XElement element)
         {
             if (null == element) throw new ArgumentNullException("element");
-
-            this.Key = element.Attribute("key").Value;
-
-            this.Token = new TemplatedConditionToken(this.ExpressionsManager);
-            this.Token.FromXml(element);
+            
+            this.Id = element.Attribute("id").Value;
+            this.Member = element.Attribute("member").Value;
         }
     }
 }

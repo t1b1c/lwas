@@ -22,14 +22,23 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
+using LWAS.Extensible.Interfaces.Expressions;
+
 namespace LWAS.Workflow.Recipes
 {
     public class TemplatedTransitCollection : IEnumerable<TemplatedTransit>
     {
         List<TemplatedTransit> list;
 
-        public TemplatedTransitCollection()
+        IExpressionsManager _expressionsManager;
+        public IExpressionsManager ExpressionsManager
         {
+            get { return _expressionsManager; }
+        }
+
+        public TemplatedTransitCollection(IExpressionsManager expressionsManager)
+        {
+            _expressionsManager = expressionsManager;
             list = new List<TemplatedTransit>();
         }
 
@@ -90,7 +99,7 @@ namespace LWAS.Workflow.Recipes
 
             foreach (XElement transitElement in element.Elements())
             {
-                TemplatedTransit transit = new TemplatedTransit();
+                TemplatedTransit transit = new TemplatedTransit(this.ExpressionsManager);
                 transit.FromXml(transitElement);
                 Add(transit);
             }

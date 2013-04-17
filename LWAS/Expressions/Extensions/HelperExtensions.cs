@@ -17,18 +17,27 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml;
 using System.Text;
+using System.Xml.Linq;
 
-using LWAS.Extensible.Interfaces.Storage;
 using LWAS.Extensible.Interfaces.Expressions;
 
-namespace LWAS.Workflow.Recipes
+namespace LWAS.Expressions.Extensions
 {
-    public class LibraryRecipesManager : RecipesManager
+    public static class HelperExtensions
     {
-        public LibraryRecipesManager(string aConfigFile, IStorageAgent anAgent, IExpressionsManager expressionsManager)
-            : base(aConfigFile, anAgent, false, expressionsManager)
+        public static IEnumerable<IExpression> Flatten(this IExpression expression)
         {
+            List<IExpression> list = new List<IExpression>();
+            if (expression != null)
+            {
+                list.Add(expression);
+                foreach (IToken token in expression.Operands)
+                    if (token is IExpression)
+                        list.AddRange((token as IExpression).Flatten());
+            }
+            return list;
         }
     }
 }

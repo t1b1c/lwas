@@ -35,7 +35,13 @@ namespace LWAS.Workflow.Recipes
         public bool ExpandTree { get; set; }
         public RecipesCollection Recipes { get; set; }
 
-        public RecipesManager(string aConfigFile, IStorageAgent anAgent, bool expandRecipesTree)
+        IExpressionsManager _expressionsManager;
+        public IExpressionsManager ExpressionsManager
+        {
+            get { return _expressionsManager; }
+        }
+
+        public RecipesManager(string aConfigFile, IStorageAgent anAgent, bool expandRecipesTree, IExpressionsManager expressionsManager)
         {
             if (String.IsNullOrEmpty(aConfigFile)) throw new ArgumentNullException("aConfigFile");
             if (null == anAgent) throw new ArgumentNullException("anAgent");
@@ -43,8 +49,9 @@ namespace LWAS.Workflow.Recipes
             configFile = aConfigFile;
             agent = anAgent;
             this.ExpandTree = expandRecipesTree;
+            _expressionsManager = expressionsManager;
 
-            this.Recipes = new RecipesCollection(this);
+            this.Recipes = new RecipesCollection(this, expressionsManager);
 
             LoadConfiguration();
         }

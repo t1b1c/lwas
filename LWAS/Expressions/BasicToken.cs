@@ -25,54 +25,25 @@ namespace LWAS.Expressions
 {
 	public class BasicToken : Token, IBasicToken, IToken
 	{
-		private object _source;
-		private string _member;
 		public override string Key
 		{
-			get
-			{
-				return "basic";
-			}
+			get { return "basic"; }
 		}
-		public object Source
-		{
-			get
-			{
-				return this._source;
-			}
-			set
-			{
-				this._source = value;
-			}
-		}
-		public string Member
-		{
-			get
-			{
-				return this._member;
-			}
-			set
-			{
-				this._member = value;
-			}
-		}
+
+        public object Source { get; set; }
+        public string Member { get; set; }
+
 		public override IResult Evaluate()
 		{
 			IResult result = base.Evaluate();
 			try
 			{
-				if (null == this._source)
-				{
-					throw new InvalidOperationException("Source is not defined");
-				}
-				if (null == this._member)
-				{
-					this.Value = this._source;
-				}
+				if (null == this.Source) throw new InvalidOperationException("Source is not defined");
+				if (null == this.Member)
+					this.Value = this.Source;
 				else
-				{
-					this.Value = ReflectionServices.ExtractValue(this._source, this._member);
-				}
+					this.Value = ReflectionServices.ExtractValue(this.Source, this.Member);
+
 				result.Status = ResultStatus.Successful;
 			}
 			catch (Exception e)
@@ -80,43 +51,36 @@ namespace LWAS.Expressions
 				result.Exceptions.Add(e);
 				result.Status = ResultStatus.Unsuccessful;
 			}
+
 			return result;
 		}
+
 		public override void Make(IConfigurationType config, IExpressionsManager manager)
 		{
-			if (null == config)
-			{
-				throw new ArgumentNullException("config");
-			}
+			if (null == config) throw new ArgumentNullException("config");
 			IConfigurationElement element = config as IConfigurationElement;
-			if (null == element)
-			{
-				throw new ArgumentException("config must be an IConfigurationElement");
-			}
-			if (!element.Elements.ContainsKey("source"))
-			{
-				throw new ArgumentException("config has no source element");
-			}
-			IConfigurationElement sourceElement = element.GetElementReference("source");
-			if (sourceElement.Attributes.ContainsKey("id"))
-			{
-				if (null == manager)
-				{
-					throw new ArgumentNullException("manager");
-				}
-				this._source = manager.FindControl(sourceElement.GetAttributeReference("id").Value.ToString());
-				if (sourceElement.Attributes.ContainsKey("member"))
-				{
-					this._member = sourceElement.GetAttributeReference("member").Value.ToString();
-				}
-			}
-			else
-			{
-				if (sourceElement.Attributes.ContainsKey("value"))
-				{
-					this._source = sourceElement.GetAttributeReference("value").Value;
-				}
-			}
+			if (null == element) throw new ArgumentException("config must be an IConfigurationElement");
+
+            if (element.Elements.ContainsKey("source"))
+            {
+                IConfigurationElement sourceElement = element.GetElementReference("source");
+
+                if (sourceElement.Attributes.ContainsKey("id"))
+                {
+                    if (null == manager) throw new ArgumentNullException("manager");
+
+                    this.Source = manager.FindControl(sourceElement.GetAttributeReference("id").Value.ToString());
+                    if (null == this.Source)
+                        this.Source = sourceElement.GetAttributeReference("id").Value;
+                    if (sourceElement.Attributes.ContainsKey("member"))
+                        this.Member = sourceElement.GetAttributeReference("member").Value.ToString();
+                }
+                else
+                {
+                    if (sourceElement.Attributes.ContainsKey("value"))
+                        this.Source = sourceElement.GetAttributeReference("value").Value;
+                }
+            }
 		}
 	}
 }

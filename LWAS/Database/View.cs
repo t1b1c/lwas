@@ -21,6 +21,8 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Text;
 
+using LWAS.Expressions.Extensions;
+
 namespace LWAS.Database
 {
     public class View
@@ -31,6 +33,7 @@ namespace LWAS.Database
         public RelationsCollection Relationship { get; set; }
         public FiltersCollection Filters { get; set; }
         public FieldsCollection Fields { get; set; }
+        public ParametersCollection Parameters { get; set; }
         public ViewsManager Manager { get; set; }
 
         public View(ViewsManager manager)
@@ -39,6 +42,7 @@ namespace LWAS.Database
             this.Relationship = new RelationsCollection(this.Manager);
             this.Filters = new FiltersCollection(this.Manager);
             this.Fields = new FieldsCollection();
+            this.Parameters = new ParametersCollection();
         }
 
         public IEnumerable<Table> RelatedTables()
@@ -128,6 +132,8 @@ namespace LWAS.Database
                 filter.ToXml(writer);
             writer.WriteEndElement();   // filters
 
+            this.Parameters.ToXml(writer);
+
             writer.WriteEndElement();   // view
         }
 
@@ -165,12 +171,26 @@ namespace LWAS.Database
             }
 
             this.Filters.FromXml(element.Element("filters"));
+
+            if (null != element.Element("parameters"))
+                this.Parameters.FromXml(element.Element("parameters"));
         }
 
         public void ToSql(StringBuilder builder)
         {
             if (null == builder) throw new ArgumentNullException("builder");
 
+            SetUpParameters();
+
+            foreach (string parameter in this.Parameters)
+            {
+                string identifier = this.Parameters.SqlIdentifier(parameter);
+                builder.AppendFormat("declare {0} varchar(max)", identifier);
+                builder.AppendLine();
+                builder.AppendFormat("set {0} = '{1}'", identifier, this.Parameters[parameter] ?? "");
+            }
+
+            builder.AppendLine();
             builder.AppendLine("select");
             this.Fields.ToSql(builder);
             builder.AppendLine();
@@ -186,6 +206,18 @@ namespace LWAS.Database
                 builder.AppendLine("where");
                 this.Filters.ToSql(builder);
             }
+        }
+
+        void SetUpParameters()
+        {
+            var parameters = this.Filters.SelectMany<Filter, ParameterToken>(f =>
+                {
+                    return f.Expression.Flatten()
+                                       .SelectMany(e => e.Operands.OfType<ParameterToken>());
+                });
+
+            foreach (ParameterToken token in parameters)
+                token.View = this;
         }
     }
 }

@@ -22,14 +22,23 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
+using LWAS.Extensible.Interfaces.Expressions;
+
 namespace LWAS.Workflow.Recipes
 {
     public class TemplatedConditionCollection : IEnumerable<TemplatedCondition>
     {
         List<TemplatedCondition> list;
-
-        public TemplatedConditionCollection()
+        
+        IExpressionsManager _expressionsManager;
+        public IExpressionsManager ExpressionsManager
         {
+            get { return _expressionsManager; }
+        }
+
+        public TemplatedConditionCollection(IExpressionsManager expressionsManager)
+        {
+            _expressionsManager = expressionsManager;
             list = new List<TemplatedCondition>();
         }
 
@@ -90,7 +99,7 @@ namespace LWAS.Workflow.Recipes
 
             foreach (XElement conditionElement in element.Elements())
             {
-                TemplatedCondition condition = new TemplatedCondition();
+                TemplatedCondition condition = new TemplatedCondition(this.ExpressionsManager);
                 condition.FromXml(conditionElement);
                 Add(condition);
             }

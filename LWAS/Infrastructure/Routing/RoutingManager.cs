@@ -29,6 +29,12 @@ namespace LWAS.Infrastructure.Routing
             get { return _settingsRoutes; }
         }
 
+        IRoutesCollection _runtimeSettingsRoutes;
+        public IRoutesCollection RuntimeSettingsRoutes
+        {
+            get { return _runtimeSettingsRoutes; }
+        }
+
         IRoutesCollection _screensRoutes;
         public IRoutesCollection ScreensRoutes
         {
@@ -49,6 +55,7 @@ namespace LWAS.Infrastructure.Routing
         public RoutingManager()
         {
             _settingsRoutes = new RoutesCollection();
+            _runtimeSettingsRoutes = new RoutesCollection();
             _screensRoutes = new RoutesCollection();
             _agents = new RoutingAgentsCollection();
         }
@@ -56,11 +63,15 @@ namespace LWAS.Infrastructure.Routing
         public void Load()
         {
             _settingsRoutes = new RoutesCollection();
+            _runtimeSettingsRoutes = new RoutesCollection();
             _screensRoutes = new RoutesCollection();
 
             foreach (IRoutingAgent agent in _agents)
                 agent.Load(this);
+
             foreach (IRoute route in _settingsRoutes)
+                route.Resolve();
+            foreach (IRoute route in _runtimeSettingsRoutes)
                 route.Resolve();
             foreach (IRoute route in _screensRoutes)
                 route.Resolve();

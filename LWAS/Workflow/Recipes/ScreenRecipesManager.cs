@@ -26,8 +26,8 @@ namespace LWAS.Workflow.Recipes
 {
     public class ScreenRecipesManager : RecipesManager
     {
-        public ScreenRecipesManager(string aConfigFile, IStorageAgent anAgent)
-            : base(aConfigFile, anAgent, true)
+        public ScreenRecipesManager(string aConfigFile, IStorageAgent anAgent, IExpressionsManager expressionsManager)
+            : base(aConfigFile, anAgent, true, expressionsManager)
         {
         }
     }

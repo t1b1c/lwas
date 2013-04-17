@@ -22,6 +22,8 @@ using System.Xml.Linq;
 using System.Text;
 using System.IO;
 
+using LWAS.Extensible.Interfaces.Expressions;
+
 namespace LWAS.Workflow.Recipes
 {
     public class Recipe
@@ -40,6 +42,12 @@ namespace LWAS.Workflow.Recipes
         public virtual TemplatedFlowCollection AppliedFlows { get; set; }
         public TemplatedText Template { get; set; }
 
+        IExpressionsManager _expressionsManager;
+        public IExpressionsManager ExpressionsManager
+        {
+            get { return _expressionsManager; }
+        }
+
         public event EventHandler<KeyChangeEventArgs> KeyChanged;
         
         public IEnumerable<RecipeComponent> Components 
@@ -52,21 +60,28 @@ namespace LWAS.Workflow.Recipes
             get { return this.Template.Components; }
         }
 
-        public Recipe(string key)
+        public Recipe(string key, IExpressionsManager expressionsManager)
         {
             if (String.IsNullOrEmpty(key)) throw new ArgumentNullException("key");
 
+            _expressionsManager = expressionsManager;
+
             this.Key = key;
             this.Template = new TemplatedText(this);
-            this.Flows = new TemplatedFlowCollection();
-            this.AppliedFlows = new TemplatedFlowCollection();
+            this.Flows = new TemplatedFlowCollection(this.ExpressionsManager);
+            this.AppliedFlows = new TemplatedFlowCollection(this.ExpressionsManager);
         }
 
         public virtual TemplatedFlowCollection Make()
         {
-            TemplatedFlowCollection workflow = new TemplatedFlowCollection();
+            return Make(MakePolicyType.Full);
+        }
+
+        public virtual TemplatedFlowCollection Make(MakePolicyType makePolicy)
+        {
+            TemplatedFlowCollection workflow = new TemplatedFlowCollection(this.ExpressionsManager);
             foreach (TemplatedFlow flow in this.Flows)
-                workflow.Add(flow.Make(this));
+                workflow.Add(flow.Make(this, makePolicy));
 
             this.AppliedFlows = workflow;
 
@@ -88,7 +103,7 @@ namespace LWAS.Workflow.Recipes
 
         public virtual Recipe Clone()
         {
-            Recipe result = new Recipe(this.Key);
+            Recipe result = new Recipe(this.Key, this.ExpressionsManager);
             Clone(result);
             return result;
         }
@@ -147,7 +162,7 @@ namespace LWAS.Workflow.Recipes
             this.Flows.FromXml(element.Element("flows"));
             if (null != element.Element("applied"))
             {
-                this.AppliedFlows = new TemplatedFlowCollection();
+                this.AppliedFlows = new TemplatedFlowCollection(this.ExpressionsManager);
                 this.AppliedFlows.FromXml(element.Element("applied"));
             }
         }

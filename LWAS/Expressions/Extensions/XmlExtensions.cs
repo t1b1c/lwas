@@ -55,9 +55,24 @@ namespace LWAS.Expressions.Extensions
             expression.Make(configElement, expressionsManager);
         }
 
+        public static IExpression Expression(this IExpressionsManager manager, XElement element)
+        {
+            Configuration config = new Configuration();
+            IConfigurationElement configElement = config.AddSection("expression extensions").AddElement("expression");
+            configElement.ReadXml(element.CreateReader());
+            IExpression expression = manager.Token(configElement.GetAttributeReference("type").Value.ToString()) as IExpression;
+            if (null != expression)
+                expression.Make(configElement, manager);
+            return expression;
+        }
+
         public static void ToConfiguration(this IToken token, IConfigurationElement config)
         {
-            config.AddAttribute("type").Value = token.Key;
+            if (!config.Attributes.ContainsKey("type"))
+                config.AddAttribute("type").Value = token.Key;
+            else if ((string)config.GetAttributeReference("type").Value != token.Key)
+                config.GetAttributeReference("type").Value = token.Key;
+
             IExpression expression = token as IExpression;
             if (null != expression)
             {
@@ -76,12 +91,13 @@ namespace LWAS.Expressions.Extensions
                 if (null != basicToken)
                 {
                     IConfigurationElement sourceElement = config.AddElement("source");
-                    if (!String.IsNullOrEmpty(basicToken.Member))
+                    if (null != basicToken.Source)
                     {
                         sourceElement.AddAttribute("id").Value = basicToken.Source;
-                        sourceElement.AddAttribute("member").Value = basicToken.Member;
+                        if (!String.IsNullOrEmpty(basicToken.Member))
+                            sourceElement.AddAttribute("member").Value = basicToken.Member;
                     }
-                    else
+                    else if (null != basicToken.Value)
                         sourceElement.AddAttribute("value").Value = basicToken.Source;
                 }
                 else

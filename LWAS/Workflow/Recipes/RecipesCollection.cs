@@ -21,6 +21,8 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 
+using LWAS.Extensible.Interfaces.Expressions;
+
 namespace LWAS.Workflow.Recipes
 {
     public class RecipesCollection : IEnumerable<Recipe>
@@ -31,22 +33,31 @@ namespace LWAS.Workflow.Recipes
         public RecipesManager Manager { get; set; }
         public event EventHandler ComponentChanged;
 
-        public RecipesCollection(RecipesManager manager)
+        IExpressionsManager _expressionsManager;
+        public IExpressionsManager ExpressionsManager
+        {
+            get { return _expressionsManager; }
+        }
+
+        public RecipesCollection(RecipesManager manager, IExpressionsManager expressionsManager)
         {
             if (null == manager) throw new ArgumentNullException("manager");
+
+            _expressionsManager = expressionsManager;
 
             list = new List<Recipe>();
             this.Manager = manager;
         }
 
-        public RecipesCollection(RecipesManager manager, bool shouldSyncComponents)
-            : this(manager)
+        public RecipesCollection(RecipesManager manager, bool shouldSyncComponents, IExpressionsManager expressionsManager)
+            : this(manager, expressionsManager)
         {
             isSyncComponentsActive = shouldSyncComponents;
         }
 
         public void Add(Recipe recipe)
         {
+            if (null == recipe) throw new ArgumentNullException("recipe");
             if (list.Contains(recipe)) return;
             if (this.ContainsKey(recipe.Key)) throw new ArgumentException(String.Format("There's a '{0}' recipe already in this collection", recipe.Key));
 
@@ -139,6 +150,17 @@ namespace LWAS.Workflow.Recipes
             return clone;
         }
 
+        public IEnumerable<Recipe> OrderRecipes()
+        {
+            return list.OrderBy(r => r is CompositeRecipe)
+                        .ThenBy(r => r is CompositeRecipe &&
+                                    null != list.OfType<CompositeRecipe>()
+                                                .FirstOrDefault(cr => cr.Recipes.Contains(r)
+                                                )
+                            )
+                        .ThenBy(r => r.Name);
+        }
+
         public IEnumerator<Recipe> GetEnumerator()
         {
             return list.GetEnumerator();
@@ -159,7 +181,8 @@ namespace LWAS.Workflow.Recipes
             if (null == writer) throw new ArgumentNullException("writer");
 
             writer.WriteStartElement("recipes");
-            foreach (Recipe recipe in this)
+            foreach (Recipe recipe in this.OrderRecipes())
+            {
                 if (referenceOnly)
                 {
                     writer.WriteStartElement("recipe");
@@ -168,6 +191,7 @@ namespace LWAS.Workflow.Recipes
                 }
                 else
                     recipe.ToXml(writer);
+            }
             writer.WriteEndElement();   // recipes
         }
 
@@ -197,9 +221,9 @@ namespace LWAS.Workflow.Recipes
                     if (null != compositeAttribute)
                         bool.TryParse(compositeAttribute.Value, out isComposite);
                     if (isComposite)
-                        recipe = new CompositeRecipe(this.Manager, key);
+                        recipe = new CompositeRecipe(this.Manager, key, this.ExpressionsManager);
                     else
-                        recipe = new Recipe(key);
+                        recipe = new Recipe(key, this.ExpressionsManager);
                     recipe.FromXml(recipeElement);
                 }
                 this.Add(recipe);

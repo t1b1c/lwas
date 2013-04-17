@@ -22,14 +22,23 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
+using LWAS.Extensible.Interfaces.Expressions;
+
 namespace LWAS.Workflow.Recipes
 {
     public class TemplatedFlowCollection : IEnumerable<TemplatedFlow>
     {
         List<TemplatedFlow> list;
 
-        public TemplatedFlowCollection()
+        IExpressionsManager _expressionsManager;
+        public IExpressionsManager ExpressionsManager
         {
+            get { return _expressionsManager; }
+        }
+
+        public TemplatedFlowCollection(IExpressionsManager expressionsManager)
+        {
+            _expressionsManager = expressionsManager;
             list = new List<TemplatedFlow>();
         }
 
@@ -96,7 +105,7 @@ namespace LWAS.Workflow.Recipes
             
             foreach(XElement pathElement in element.Elements())
             {
-                TemplatedFlow path = TemplatedFlow.FromType(pathElement.Name.LocalName);
+                TemplatedFlow path = TemplatedFlow.FromType(pathElement.Name.LocalName, this.ExpressionsManager);
                 path.FromXml(pathElement);
                 Add(path);
             }

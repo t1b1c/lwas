@@ -26,61 +26,52 @@ using LWAS.Expressions.Extensions;
 
 namespace LWAS.Workflow.Recipes
 {
-    public class TemplatedTransit : TemplatedFlow
+    public class TemplatedConditionToken : TemplatedToken
     {
-        public bool Persistent { get; set; }
-        public TemplatedTransitSource Source { get; set; }
-        public TemplatedTransitDestination Destination { get; set; }
-        public IExpression Expression { get; set; }
+        public override TransitTokenTypeEnum TokenType
+        {
+            get { return TransitTokenTypeEnum.Reference; }
+            set { ; }
+        }
 
-        public TemplatedTransit(IExpressionsManager expressionsManager)
+        public override string SerializedName
+        {
+            get { return null; }
+        }
+
+        public TemplatedConditionToken(IExpressionsManager expressionsManager)
             : base(expressionsManager)
         { }
 
         public override TemplatedFlow Make(Recipe recipe, MakePolicyType makePolicy)
         {
-            TemplatedTransit transit = new TemplatedTransit(this.ExpressionsManager);
-            transit.Persistent = this.Persistent;
-            transit.Source = (TemplatedTransitSource)this.Source.Make(recipe, makePolicy);
-            transit.Destination = (TemplatedTransitDestination)this.Destination.Make(recipe, makePolicy);
-            
-            transit.Expression = this.Expression;
-            Make(recipe, makePolicy, transit.Expression);
+            TemplatedConditionToken result = new TemplatedConditionToken(this.ExpressionsManager);
+            result.Id = this.Id;
+            result.Member = this.Member;
+            result.Expression = this.Expression;
 
-            return transit;
+            Make(recipe, makePolicy, result);
+
+            return result;
         }
 
         public override void ToXml(XmlTextWriter writer)
         {
             if (null == writer) throw new ArgumentNullException("writer");
 
-            writer.WriteStartElement("transit");
-            writer.WriteAttributeString("key", this.Key);
-            writer.WriteAttributeString("persistent", this.Persistent.ToString());
-
-            this.Source.ToXml(writer);
-            this.Destination.ToXml(writer);
+            writer.WriteAttributeString("sender", this.Id);
+            writer.WriteAttributeString("milestone", this.Member);
 
             if (null != this.Expression)
                 this.Expression.ToXml(writer);
-
-            writer.WriteEndElement();   // transit
         }
 
         public override void FromXml(XElement element)
         {
             if (null == element) throw new ArgumentNullException("element");
 
-            this.Key = element.Attribute("key").Value;
-            this.Persistent = bool.Parse(element.Attribute("persistent").Value);
-
-            this.Source = new TemplatedTransitSource(this.ExpressionsManager);
-            if (null != element.Element(this.Source.SerializedName))
-                this.Source.FromXml(element.Element(this.Source.SerializedName));
-
-            this.Destination = new TemplatedTransitDestination(this.ExpressionsManager);
-            if (null != element.Element(this.Destination.SerializedName))
-                this.Destination.FromXml(element.Element(this.Destination.SerializedName));
+            this.Id = element.Attribute("sender").Value;
+            this.Member = element.Attribute("milestone").Value;
 
             XElement expressionElement = element.Elements()
                                                 .SingleOrDefault(x => null != x.Attribute("configKey") &&
@@ -88,6 +79,5 @@ namespace LWAS.Workflow.Recipes
             if (null != expressionElement)
                 this.Expression = this.ExpressionsManager.Expression(expressionElement);
         }
-
     }
 }
