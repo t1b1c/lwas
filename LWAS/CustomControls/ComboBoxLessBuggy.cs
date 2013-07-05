@@ -15,23 +15,20 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Xml;
-using System.Xml.Linq;
+using System.Collections.Specialized;
+using System.Web.UI.WebControls;
+using System.Globalization;
 
-namespace LWAS.Workflow.Recipes
+using AjaxControlToolkit;
+
+namespace LWAS.CustomControls
 {
-    public class VariableRecipeComponent : RecipeComponent
+    public class ComboBoxLessBuggy : ComboBox
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public virtual bool HasValue
+        protected override void LoadViewState(object savedState)
         {
-            get { return !String.IsNullOrEmpty(this.GetValue()); }
+            // base.LoadViewState(savedState);  // if the Page.ViewState is not disabled this will cause the items to be overwritten if they had been created previously
+                                                // i.e. databind in Page.OnInitComplete
         }
-
-        public override void ToXml(XmlTextWriter writer) { }
-        public override void FromXml(XElement element) { }
     }
 }

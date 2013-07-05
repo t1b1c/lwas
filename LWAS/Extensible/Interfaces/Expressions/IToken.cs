@@ -22,15 +22,9 @@ namespace LWAS.Extensible.Interfaces.Expressions
 {
 	public interface IToken
 	{
-		string Key
-		{
-			get;
-		}
-		object Value
-		{
-			get;
-			set;
-		}
+		string Key { get; }
+        object Value { get; set; }
+        bool IsValid { get; }
 		void Make(IConfigurationType config, IExpressionsManager manager);
 		IResult Evaluate();
 	}

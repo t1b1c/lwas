@@ -140,7 +140,8 @@ namespace LWAS.CustomControls
                         ID = ToID(name),
                         DisplayMode = BulletedListDisplayMode.LinkButton,
                         Label = name,
-                        Argument = ToXPath(element)
+                        Argument = ToXPath(element),
+                        ActiveLabel = true
                     };
 
                     foreach (XElement sibling in element.ElementsBeforeSelf())

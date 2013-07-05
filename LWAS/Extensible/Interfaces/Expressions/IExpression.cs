@@ -20,10 +20,6 @@ namespace LWAS.Extensible.Interfaces.Expressions
 {
 	public interface IExpression : IToken
 	{
-		ITokensCollection Operands
-		{
-			get;
-			set;
-		}
+		ITokensCollection Operands { get; set; }
 	}
 }

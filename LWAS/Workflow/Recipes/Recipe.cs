@@ -125,6 +125,13 @@ namespace LWAS.Workflow.Recipes
             clone.FromXml(element);
         }
 
+        public virtual bool IsReady()
+        {
+            return null == this.Template.Components
+                                        .OfType<VariableRecipeComponent>()
+                                        .FirstOrDefault(vrc => vrc.HasValue == false);
+        }
+
         public bool HasAppliedKey(string key)
         {
             return null != this.AppliedFlows

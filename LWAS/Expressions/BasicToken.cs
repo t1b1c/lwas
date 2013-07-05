@@ -33,24 +33,32 @@ namespace LWAS.Expressions
         public object Source { get; set; }
         public string Member { get; set; }
 
+        public override bool IsValid
+        {
+            get { return null != this.Value; }
+        }
+
 		public override IResult Evaluate()
 		{
 			IResult result = base.Evaluate();
-			try
-			{
-				if (null == this.Source) throw new InvalidOperationException("Source is not defined");
-				if (null == this.Member)
-					this.Value = this.Source;
-				else
-					this.Value = ReflectionServices.ExtractValue(this.Source, this.Member);
+            if (!this.IsValid)
+            {
+                try
+                {
+                    if (null == this.Source) throw new InvalidOperationException("Source is not defined");
+                    if (null == this.Member)
+                        this.Value = this.Source;
+                    else
+                        this.Value = ReflectionServices.ExtractValue(this.Source, this.Member);
 
-				result.Status = ResultStatus.Successful;
-			}
-			catch (Exception e)
-			{
-				result.Exceptions.Add(e);
-				result.Status = ResultStatus.Unsuccessful;
-			}
+                    result.Status = ResultStatus.Successful;
+                }
+                catch (Exception e)
+                {
+                    result.Exceptions.Add(e);
+                    result.Status = ResultStatus.Unsuccessful;
+                }
+            }
 
 			return result;
 		}

@@ -141,39 +141,41 @@ namespace LWAS.CustomControls
                 return;
 
             string key = "";
-            if (this.UseUploadedFileName)
+            lock (SyncRoot)
             {
-                this.FileName = Path.GetFileName(e.FileName);
-                key = this.FileName;
-            }
-            else
-                key = this.FileName + Path.GetExtension(e.FileName);
-
-            if (!string.IsNullOrEmpty(this.FileName) && !string.IsNullOrEmpty(this.StoragePath))
-            {
-                string container_path = this.FilePath;
-                if (container_path.StartsWith("/"))
-                    container_path = container_path.Remove(0, 1);
-                if (!String.IsNullOrEmpty(container_path))
-                    container = new DirectoryContainer(this.StoragePath, container_path);
-                else
-                    container = new DirectoryContainer(null, this.StoragePath);
-                lock (SyncRoot)
+                if (this.UseUploadedFileName)
                 {
+                    this.FileName = Path.GetFileName(e.FileName);
+                    key = this.FileName;
+                }
+                else
+                    key = this.FileName + Path.GetExtension(e.FileName);
+
+                if (!string.IsNullOrEmpty(this.FileName) && !string.IsNullOrEmpty(this.StoragePath))
+                {
+                    string container_path = this.FilePath;
+                    if (container_path.StartsWith("/"))
+                        container_path = container_path.Remove(0, 1);
+                    if (!String.IsNullOrEmpty(container_path))
+                        container = new DirectoryContainer(this.StoragePath, container_path);
+                    else
+                        container = new DirectoryContainer(null, this.StoragePath);
+
                     try
                     {
                         if (container.Agent.HasKey(key))
                             container.Agent.Erase(key);
                         ((FileAgent)this.container.Agent).Write(key, this.uploader.FileContent);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         this.container.Agent.CloseStream(key);
                         throw ex;
                     }
                 }
-			}
-			this.uploader.ClearAllFilesFromPersistedStore();
+                this.uploader.ClearFileFromPersistedStore();
+            }
+
             if (null != this.FileUploaded)
                 FileUploaded(this, new UploaderEventArgs(key));
 

@@ -24,6 +24,11 @@ namespace LWAS.Workflow.Recipes
 {
     public class AbsoluteValue : VariableRecipeComponent
     {
+        public override bool HasValue
+        {
+            get { return true; }
+        }
+
         public override void ToXml(XmlTextWriter writer)
         {
             if (null == writer) throw new ArgumentNullException("writer");

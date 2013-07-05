@@ -79,6 +79,26 @@ namespace LWAS.Workflow.Recipes
             list = new List<TemplatedFlow>(list.Union(collection));
         }
 
+        public void Merge(TemplatedFlowCollection collection)
+        {
+            List<TemplatedFlow> merged = new List<TemplatedFlow>();
+            foreach (TemplatedJob job in list.OfType<TemplatedJob>())
+            {
+                string serialized_conditions = job.Conditions.ToXmlString();
+                foreach (TemplatedJob similar in collection.OfType<TemplatedJob>()
+                                                           .Where(j => String.Equals(j.Conditions.ToXmlString(), serialized_conditions)))
+                {
+                    foreach (TemplatedTransit transit in similar.Transits)
+                        job.Transits.Add(transit);
+                    merged.Add(similar);
+                }
+            }
+
+            foreach (TemplatedFlow mergedFlow in merged)
+                collection.Remove(mergedFlow);
+            list = new List<TemplatedFlow>(list.Union(collection));
+        }
+
         public IEnumerator<TemplatedFlow> GetEnumerator()
         {
             return list.GetEnumerator();

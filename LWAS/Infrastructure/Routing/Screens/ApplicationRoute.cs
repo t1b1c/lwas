@@ -24,23 +24,20 @@ using LWAS.Extensible.Interfaces.Routing;
 
 namespace LWAS.Infrastructure.Routing.Screens
 {
-    public class ScreenRoute : BaseRoute
-    {
+    public class ApplicationRoute : BaseRoute
+    {        
         public override string Target
         {
             get { return this.Key; }
         }
 
-        public ScreenRoute(string key, string completePath)
-            : base(key, completePath)
+        public ApplicationRoute(string key)
+            : base(key, key)
         {}
 
         public override void Resolve()
         {
-            if (this.OriginalPath.Contains("/"))
-                _path = this.OriginalPath.Substring(0, this.OriginalPath.IndexOf("/" + this.Target));
-            else
-                _path = this.OriginalPath;
+            _path = this.OriginalPath;
             base.Resolve();
         }
     }

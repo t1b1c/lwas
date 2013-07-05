@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using System.IO;
 
 using LWAS.Extensible.Interfaces.Expressions;
 
@@ -105,5 +106,17 @@ namespace LWAS.Workflow.Recipes
             }
         }
 
+        public string ToXmlString()
+        {
+            StringBuilder sb = new StringBuilder();
+            using (StringWriter stringWriter = new StringWriter(sb))
+            {
+                using (XmlTextWriter writer = new XmlTextWriter(stringWriter))
+                {
+                    ToXml(writer);
+                }
+            }
+            return sb.ToString();
+        }
     }
 }

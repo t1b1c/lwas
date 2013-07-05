@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CustomControls\Breadcrumb.cs" />
+    <Compile Include="CustomControls\ComboBoxLessBuggy.cs" />
     <Compile Include="CustomControls\DataControls\Container.cs" />
     <Compile Include="CustomControls\DataControls\DataTableDataSource.cs" />
     <Compile Include="CustomControls\DataControls\DataTableDataSourceView.cs" />
@@ -251,6 +252,7 @@
     <Compile Include="Infrastructure\Routing\RoutesCollection.cs" />
     <Compile Include="Infrastructure\Routing\RoutingAgentsCollection.cs" />
     <Compile Include="Infrastructure\Routing\RoutingManager.cs" />
+    <Compile Include="Infrastructure\Routing\Screens\ApplicationRoute.cs" />
     <Compile Include="Infrastructure\Routing\Screens\ScreenRoute.cs" />
     <Compile Include="Infrastructure\Routing\Screens\ScreensRoutingAgent.cs" />
     <Compile Include="Infrastructure\Routing\Web\WebRoute.cs" />

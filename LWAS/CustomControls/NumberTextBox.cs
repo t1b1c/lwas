@@ -26,46 +26,43 @@ namespace LWAS.CustomControls
 		private string _format = string.Empty;
 		private NumberType _numberType = NumberType.WholeNumber;
 		private object _autoIncrementScope = null;
-		private static Dictionary<object, int> CurrentIncrements = new Dictionary<object, int>();
+		
+        private static Dictionary<object, int> CurrentIncrements = new Dictionary<object, int>();
+
 		[Themeable(true)]
 		public string Format
 		{
 			get
 			{
-				return this._format;
+                if (!String.IsNullOrEmpty(this.Decimals))
+                {
+                    if (this.NumberType == CustomControls.NumberType.Money)
+                        return String.Format("N{0}", this.Decimals);
+                    else if (this.NumberType == CustomControls.NumberType.Percentage)
+                        return String.Format("P{0}", this.Decimals);
+                    return null;
+                }
+                else
+                    return _format;
 			}
-			set
-			{
-				this._format = value;
-			}
+			set { _format = value; }
 		}
+
+        public string Decimals { get; set; }
+        
         [Themeable(true)]
-        public string PercentFormat
-        {
-            get;
-            set;
-        }
+        public string PercentFormat { get; set; }
+
 		public NumberType NumberType
 		{
-			get
-			{
-				return this._numberType;
-			}
-			set
-			{
-				this._numberType = value;
-			}
+			get { return this._numberType; }
+			set { this._numberType = value; }
 		}
+
 		public object AutoIncrementScope
 		{
-			get
-			{
-				return this._autoIncrementScope;
-			}
-			set
-			{
-				this._autoIncrementScope = value;
-			}
+			get { return this._autoIncrementScope; }
+			set { this._autoIncrementScope = value; }
 		}
 		public override bool ReadOnly
 		{
@@ -106,7 +103,7 @@ namespace LWAS.CustomControls
                             }
                             else
                             {
-                                base.Text = dec.ToString(this._format);
+                                base.Text = dec.ToString(this.Format);
                             }
 						}
 						else

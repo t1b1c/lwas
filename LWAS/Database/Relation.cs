@@ -135,9 +135,9 @@ namespace LWAS.Database
             {
                 builder.Append("    ");
                 builder.AppendFormat("left join [{0}] on ", primaryTable == this.MasterTable ? this.DetailsTable.Name : this.MasterTable.Name);
-                this.MasterField.ToSql(builder);
+                this.MasterField.ToSql(builder, this.MasterField.Alias);
                 builder.Append(" = ");
-                this.DetailsField.ToSql(builder);
+                this.DetailsField.ToSql(builder, this.DetailsField.Alias);
             }
         }
     }

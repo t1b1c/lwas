@@ -24,76 +24,36 @@ namespace LWAS.CustomControls
 {
 	public class DateBoundField : BoundField
 	{
-		private HiddenField valueHidden;
-		public DateTime Value
-		{
-			get
-			{
-				DateTime ret = default(DateTime);
-				if (!string.IsNullOrEmpty(this.valueHidden.Value))
-				{
-					DateTime.TryParse(this.valueHidden.Value, out ret);
-				}
-				return ret;
-			}
-			set
-			{
-				this.valueHidden.Value = value.ToString();
-			}
-		}
-		public override void InitializeCell(DataControlFieldCell cell, DataControlCellType cellType, DataControlRowState rowState, int rowIndex)
-		{
-			base.InitializeCell(cell, cellType, rowState, rowIndex);
-			if (cellType == DataControlCellType.DataCell)
-			{
-				this.valueHidden = new HiddenField();
-				cell.Controls.Add(this.valueHidden);
-			}
-		}
-		protected override void OnDataBindField(object sender, EventArgs e)
-		{
-			try
-			{
-				base.OnDataBindField(sender, e);
-			}
-			catch
-			{
-			}
-			object dataValue = this.GetValue(((Control)sender).NamingContainer);
-			if (dataValue != null && !string.IsNullOrEmpty(dataValue.ToString()))
-			{
-				this.Value = (DateTime)dataValue;
-			}
-		}
 		protected override string FormatDataValue(object dataValue, bool encode)
 		{
 			string format = this.DataFormatString;
 			if (string.IsNullOrEmpty(format))
-			{
 				format = DateTimeFormatInfo.CurrentInfo.ShortDatePattern;
-			}
-			string result;
+
+            string result;
 			if (dataValue != null && !string.IsNullOrEmpty(dataValue.ToString()))
-			{
 				result = ((DateTime)dataValue).ToString(format);
-			}
 			else
-			{
 				result = null;
-			}
-			return result;
+
+            return result;
 		}
+
 		public override void ExtractValuesFromCell(IOrderedDictionary dictionary, DataControlFieldCell cell, DataControlRowState rowState, bool includeReadOnly)
 		{
-			string dataField = this.DataField;
-			if (dictionary.Contains(dataField))
-			{
-				dictionary[dataField] = this.Value;
-			}
-			else
-			{
-				dictionary.Add(dataField, this.Value);
-			}
+            string format = this.DataFormatString;
+            if (string.IsNullOrEmpty(format))
+                format = DateTimeFormatInfo.CurrentInfo.ShortDatePattern;
+
+            DateTime val = DateTime.ParseExact(cell.Text, format, CultureInfo.CurrentCulture);
+            
+            string dataField = this.DataField;
+            if (dictionary.Contains(dataField))
+                dictionary[dataField] = val;
+            else
+            {
+                dictionary.Add(dataField, val);
+            }
 		}
 	}
 }

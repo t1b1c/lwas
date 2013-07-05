@@ -24,6 +24,7 @@ namespace LWAS.Extensible.Interfaces.Routing
         IRoutesCollection SettingsRoutes { get; }
         IRoutesCollection RuntimeSettingsRoutes { get; }
         IRoutesCollection ScreensRoutes { get; }
+        IRoutesCollection ApplicationsRoutes { get; }
         IRoutingAgentsCollection Agents { get; }
         void Load();
     }

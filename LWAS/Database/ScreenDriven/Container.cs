@@ -301,7 +301,7 @@ namespace LWAS.Database.ScreenDriven
                 sql_insert += rn + "create procedure dbo." + tableName + "_insert";
                 sql_insert += rn + " (";
                 sql_insert += rn + "    @ID int";
-                if (1 == flag)
+                if (1 == flag || 5 == flag)
                     sql_insert += " output";
 
                 sql_update = "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'dbo." + tableName + "_update" + "') AND type in (N'P', N'PC'))";
@@ -514,7 +514,7 @@ namespace LWAS.Database.ScreenDriven
                 sql_insert += rn + "(";
                 sql_insert += sql_insert_vals;
                 sql_insert += rn + ")";
-                if (1 == flag)
+                if (1 == flag || 5 == flag)
                     sql_insert += rn + "SET @ID = SCOPE_IDENTITY()";
                 if (!String.IsNullOrEmpty(sql_check_unique))
                     sql_insert += rn + "    end";

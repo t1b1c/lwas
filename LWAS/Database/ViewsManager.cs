@@ -25,7 +25,6 @@ using System.IO;
 
 using LWAS.Extensible.Interfaces.Storage;
 using LWAS.Extensible.Interfaces.Expressions;
-using SD = LWAS.Database.ScreenDriven;
 
 namespace LWAS.Database
 {
@@ -114,83 +113,6 @@ namespace LWAS.Database
                 writer.Formatting = Formatting.Indented;
                 writer.WriteStartDocument();
                 ToXml(writer);
-            }
-        }
-
-        public void FillFromScreenDriven(string a, IEnumerable screens)
-        {
-            if (String.IsNullOrEmpty(a)) throw new ArgumentNullException("a");
-
-            //this.Views.Clear();
-            this.Tables.Clear();
-            this.Relations.Clear();
-
-            screens.OfType<string>()
-                   .ToList()
-                   .ForEach(s => FillFromScreenDriven(a, s));
-        }
-
-        public void FillFromScreenDriven(string a, string s)
-        {
-            if (String.IsNullOrEmpty(a)) throw new ArgumentNullException("a");
-            if (String.IsNullOrEmpty(s)) throw new ArgumentNullException("s");
-
-            SD.Screen screen = new SD.Screen(a, s);
-            foreach (SD.Container container in screen)
-            {
-                string tableName = String.IsNullOrEmpty(container.Alias) ? screen.Key + "_" + container.Name : container.Alias;
-                if (!this.Tables.ContainsKey(tableName))
-                    AddTableFromScreenDriven(screen, container, tableName);
-            }
-        }
-
-        public void AddTableFromScreenDriven(SD.Screen screen, SD.Container container, string tableName)
-        {
-            if (null == screen) throw new ArgumentNullException("screen");
-            if (null == container) throw new ArgumentNullException("container");
-            if (String.IsNullOrEmpty(tableName))
-                tableName = String.IsNullOrEmpty(container.Alias) ? screen.Key + "_" + container.Name : container.Alias;
-
-            Table table = new Table(this, tableName);
-            this.Tables.Add(tableName, table);
-            foreach (SD.Field sdfield in container)
-            {
-                Field field = table.Fields.Add(table, sdfield.Name, null, sdfield.Type, sdfield.Name == "ID");
-                Field relatedField = null;
-
-                if (!String.IsNullOrEmpty(sdfield.LinkedScreen) && !String.IsNullOrEmpty(sdfield.LinkedField) && !sdfield.IsExcluded)
-                {
-                    SD.Container linkedcontainer = screen.All()
-                                                         .Select<SD.Screen, SD.Container>(scr =>
-                                                             scr.ToList<SD.Container>()
-                                                                .Find(c =>
-                                                                {
-                                                                    if (String.IsNullOrEmpty(sdfield.LinkedContainer))
-                                                                        return c.Alias == sdfield.LinkedScreen;
-                                                                    else
-                                                                        return c.Screen.Key == sdfield.LinkedScreen && c.Alias == sdfield.LinkedContainer;
-                                                                }))
-                                                         .Where(c => c != null)
-                                                         .SingleOrDefault();
-
-                    if (null != linkedcontainer)
-                    {
-                        string linkedtablename = String.IsNullOrEmpty(sdfield.LinkedContainer) ? linkedcontainer.Alias : sdfield.LinkedScreen + "_" + sdfield.LinkedContainer;
-
-                        if (!String.IsNullOrEmpty(linkedtablename) &&
-                            !this.Tables.ContainsKey(linkedtablename))
-                        {
-                            AddTableFromScreenDriven(screen, linkedcontainer, linkedtablename);
-                        }
-
-                        relatedField = this.Tables[linkedtablename]
-                                           .Fields
-                                           .FirstOrDefault(f => f.Name == sdfield.LinkedField);
-                    }
-                }
-
-                if (null != relatedField)
-                    this.Relations.Add(field, relatedField);
             }
         }
 

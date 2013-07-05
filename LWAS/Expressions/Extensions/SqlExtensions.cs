@@ -125,11 +125,10 @@ namespace LWAS.Expressions.Extensions
                                             .ElementAtOrDefault(1);
                 if (null != operand1 && null != operand2)
                 {
-                    builder.Append("CONTAINS(");
                     operand1.ToSql(builder);
-                    builder.Append(", ");
+                    builder.Append(" LIKE '%' +");
                     operand2.ToSql(builder);
-                    builder.Append(")");
+                    builder.Append("+ '%'");
                 }
             }
         }
@@ -180,11 +179,10 @@ namespace LWAS.Expressions.Extensions
                                             .ElementAtOrDefault(1);
                 if (null != operand1 && null != operand2)
                 {
-                    builder.Append("NOT CONTAINS(");
                     operand1.ToSql(builder);
-                    builder.Append(", ");
+                    builder.Append(" NOT LIKE '%' +");
                     operand2.ToSql(builder);
-                    builder.Append(")");
+                    builder.Append("+ '%'");
                 }
             }
         }

@@ -131,8 +131,19 @@ namespace LWAS.Workflow.Recipes
 
                         if (!String.IsNullOrEmpty(r_member) && r_member.Contains(template))
                         {
-                            r_id = recipePartMember.Part;
-                            r_member = r_member.Replace(template, value);
+                            if (makePolicy == MakePolicyType.ForEdit)
+                            {
+                                r_id = recipePartMember.Part;
+                                r_member = r_member.Replace(template, value);
+                            }
+                            else
+                            {
+                                r_id = recipePartMember.ValuePart;
+                                if (recipePartMember.IsValueFromReference)
+                                    r_member = recipePartMember.ValueMember;
+                                else
+                                    r_member = String.Format("{0}.{1}", recipePartMember.Member, recipePartMember.ValueMember);
+                            }
                         }
                     }
                     else if (r_id == template)
@@ -150,6 +161,11 @@ namespace LWAS.Workflow.Recipes
 
                     r_value = r_value.Replace(template, value);
 
+                }
+                else if (tokenIsReference && component is AbsoluteValue)
+                {
+                    if (makePolicy == MakePolicyType.Full)
+                        r_member = r_member.Replace(template, value);
                 }
                 else if (!tokenIsReference && component is AbsoluteValue)
                 {

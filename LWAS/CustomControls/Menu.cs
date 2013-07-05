@@ -77,6 +77,11 @@ namespace LWAS.CustomControls
         public bool ActiveLabel { get; set; }
         public Unit LabelWidth { get; set; }
         public Unit LabelHeight { get; set; }
+        public override bool Visible
+        {
+            get { return base.Visible; }
+            set { base.Visible = value; }
+        }
 
         public Menu()
         {

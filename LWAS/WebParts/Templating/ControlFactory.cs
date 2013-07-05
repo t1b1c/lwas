@@ -302,6 +302,7 @@ namespace LWAS.WebParts.Templating
                                         try
                                         {
                                             expression.Make(expressionElement, sysmanager.ExpressionsManager);
+                                            expression.Evaluate();
                                         }
                                         catch (ArgumentException ax)
                                         {

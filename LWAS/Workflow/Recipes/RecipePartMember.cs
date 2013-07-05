@@ -55,7 +55,10 @@ namespace LWAS.Workflow.Recipes
             {
                 if (String.IsNullOrEmpty(this.Value))
                     return null;
-                string val = this.Value.Replace(this.ValuePart, "").Replace(this.Member, "").TrimStart('.');
+                string val = this.Value;
+                if (!String.IsNullOrEmpty(this.ValuePart))
+                    val = this.Value.Replace(this.ValuePart, "").Replace(this.Member, "");
+                val = val.TrimStart('.');
                 return val;
             }
             set
@@ -65,6 +68,11 @@ namespace LWAS.Workflow.Recipes
                 else
                     this.ChangeValue(String.Format("{0}.{1}.{2}", this.ValuePart, this.Member, value));
             }
+        }
+
+        public override bool HasValue
+        {
+            get { return !String.IsNullOrEmpty(this.ValueMember); }
         }
 
         protected override void WriteAttributes(XmlTextWriter writer)

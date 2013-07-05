@@ -77,11 +77,11 @@ namespace LWAS.Workflow.Recipes
                 this.Recipes.SyncComponents(vrc);
         }
 
-        public override TemplatedFlowCollection Make()
+        public override TemplatedFlowCollection Make(MakePolicyType makePolicy)
         {
             TemplatedFlowCollection workflow = new TemplatedFlowCollection(this.ExpressionsManager);
             foreach (Recipe recipe in this.Recipes)
-                workflow.Union(recipe.Make());
+                workflow.Merge(recipe.Make());
 
             return workflow;
         }
@@ -98,6 +98,11 @@ namespace LWAS.Workflow.Recipes
             CompositeRecipe result = new CompositeRecipe(this.Manager, this.Key, this.ExpressionsManager);
             Clone(result);
             return result;
+        }
+
+        public override bool IsReady()
+        {
+            return null == this.Recipes.FirstOrDefault(r => r.IsReady() == false);
         }
 
         public override void ToXml(XmlTextWriter writer)

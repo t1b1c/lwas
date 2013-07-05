@@ -37,8 +37,9 @@ namespace LWAS.Database
             }
             set
             {
-                if (parameters.ContainsKey(key))
-                    parameters[key] = value;
+                if (!parameters.ContainsKey(key))
+                    parameters.Add(key, null);
+                parameters[key] = value;
             }
         }
 
@@ -47,6 +48,13 @@ namespace LWAS.Database
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
             if (!parameters.ContainsKey(name))
                 parameters.Add(name, null);
+        }
+
+        public void Remove(string name)
+        {
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
+            if (parameters.ContainsKey(name))
+                parameters.Remove(name);
         }
 
         public IEnumerator<string> GetEnumerator()

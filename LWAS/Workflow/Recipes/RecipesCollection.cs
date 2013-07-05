@@ -104,6 +104,12 @@ namespace LWAS.Workflow.Recipes
             set { AddAt(value, index); }
         }
 
+        public int this[Recipe recipe]
+        {
+            get { return list.IndexOf(recipe); }
+            set { list.Insert(value, recipe); }
+        }
+
         public void RegisterRecipe(Recipe recipe)
         {
             if (isSyncComponentsActive)
@@ -128,7 +134,11 @@ namespace LWAS.Workflow.Recipes
             string value = vrc.GetValue();
             if (null != vrc)
                 foreach (Recipe recipe in this)
+                {
                     recipe.Template.Components.SyncComponents(name, value);
+                    if (recipe is CompositeRecipe)
+                        ((CompositeRecipe)recipe).Recipes.SyncComponents(vrc);
+                }
         }
 
         public void UnregisterRecipe(Recipe recipe)
@@ -136,16 +146,29 @@ namespace LWAS.Workflow.Recipes
             recipe.Template.Components.ComponentChanged -= new EventHandler(Components_ComponentChanged);
         }
 
-        public Recipe MultiplyRecipe(Recipe recipe)
+        public Recipe MultiplyRecipe(Recipe recipe, LibraryRecipesManager library)
         {
             if (null == recipe) throw new ArgumentNullException("recipe");
             if (!list.Contains(recipe)) throw new ArgumentException(String.Format("This collection does not contain the recipe '{0}'", recipe.Key));
 
-            Recipe clone = recipe.Clone();
+            Recipe source = recipe;
+            if (source.Key != source.Name)  // multiplied recipe
+                source = library.Recipes[recipe.Name];
+            else
+                source = library.Recipes[recipe.Key];
+
+            Recipe clone = source.Clone();
             string suffix = clone.Key.Substring(clone.Name.Length).Trim();
             int counter = 0;
             Int32.TryParse(suffix, out counter);
             clone.Key = clone.Name + " " + (++counter).ToString();
+
+            while (null != list.SingleOrDefault(r => r.Key == clone.Key))
+                clone.Key = clone.Name + " " + (++counter).ToString();
+
+            if (clone is CompositeRecipe)
+                ((CompositeRecipe)clone).Expand();
+
             this.Add(clone);
             return clone;
         }
@@ -154,11 +177,11 @@ namespace LWAS.Workflow.Recipes
         {
             return list.OrderBy(r => r is CompositeRecipe)
                         .ThenBy(r => r is CompositeRecipe &&
-                                    null != list.OfType<CompositeRecipe>()
+                                    null == list.OfType<CompositeRecipe>()
                                                 .FirstOrDefault(cr => cr.Recipes.Contains(r)
                                                 )
                             )
-                        .ThenBy(r => r.Name);
+                        .ThenBy(r => list.IndexOf(r));
         }
 
         public IEnumerator<Recipe> GetEnumerator()

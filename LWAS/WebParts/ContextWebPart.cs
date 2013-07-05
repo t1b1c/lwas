@@ -116,6 +116,22 @@ namespace LWAS.WebParts
                 this.DataKey = null;
 			}
 		}
+        public Dictionary<string, object> DataItem
+        {
+            set
+            {
+                if (null == this.DataKey) throw new InvalidOperationException("DataKey not set");
+
+                if (value != null)
+                {
+                    if (_data.ContainsKey(this.DataKey))
+                        _data.Remove(this.DataKey);
+                    _data.Add(this.DataKey, value);
+                }
+
+                this.DataKey = null;
+            }
+        }
 		public IMonitor Monitor
 		{
 			get

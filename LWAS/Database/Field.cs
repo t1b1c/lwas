@@ -83,15 +83,15 @@ namespace LWAS.Database
                 this.Alias = element.Attribute("alias").Value;
         }
 
-        public void ToSql(StringBuilder builder)
+        public void ToSql(StringBuilder builder, string alias)
         {
             if (null == builder) throw new ArgumentNullException("builder");
 
             if (null != this.Table && !String.IsNullOrEmpty(this.Table.Name) && !String.IsNullOrEmpty(this.Name))
             {
                 builder.AppendFormat("[{0}].[{1}]", this.Table.Name, this.Name);
-                if (!String.IsNullOrEmpty(this.Alias))
-                    builder.AppendFormat(" as [{0}]", this.Alias);
+                if (!String.IsNullOrEmpty(alias))
+                    builder.AppendFormat(" as [{0}]", alias);
             }
         }
     }

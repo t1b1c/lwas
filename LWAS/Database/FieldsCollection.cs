@@ -115,14 +115,15 @@ namespace LWAS.Database
             }
         }
 
-        public void ToSql(StringBuilder builder)
+        public void ToSql(StringBuilder builder, Dictionary<Field, string> aliases)
         {
             if (null == builder) throw new ArgumentNullException("builder");
 
             foreach (Field field in this.Fields)
             {
                 builder.Append("    ");
-                field.ToSql(builder);
+                string alias = aliases.ContainsKey(field) ? aliases[field] : null;
+                field.ToSql(builder, alias);
                 builder.AppendLine(",");
             }
             builder.Remove(builder.Length - 3, 3);

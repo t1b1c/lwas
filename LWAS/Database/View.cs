@@ -33,7 +33,9 @@ namespace LWAS.Database
         public RelationsCollection Relationship { get; set; }
         public FiltersCollection Filters { get; set; }
         public FieldsCollection Fields { get; set; }
+        public Dictionary<Field, string> Aliases { get; set; }
         public ParametersCollection Parameters { get; set; }
+        public ParametersCollection UpdateParameters { get; set; }
         public ViewsManager Manager { get; set; }
 
         public View(ViewsManager manager)
@@ -42,7 +44,9 @@ namespace LWAS.Database
             this.Relationship = new RelationsCollection(this.Manager);
             this.Filters = new FiltersCollection(this.Manager);
             this.Fields = new FieldsCollection();
+            this.Aliases = new Dictionary<Field, string>();
             this.Parameters = new ParametersCollection();
+            this.UpdateParameters = new ParametersCollection();
         }
 
         public IEnumerable<Table> RelatedTables()
@@ -107,8 +111,8 @@ namespace LWAS.Database
                 writer.WriteStartElement("field");
                 writer.WriteAttributeString("name", field.Name);
                 writer.WriteAttributeString("table", field.Table.Name);
-                if (!String.IsNullOrEmpty(field.Alias))
-                    writer.WriteAttributeString("alias", field.Alias);
+                if (this.Aliases.ContainsKey(field))
+                    writer.WriteAttributeString("alias", this.Aliases[field]);
                 writer.WriteEndElement();   // field
             }
             writer.WriteEndElement();   // fields
@@ -152,7 +156,7 @@ namespace LWAS.Database
                 Field field = table.Fields[fieldName];
                 if (null == field) throw new ApplicationException(String.Format("Table '{0}' does not contain field '{1}' to add it to the view '{2}'", tableName, fieldName, this.Name));
                 if (null != fieldElement.Attribute("alias"))
-                    field.Alias = fieldElement.Attribute("alias").Value;
+                    this.Aliases.Add(field, fieldElement.Attribute("alias").Value);
                 this.Fields.Add(field);
             }
 
@@ -192,7 +196,7 @@ namespace LWAS.Database
 
             builder.AppendLine();
             builder.AppendLine("select");
-            this.Fields.ToSql(builder);
+            this.Fields.ToSql(builder, this.Aliases);
             builder.AppendLine();
             builder.AppendLine("from");
             builder.Append("    ");
@@ -208,6 +212,68 @@ namespace LWAS.Database
             }
         }
 
+        public void ToUpdateSql(StringBuilder builder)
+        {
+            if (null == builder) throw new ArgumentNullException("builder");
+            if (this.UpdateParameters.Count() == 0) throw new InvalidOperationException("No update parameters defined");
+
+            SetUpParameters();
+
+            foreach (string parameter in this.Parameters)
+            {
+                string identifier = this.Parameters.SqlIdentifier(parameter);
+                builder.AppendFormat("declare {0} varchar(max)", identifier);
+                builder.AppendLine();
+                builder.AppendFormat("set {0} = '{1}'", identifier, this.Parameters[parameter] ?? "");
+            }
+
+            builder.AppendLine();
+            builder.AppendFormat("update [{0}]", this.Source.Name);
+            builder.AppendLine();
+            builder.AppendLine("set");
+
+            foreach (string updateParameter in this.UpdateParameters)
+            {
+                Field field = this.Source.Fields[updateParameter];
+                builder.AppendFormat("    [{0}].[{1}] = {2}", field.Table.Name, field.Name, CastToDbType(this.UpdateParameters[updateParameter], field.DBType));
+            }
+
+            builder.AppendLine();
+            builder.AppendLine("from");
+            builder.Append("    ");
+            builder.AppendFormat("[{0}]", this.Source.Name);
+            builder.AppendLine();
+            if (this.Relationship.Count > 0)
+                this.Relationship.ToSql(builder, this.Source);
+            if (this.Filters.Count > 0)
+            {
+                builder.AppendLine();
+                builder.AppendLine("where");
+                this.Filters.ToSql(builder);
+            }
+        }
+
+        string CastToDbType(object val, string dbtype)
+        {
+            string strval = (val ?? "").ToString();
+            switch (dbtype)
+            {
+                case "Identifier":
+                    return String.Format("cast('{0}' as int)", strval);
+                case "Text":
+                    return String.Format("cast('{0}' as varchar(max))", strval);
+                case "Number":
+                    decimal d = decimal.Parse(strval);
+                    return String.Format("cast('{0}' as decimal(18,4))", d.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                case "Date":
+                    DateTime dt = DateTime.Parse(strval);
+                    return String.Format("cast('{0}' as smalldatetime)", dt.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                case "Boolean":
+                    return String.Format("cast('{0}' as bit)", strval);
+            }
+            return "''";
+        }
+
         void SetUpParameters()
         {
             var parameters = this.Filters.SelectMany<Filter, ParameterToken>(f =>
@@ -218,6 +284,33 @@ namespace LWAS.Database
 
             foreach (ParameterToken token in parameters)
                 token.View = this;
+        }
+
+        public void CleanupParameters()
+        {
+            List<string> parameters = new List<string>(this.Parameters);
+            foreach (string p in parameters)
+                CleanupParameter(p);
+        }
+
+        public void CleanupParameter(string name)
+        {
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
+
+            if (!this.Parameters.Contains(name))
+                return;
+            if (!IsParameterUsed(name))
+                this.Parameters.Remove(name);
+        }
+
+        public bool IsParameterUsed(string name)
+        {
+            return null != this.Filters.SelectMany<Filter, ParameterToken>(f =>
+                                            {
+                                                return f.Expression.Flatten()
+                                                                   .SelectMany(e => e.Operands.OfType<ParameterToken>());
+                                            })
+                                       .SingleOrDefault(p => p.ParameterName == name);
         }
     }
 }

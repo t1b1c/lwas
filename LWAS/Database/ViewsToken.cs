@@ -33,6 +33,10 @@ namespace LWAS.Database
         public abstract string Key { get; }
 
         public object Value { get; set; }
+        public virtual bool IsValid
+        {
+            get { return true; }
+        }
 
         public abstract void Make(IConfigurationType config, IExpressionsManager manager);
         public abstract IResult Evaluate();

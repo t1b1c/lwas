@@ -110,11 +110,65 @@ namespace LWAS.Database
         public void ToSql(StringBuilder builder, Table primaryTable)
         {
             if (null == builder) throw new ArgumentNullException("builder");
+            LinkedList<Table> masters = MasterTables(primaryTable);
 
             foreach (Relation relation in this.Relations)
             {
-                relation.ToSql(builder, primaryTable);
+                relation.ToSql(builder, masters.Contains(relation.MasterTable) ? relation.MasterTable : relation.DetailsTable);
                 builder.AppendLine();
+            }
+        }
+
+        public LinkedList<Table> MasterTables(Table primaryTable)
+        {
+            LinkedList<Table> list = new LinkedList<Table>();
+            LinkedListNode<Table> master = list.AddFirst(primaryTable);
+            LinkMasters(master, list);
+
+            return list;
+        }
+
+        void LinkMasters(LinkedListNode<Table> node, LinkedList<Table> list)
+        {
+            Table primaryTable = node.Value;
+            IEnumerable<Table> masters = this.Relations.Select(r =>
+                                                            {
+                                                                if (primaryTable == r.MasterTable)
+                                                                {
+                                                                    if (null != this.Relations.FirstOrDefault(r2 =>
+                                                                                                    {
+                                                                                                        return r2 != r &&
+                                                                                                               (r2.MasterTable == r.DetailsTable ||
+                                                                                                                r2.DetailsTable == r.DetailsTable);
+                                                                                                    }))
+                                                                        return r.DetailsTable;
+                                                                    else
+                                                                        return null;
+                                                                }
+                                                                else if (primaryTable == r.DetailsTable)
+                                                                {
+                                                                    if (null != this.Relations.FirstOrDefault(r2 =>
+                                                                                                    {
+                                                                                                        return r2 != r &&
+                                                                                                               (r2.MasterTable == r.MasterTable ||
+                                                                                                                r2.DetailsTable == r.MasterTable);
+                                                                                                    }))
+                                                                        return r.MasterTable;
+                                                                    else
+                                                                        return null;
+                                                                }
+                                                                else
+                                                                    return null;
+                                                            })
+                                                        .Where(t => t != null);
+
+            foreach (Table table in masters.Reverse())
+            {
+                if (!list.Contains(table))
+                {
+                    LinkedListNode<Table> newnode = list.AddAfter(node, table);
+                    LinkMasters(newnode, list);
+                }
             }
         }
     }

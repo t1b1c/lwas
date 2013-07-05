@@ -177,6 +177,9 @@ namespace LWAS.WebParts
 
         private void OnSave()
         {
+            if (String.IsNullOrEmpty(_key))
+                return;
+
             XDocument doc = LoadDocument();
 
             string path = this.Path;
@@ -226,6 +229,9 @@ namespace LWAS.WebParts
 
         private void OnDelete()
         {
+            if (String.IsNullOrEmpty(_key))
+                return;
+
             XDocument doc = LoadDocument();
 
             string path = this.Path;

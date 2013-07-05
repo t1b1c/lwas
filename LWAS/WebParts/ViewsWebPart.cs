@@ -39,14 +39,16 @@ using LWAS.Database;
 
 namespace LWAS.WebParts
 {
-    public class ViewsWebPart : InitializableWebPart
+    public class ViewsWebPart : ConfigurableWebPart
     {
         string views_config;
+
         public IExpressionsManager ExpressionsManager { get; set; }
         public IStorageAgent Agent { get; set; }
         public IRoutingManager RoutingManager { get; set; }
         public ViewsManager ViewsManager { get; set; }
         public LWAS.Database.View CurrentView { get; set; }
+
         public string SelectView 
         {
             set
@@ -56,6 +58,7 @@ namespace LWAS.WebParts
                 this.CurrentView = this.ViewsManager.Views[value];
             }
         }
+
         public string[] Command
         {
             get
@@ -63,6 +66,17 @@ namespace LWAS.WebParts
                 if (null == this.CurrentView) throw new InvalidOperationException("CurrentView not set");
                 StringBuilder sb = new StringBuilder();
                 this.CurrentView.ToSql(sb);
+                return new string[] { this.CurrentView.Name, sb.ToString() };
+            }
+        }
+
+        public string[] UpdateCommand
+        {
+            get
+            {
+                if (null == this.CurrentView) throw new InvalidOperationException("CurrentView not set");
+                StringBuilder sb = new StringBuilder();
+                this.CurrentView.ToUpdateSql(sb);
                 return new string[] { this.CurrentView.Name, sb.ToString() };
             }
         }

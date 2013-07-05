@@ -50,6 +50,18 @@ namespace LWAS.Infrastructure.Routing.Screens
                 CreateEmptyConfigFile(routes_config);
 
             XDocument doc = XDocument.Parse(this.Agent.Read(routes_config));
+
+            XElement routesElement = doc.Element("routes");
+            if (null != routesElement)
+            {
+                XAttribute appRouteAttribute = routesElement.Attribute("name");
+                if (null != appRouteAttribute && !String.IsNullOrEmpty(appRouteAttribute.Value))
+                {
+                    string name = appRouteAttribute.Value;
+                    manager.ApplicationsRoutes.Add(new ApplicationRoute(name));
+                }
+            }
+
             IEnumerable<XElement> leaves = doc.Descendants()
                                               .Where(e => !e.HasElements && e.Name != "routes");
             foreach (XElement element in leaves)
@@ -64,7 +76,7 @@ namespace LWAS.Infrastructure.Routing.Screens
         {
             var parents = new List<string>();
             var node = element;
-            while (node != null)
+            while (node != null && "routes" != node.Name)
             {
                 parents.Add(node.Attribute("name").Value.ToString());
                 node = node.Parent;

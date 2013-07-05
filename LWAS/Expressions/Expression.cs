@@ -41,9 +41,21 @@ namespace LWAS.Expressions
 			set { this._operands = value; }
 		}
 
+        public override bool IsValid
+        {
+            get
+            {
+                foreach (Token token in this.Operands)
+                    if (!token.IsValid)
+                        return false;
+                return true;
+            }
+        }
+
 		public override IResult Evaluate()
 		{
-			IResult result = base.Evaluate();
+            IResult result = new ExpressionResult();
+
 			foreach (IToken child in this.Operands)
 				result.Concatenate(child.Evaluate());
 

@@ -24,29 +24,22 @@ namespace LWAS.Expressions
 {
 	public class Token : IToken
 	{
-		private object _value;
 		public virtual string Key
 		{
-			get
-			{
-				return string.Empty;
-			}
+			get { return string.Empty; }
 		}
-		public virtual object Value
-		{
-			get
-			{
-				return this._value;
-			}
-			set
-			{
-				this._value = value;
-			}
-		}
+
+        public virtual object Value { get; set; }
+        public virtual bool IsValid
+        {
+            get { return true; }
+        }
+
 		public virtual IResult Evaluate()
 		{
 			return new ExpressionResult();
 		}
+
 		public virtual void Make(IConfigurationType config, IExpressionsManager manager)
 		{
 		}
