@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2012 TIBIC SOLUTIONS
+ * Copyright 2006-2013 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,14 +28,14 @@ namespace LWAS.Database
         public string Name { get; set; }
         public string Description { get; set; }
         public RelationsCollection Relations { get; set; }
-        public FieldsCollection Fields { get; set; }
+        public FieldsCollection<TableField> Fields { get; set; }
         public ViewsManager Manager { get; set; }
 
         public Table(ViewsManager manager) 
         {
             this.Manager = manager;
             this.Relations = new RelationsCollection(manager);
-            this.Fields = new FieldsCollection();
+            this.Fields = new FieldsCollection<TableField>(TableField.XML_KEY);
         }
         public Table(ViewsManager manager, string name)
             : this(manager)
@@ -81,7 +81,7 @@ namespace LWAS.Database
 
             this.Fields.FromXml(element.Element("fields"));
 
-            foreach (Field field in this.Fields)
+            foreach (TableField field in this.Fields)
                 field.Table = this;
         }
 

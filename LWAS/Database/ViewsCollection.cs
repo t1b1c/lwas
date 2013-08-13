@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2012 TIBIC SOLUTIONS
+ * Copyright 2006-2013 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,21 @@ namespace LWAS.Database
             if (null == writer) throw new ArgumentNullException("writer");
 
             writer.WriteStartElement("views");
-            foreach (View view in this.Values)
+            List<View> views = this.Values.ToList();
+            var orderedviews = views.OrderBy(v => v.Subviews.Count > 0)
+                                  .ThenBy(v =>
+                                    {
+                                        if (null != views.FirstOrDefault(av => av.Subviews.ContainsKey(v)))
+                                        {
+                                            int firstparent = views.Where(av => av.Subviews.ContainsKey(v))
+                                                                    .Min(ap => views.IndexOf(ap));
+                                            return views.IndexOf(v) <= firstparent;
+                                        }
+                                        return false;
+                                    })
+                                   .ThenBy(v => v.Name);
+
+            foreach (View view in orderedviews)
                 view.ToXml(writer);
             writer.WriteEndElement();   // views
         }

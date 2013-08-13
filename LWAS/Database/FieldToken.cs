@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2012 TIBIC SOLUTIONS
+ * Copyright 2006-2013 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,14 +28,13 @@ using LWAS.Infrastructure;
 
 namespace LWAS.Database
 {
-    public class FieldToken: ViewsToken
+    public class FieldToken: BaseViewsToken
     {
         public override string Key
         {
-            get { return "views field token"; }
+            get { return "field token"; }
         }
 
-        public string TableName { get; set; }
         public string FieldName { get; set; }
 
         public override void Make(IConfigurationType config, IExpressionsManager manager)
@@ -45,11 +44,18 @@ namespace LWAS.Database
 
             IConfigurationElement tokenElement = config as IConfigurationElement;
             if (null == tokenElement) throw new ArgumentException("config is not an IConfigurationElement");
-            if (!tokenElement.Elements.ContainsKey("source")) throw new ConfigurationException("Bad views token configuration: 'source' element not found");
+            if (!tokenElement.Elements.ContainsKey("source")) throw new ConfigurationException("Bad views field token configuration: 'source' element not found");
             IConfigurationElement sourceElement = tokenElement.GetElementReference("source");
-            if (!sourceElement.Attributes.ContainsKey("table")) throw new ConfigurationException("Bad views token configuration: 'source' element has no 'table' attribute");
-            this.TableName = sourceElement.GetAttributeReference("table").Value.ToString();
-            if (!sourceElement.Attributes.ContainsKey("field")) throw new ConfigurationException("Bad views token configuration: 'source' element has no 'field' attribute");
+
+            Make(sourceElement, manager);
+        }
+
+        protected virtual void Make(IConfigurationElement sourceElement, IExpressionsManager manager)
+        {
+            if (null == sourceElement) throw new ArgumentNullException("sourceElement");
+            if (null == manager) throw new ArgumentNullException("manager");
+
+            if (!sourceElement.Attributes.ContainsKey("field")) throw new ConfigurationException("Bad views field token configuration: 'source' element has no 'field' attribute");
             this.FieldName = sourceElement.GetAttributeReference("field").Value.ToString();
         }
 
@@ -63,7 +69,13 @@ namespace LWAS.Database
             if (null == config) throw new ArgumentNullException("config");
 
             IConfigurationElement sourceElement = config.AddElement("source");
-            sourceElement.AddAttribute("table").Value = this.TableName;
+            WriteConfiguration(sourceElement);
+        }
+
+        protected virtual void WriteConfiguration(IConfigurationElement sourceElement)
+        {
+            if (null == sourceElement) throw new ArgumentNullException("sourceElement");
+
             sourceElement.AddAttribute("field").Value = this.FieldName;
         }
 
@@ -71,7 +83,7 @@ namespace LWAS.Database
         {
             if (null == builder) throw new ArgumentNullException("builder");
 
-            builder.AppendFormat("[{0}].[{1}]", this.TableName, this.FieldName);
+            builder.AppendFormat("[{0}]", this.FieldName);
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2012 TIBIC SOLUTIONS
+ * Copyright 2006-2013 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,11 @@ namespace LWAS.Database
             }
         }
 
+        public bool Contains(string name)
+        {
+            return parameters.ContainsKey(name);
+        }
+
         public void Add(string name)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
@@ -65,6 +70,11 @@ namespace LWAS.Database
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        public bool IsEmpty
+        {
+            get { return parameters.Count == 0; }
         }
 
         public string SqlIdentifier(string parameter)

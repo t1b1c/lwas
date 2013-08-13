@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2012 TIBIC SOLUTIONS
+ * Copyright 2006-2013 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -342,11 +342,30 @@ namespace LWAS.Infrastructure
                                                     {
                                                         sourcePropertyInfo = sourceType.GetProperty(propertyName, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public);
                                                     }
+
+                                                    bool isIndexer = false;
                                                     if (null == sourcePropertyInfo)
                                                     {
-                                                        throw new InvalidOperationException(string.Format("Could not find property '{0}' from '{1}'. Remaining property loop is '{2}'", propertyName, originalPropertyName, childProperty));
+                                                        // try to find an indexer with one string param
+                                                        foreach (PropertyInfo pi in sourceType.GetProperties())
+                                                        {
+                                                            ParameterInfo[] parami = pi.GetIndexParameters();
+                                                            if (parami.Length == 1 && parami[0].ParameterType == typeof(string))
+                                                            {
+                                                                sourcePropertyInfo = pi;
+                                                                isIndexer = true;
+                                                                break;
+                                                            }
+                                                        }
                                                     }
-                                                    val = sourcePropertyInfo.GetValue(source, null);
+
+                                                    if (null == sourcePropertyInfo)
+                                                        throw new InvalidOperationException(string.Format("Could not find property '{0}' from '{1}'. Remaining property loop is '{2}'", propertyName, originalPropertyName, childProperty));
+
+                                                    if (isIndexer)
+                                                        val = sourcePropertyInfo.GetValue(source, new object[] { propertyName });
+                                                    else
+                                                        val = sourcePropertyInfo.GetValue(source, null);
                                                 }
                                             }
                                         }

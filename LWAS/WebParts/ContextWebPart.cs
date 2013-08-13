@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2012 TIBIC SOLUTIONS
+ * Copyright 2006-2013 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -152,7 +152,7 @@ namespace LWAS.WebParts
         {
             set
             {
-                this.Page.Response.Redirect(value, true);
+                this.Page.Response.Redirect(value, false); // let the lifecycle to complete
             }
         }
 		public ContextWebPart()

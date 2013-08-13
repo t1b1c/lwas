@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2012 TIBIC SOLUTIONS
+ * Copyright 2006-2013 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,44 +24,32 @@ using System.Xml.Linq;
 
 namespace LWAS.Database
 {
-    public class FieldsCollection: IEnumerable<Field>
+    public class FieldsCollection<T>: IEnumerable<T> where T : Field, new()
     {
-        List<Field> Fields { get; set; }
+        public class FieldEventArgs : EventArgs
+        {
+            public T Field { get; set; }
+        }
+
+        List<T> Fields { get; set; }
+        public string XmlKey { get; private set; }
+        public event EventHandler<FieldEventArgs> InitField;
+
         public int Count 
         { 
             get { return this.Fields.Count; } 
         }
 
-        public FieldsCollection()
+        public FieldsCollection(string xmlKey)
         {
-            this.Fields = new List<Field>();
+            this.Fields = new List<T>();
+            this.XmlKey = xmlKey;
         }
 
-        public void Add(Field field)
+        public void Add(T field)
         {
             if (null == field) throw new ArgumentNullException("field");
             this.Fields.Add(field);
-        }
-
-        public Field Add(Table table, string name, string description)
-        {
-            Field field = new Field(table, name, description);
-            this.Fields.Add(field);
-            return field;
-        }
-
-        public Field Add(Table table, string name, string description, string dbtype)
-        {
-            Field field = Add(table, name, description);
-            field.DBType = dbtype;
-            return field;
-        }
-
-        public Field Add(Table table, string name, string description, string dbtype, bool isPrimaryKey)
-        {
-            Field field = Add(table, name, description, dbtype);
-            field.IsPrimaryKey = isPrimaryKey;
-            return field;
         }
 
         public void Clear()
@@ -69,13 +57,13 @@ namespace LWAS.Database
             this.Fields.Clear();
         }
 
-        public void Remove(Field field)
+        public void Remove(T field)
         {
             if (this.Fields.Contains(field))
                 this.Fields.Remove(field);
         }
 
-        public Field this[string name]
+        public T this[string name]
         {
             get
             {
@@ -83,7 +71,7 @@ namespace LWAS.Database
             }
         }
 
-        public IEnumerator<Field> GetEnumerator()
+        public IEnumerator<T> GetEnumerator()
         {
             return this.Fields.GetEnumerator();
         }
@@ -97,7 +85,7 @@ namespace LWAS.Database
         {
             if (null == writer) throw new ArgumentNullException("writer");
 
-            writer.WriteStartElement("fields");
+            writer.WriteStartElement(this.XmlKey);
             foreach (Field field in this.Fields)
                 field.ToXml(writer);
             writer.WriteEndElement();   // fields
@@ -109,7 +97,9 @@ namespace LWAS.Database
 
             foreach (XElement fieldElement in element.Elements("field"))
             {
-                Field field = new Field();
+                T field = new T();
+                if (null != InitField)
+                    InitField(this, new FieldEventArgs() { Field = field });
                 field.FromXml(fieldElement);
                 this.Add(field);
             }
@@ -119,14 +109,17 @@ namespace LWAS.Database
         {
             if (null == builder) throw new ArgumentNullException("builder");
 
-            foreach (Field field in this.Fields)
+            bool first = true;
+            foreach (T field in this.Fields)
             {
+                if (first)
+                    first = false;
+                else
+                    builder.AppendLine(",");
                 builder.Append("    ");
                 string alias = aliases.ContainsKey(field) ? aliases[field] : null;
                 field.ToSql(builder, alias);
-                builder.AppendLine(",");
             }
-            builder.Remove(builder.Length - 3, 3);
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2012 TIBIC SOLUTIONS
+ * Copyright 2006-2013 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ using LWAS.Infrastructure;
 
 namespace LWAS.Database
 {
-    public class ParameterToken : ViewsToken
+    public class ParameterToken : BaseViewsToken
     {
         public override string Key
         {
@@ -37,6 +37,8 @@ namespace LWAS.Database
 
         public View View { get; set; }
         public string ParameterName { get; set; }
+        public Field ReferenceField { get; set; }
+        public string ReferenceFieldAlias { get; set; }
 
         public ParameterToken()
         { }
@@ -81,7 +83,10 @@ namespace LWAS.Database
         {
             if (null == builder) throw new ArgumentNullException("builder");
 
-            builder.AppendFormat("{0}", this.View.Parameters.SqlIdentifier(this.ParameterName));
+            if (null == this.ReferenceField)
+                builder.AppendFormat("{0}", this.View.Parameters.SqlIdentifier(this.ParameterName));
+            else
+                this.ReferenceField.ToSql(builder, this.ReferenceFieldAlias);
         }
     }
 }

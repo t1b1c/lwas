@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2012 TIBIC SOLUTIONS
+ * Copyright 2006-2013 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -275,7 +275,8 @@ namespace LWAS.WebParts.Templating
 					{
 						registry.Add(controlElement.ConfigKey, cellControl);
 					}
-					foreach (IConfigurationElement controlPropertyElement in controlElement.Elements.Values)
+                    var properties = controlElement.Elements.Values;
+					foreach (IConfigurationElement controlPropertyElement in properties)
 					{
 						if (!controlPropertyElement.Attributes.ContainsKey("for") || !("cell" == controlPropertyElement.GetAttributeReference("for").Value.ToString()))
 						{

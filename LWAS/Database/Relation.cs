@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2012 TIBIC SOLUTIONS
+ * Copyright 2006-2013 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ namespace LWAS.Database
         public string Name { get; set; }
         public string Description { get; set; }
         public Table MasterTable { get; set; }
-        public Field MasterField { get; set; }
+        public TableField MasterField { get; set; }
         public Table DetailsTable { get; set; }
-        public Field DetailsField { get; set; }
+        public TableField DetailsField { get; set; }
         public ViewsManager Manager { get; set; }
 
         public Relation(ViewsManager manager)
@@ -44,7 +44,7 @@ namespace LWAS.Database
             this.Name = name;
             this.Description = description;
         }
-        public Relation(ViewsManager manager, string name, string description, Field masterField, Field detailsField)
+        public Relation(ViewsManager manager, string name, string description, TableField masterField, TableField detailsField)
             : this(manager, name, description)
         {
             if (null == masterField) throw new ArgumentNullException("masterField");

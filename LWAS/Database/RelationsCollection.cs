@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2012 TIBIC SOLUTIONS
+ * Copyright 2006-2013 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,11 +44,11 @@ namespace LWAS.Database
         {
             this.Relations.Add(relation);
         }
-        public Relation Add(Field masterField, Field detailsField)
+        public Relation Add(TableField masterField, TableField detailsField)
         {
             return Add(null, null, masterField, detailsField);
         }
-        public Relation Add(string name, string description, Field masterField, Field detailsField)
+        public Relation Add(string name, string description, TableField masterField, TableField detailsField)
         {
             Relation relation = new Relation(this.Manager, name, description, masterField, detailsField);
             Add(relation);

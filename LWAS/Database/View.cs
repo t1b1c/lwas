@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2012 TIBIC SOLUTIONS
+ * Copyright 2006-2013 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,11 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Text;
 
+using LWAS.Extensible.Interfaces.Expressions;
+
 using LWAS.Expressions.Extensions;
+using LWAS.Database.Expressions;
+using LWAS.Database.Expressions.Aggregate;
 
 namespace LWAS.Database
 {
@@ -32,21 +36,37 @@ namespace LWAS.Database
         public Table Source { get; set; }
         public RelationsCollection Relationship { get; set; }
         public FiltersCollection Filters { get; set; }
-        public FieldsCollection Fields { get; set; }
+        public FieldsCollection<TableField> Fields { get; set; }
+        public FieldsCollection<ComputedField> ComputedFields { get; set; }
+        public IEnumerable<Field> AllFields
+        {
+            get { return this.Fields.Cast<Field>().Union(this.ComputedFields.Cast<Field>()); }
+        }
         public Dictionary<Field, string> Aliases { get; set; }
         public ParametersCollection Parameters { get; set; }
         public ParametersCollection UpdateParameters { get; set; }
         public ViewsManager Manager { get; set; }
+        public ViewSorting Sorting { get; private set; }
+        public Dictionary<View, Dictionary<string, Field>> Subviews { get; set; }
 
         public View(ViewsManager manager)
         {
             this.Manager = manager;
             this.Relationship = new RelationsCollection(this.Manager);
             this.Filters = new FiltersCollection(this.Manager);
-            this.Fields = new FieldsCollection();
+            this.Fields = new FieldsCollection<TableField>(TableField.XML_KEY);
+            this.ComputedFields = new FieldsCollection<ComputedField>(ComputedField.XML_KEY);
+            this.ComputedFields.InitField += new EventHandler<FieldsCollection<ComputedField>.FieldEventArgs>(ComputedFields_InitField);
             this.Aliases = new Dictionary<Field, string>();
             this.Parameters = new ParametersCollection();
             this.UpdateParameters = new ParametersCollection();
+            this.Sorting = new ViewSorting(this);
+            this.Subviews = new Dictionary<View, Dictionary<string, Field>>();
+        }
+
+        void ComputedFields_InitField(object sender, FieldsCollection<ComputedField>.FieldEventArgs e)
+        {
+            e.Field.Manager = this.Manager;
         }
 
         public IEnumerable<Table> RelatedTables()
@@ -105,8 +125,8 @@ namespace LWAS.Database
             writer.WriteAttributeString("name", this.Name);
             writer.WriteAttributeString("description", this.Description);
 
-            writer.WriteStartElement("fields");
-            foreach (Field field in this.Fields)
+            writer.WriteStartElement(TableField.XML_KEY);
+            foreach (TableField field in this.Fields)
             {
                 writer.WriteStartElement("field");
                 writer.WriteAttributeString("name", field.Name);
@@ -116,6 +136,8 @@ namespace LWAS.Database
                 writer.WriteEndElement();   // field
             }
             writer.WriteEndElement();   // fields
+
+            this.ComputedFields.ToXml(writer); // computedFields
 
             writer.WriteStartElement("source");
             if (null != this.Source)
@@ -138,6 +160,29 @@ namespace LWAS.Database
 
             this.Parameters.ToXml(writer);
 
+            writer.WriteStartElement("subviews");
+            foreach (View subview in this.Subviews.Keys)
+            {
+                writer.WriteStartElement("subview");
+                writer.WriteAttributeString("name", subview.Name);
+                foreach (string p in this.Subviews[subview].Keys)
+                {
+                    Field f = this.Subviews[subview][p];
+                    writer.WriteStartElement("parameter");
+                    writer.WriteAttributeString("name", p);
+                    if (null != f)
+                    {
+                        if (this.Aliases.ContainsKey(f))
+                            writer.WriteAttributeString("field", this.Aliases[f]);
+                        else
+                            writer.WriteAttributeString("field", f.Name);
+                    }
+                    writer.WriteEndElement();   // parameter
+                }
+                writer.WriteEndElement();   // subview
+            }
+            writer.WriteEndElement();   // subviews
+
             writer.WriteEndElement();   // view
         }
 
@@ -147,18 +192,22 @@ namespace LWAS.Database
             this.Name = element.Attribute("name").Value;
             this.Description = element.Attribute("description").Value;
 
-            foreach (XElement fieldElement in element.Element("fields").Elements("field"))
+            foreach (XElement fieldElement in element.Element(TableField.XML_KEY).Elements("field"))
             {
                 string tableName = fieldElement.Attribute("table").Value;
                 string fieldName = fieldElement.Attribute("name").Value;
                 if (!this.Manager.Tables.ContainsKey(tableName)) throw new ApplicationException(String.Format("Can't find table '{0}' to add it's field '{1}' to the view '{2}'", tableName, fieldName, this.Name));
                 Table table = this.Manager.Tables[tableName];
-                Field field = table.Fields[fieldName];
+                TableField field = table.Fields[fieldName];
                 if (null == field) throw new ApplicationException(String.Format("Table '{0}' does not contain field '{1}' to add it to the view '{2}'", tableName, fieldName, this.Name));
                 if (null != fieldElement.Attribute("alias"))
                     this.Aliases.Add(field, fieldElement.Attribute("alias").Value);
                 this.Fields.Add(field);
             }
+
+            XElement computedFieldsElement = element.Element(ComputedField.XML_KEY);
+            if (null != computedFieldsElement)
+                this.ComputedFields.FromXml(computedFieldsElement);
 
             if (null != element.Element("source") && null != element.Element("source").Attribute("name"))
             {
@@ -178,25 +227,48 @@ namespace LWAS.Database
 
             if (null != element.Element("parameters"))
                 this.Parameters.FromXml(element.Element("parameters"));
+
+            XElement subviewsElement = element.Element("subviews");
+            if (null != subviewsElement)
+            {
+                foreach (XElement subviewElement in subviewsElement.Elements("subview"))
+                {
+                    View subview = this.Manager.Views[subviewElement.Attribute("name").Value];
+                    Dictionary<string, Field> subviewparams = new Dictionary<string, Field>();
+                    foreach (XElement subviewparamElement in subviewElement.Elements("parameter"))
+                    {
+                        string p = subviewparamElement.Attribute("name").Value;
+                        Field f = null;
+                        if (null != subviewparamElement.Attribute("field"))
+                        {
+                            string fname = subviewparamElement.Attribute("field").Value;
+                            if (!String.IsNullOrEmpty(fname))
+                            {
+                                f = this.AllFields.FirstOrDefault(fld => fld.Name == fname);
+                                if (null == f)
+                                    f = this.Aliases.FirstOrDefault(kvp => kvp.Value == fname).Key;
+                            }
+                        }
+                        subviewparams.Add(p, f);
+                    }
+                    this.Subviews.Add(subview, subviewparams);
+                }
+            }
         }
 
         public void ToSql(StringBuilder builder)
         {
             if (null == builder) throw new ArgumentNullException("builder");
 
-            SetUpParameters();
+            SetUpTokens();
 
-            foreach (string parameter in this.Parameters)
-            {
-                string identifier = this.Parameters.SqlIdentifier(parameter);
-                builder.AppendFormat("declare {0} varchar(max)", identifier);
-                builder.AppendLine();
-                builder.AppendFormat("set {0} = '{1}'", identifier, this.Parameters[parameter] ?? "");
-            }
-
-            builder.AppendLine();
+            // cmd
+            builder.AppendLine("exec sp_executesql N'");
             builder.AppendLine("select");
             this.Fields.ToSql(builder, this.Aliases);
+            if (this.ComputedFields.Count > 0)
+                builder.AppendLine(",");
+            this.ComputedFields.ToSql(builder, this.Aliases);
             builder.AppendLine();
             builder.AppendLine("from");
             builder.Append("    ");
@@ -210,6 +282,64 @@ namespace LWAS.Database
                 builder.AppendLine("where");
                 this.Filters.ToSql(builder);
             }
+            for (int i = 0; i < this.Sorting.SortedFields.Count; i++)
+            {
+                FieldSorting sorting = this.Sorting.SortedFields[i];
+                string op = null;
+                if (sorting.Direction == SortingOptions.Up)
+                    op = "asc";
+                else if (sorting.Direction == SortingOptions.Down)
+                    op = "desc";
+                if (String.IsNullOrEmpty(op))
+                    continue;
+
+                if (i == 0)
+                {
+                    builder.AppendLine();
+                    builder.Append("order by ");
+                }
+                else
+                    builder.AppendLine(", ");
+                builder.AppendFormat("[{0}].[{1}] {2}", sorting.Field.Table.Name, sorting.Field.Name, op);
+            }
+            builder.Append("'");
+
+            if (!this.Parameters.IsEmpty)
+            {
+
+                builder.AppendLine(",");
+
+                // parameters declaration
+                builder.Append("N'");
+                bool firstParameter = true;
+                foreach (string parameter in this.Parameters)
+                {
+                    string identifier = this.Parameters.SqlIdentifier(parameter);
+
+                    if (!firstParameter)
+                        builder.Append(", ");
+                    else
+                        firstParameter = false;
+
+                    builder.AppendFormat("{0} varchar(max)", identifier);
+                }
+
+                builder.AppendLine("',");
+
+                // parameters values
+                firstParameter = true;
+                foreach (string parameter in this.Parameters)
+                {
+                    string identifier = this.Parameters.SqlIdentifier(parameter);
+
+                    if (!firstParameter)
+                        builder.Append(", ");
+                    else
+                        firstParameter = false;
+
+                    builder.AppendFormat("{0} = '{1}'", identifier, this.Parameters[parameter] ?? "");
+                }
+            }
         }
 
         public void ToUpdateSql(StringBuilder builder)
@@ -217,24 +347,17 @@ namespace LWAS.Database
             if (null == builder) throw new ArgumentNullException("builder");
             if (this.UpdateParameters.Count() == 0) throw new InvalidOperationException("No update parameters defined");
 
-            SetUpParameters();
+            SetUpTokens();
 
-            foreach (string parameter in this.Parameters)
-            {
-                string identifier = this.Parameters.SqlIdentifier(parameter);
-                builder.AppendFormat("declare {0} varchar(max)", identifier);
-                builder.AppendLine();
-                builder.AppendFormat("set {0} = '{1}'", identifier, this.Parameters[parameter] ?? "");
-            }
-
-            builder.AppendLine();
+            // cmd
+            builder.AppendLine("exec sp_executesql N'");
             builder.AppendFormat("update [{0}]", this.Source.Name);
             builder.AppendLine();
             builder.AppendLine("set");
 
             foreach (string updateParameter in this.UpdateParameters)
             {
-                Field field = this.Source.Fields[updateParameter];
+                TableField field = this.Source.Fields[updateParameter];
                 builder.AppendFormat("    [{0}].[{1}] = {2}", field.Table.Name, field.Name, CastToDbType(this.UpdateParameters[updateParameter], field.DBType));
             }
 
@@ -251,39 +374,112 @@ namespace LWAS.Database
                 builder.AppendLine("where");
                 this.Filters.ToSql(builder);
             }
+            builder.Append("'");
+
+            if (!this.Parameters.IsEmpty)
+            {
+
+                builder.AppendLine(",");
+
+                // parameters declaration
+                builder.Append("N'");
+                bool firstParameter = true;
+                foreach (string parameter in this.Parameters)
+                {
+                    string identifier = this.Parameters.SqlIdentifier(parameter);
+
+                    if (!firstParameter)
+                        builder.Append(", ");
+                    else
+                        firstParameter = false;
+
+                    builder.AppendFormat("{0} varchar(max)", identifier);
+                }
+
+                builder.AppendLine("',");
+
+                // parameters values
+                firstParameter = true;
+                foreach (string parameter in this.Parameters)
+                {
+                    string identifier = this.Parameters.SqlIdentifier(parameter);
+
+                    if (!firstParameter)
+                        builder.Append(", ");
+                    else
+                        firstParameter = false;
+
+                    builder.AppendFormat("{0} = '{1}'", identifier, this.Parameters[parameter] ?? "");
+                }
+            }
         }
 
         string CastToDbType(object val, string dbtype)
         {
             string strval = (val ?? "").ToString();
+            strval = strval.Replace("'", ""); // avoid sql injection
             switch (dbtype)
             {
                 case "Identifier":
-                    return String.Format("cast('{0}' as int)", strval);
+                    return String.Format("cast(''{0}'' as int)", strval);
                 case "Text":
-                    return String.Format("cast('{0}' as varchar(max))", strval);
+                    return String.Format("cast(''{0}'' as varchar(max))", strval);
                 case "Number":
                     decimal d = decimal.Parse(strval);
-                    return String.Format("cast('{0}' as decimal(18,4))", d.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    return String.Format("cast(''{0}'' as decimal(18,4))", d.ToString(System.Globalization.CultureInfo.InvariantCulture));
                 case "Date":
                     DateTime dt = DateTime.Parse(strval);
-                    return String.Format("cast('{0}' as smalldatetime)", dt.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    return String.Format("cast(''{0}'' as smalldatetime)", dt.ToString(System.Globalization.CultureInfo.InvariantCulture));
                 case "Boolean":
-                    return String.Format("cast('{0}' as bit)", strval);
+                    return String.Format("cast(''{0}'' as bit)", strval);
             }
-            return "''";
+            return "''''";
         }
 
-        void SetUpParameters()
+        public void SetUpTokens()
         {
             var parameters = this.Filters.SelectMany<Filter, ParameterToken>(f =>
-                {
-                    return f.Expression.Flatten()
-                                       .SelectMany(e => e.Operands.OfType<ParameterToken>());
-                });
+                                            {
+                                                return f.Expression.Flatten()
+                                                                   .SelectMany(e => e.Operands.OfType<ParameterToken>());
+                                            });
 
             foreach (ParameterToken token in parameters)
                 token.View = this;
+
+            var viewtokens = this.ComputedFields
+                                 .Select<ComputedField, IExpression>(cf => cf.Expression)
+                                 .SelectMany(e => e.Flatten())
+                                 .OfType<AggregateExpression>()
+                                 .Select<AggregateExpression, ViewToken>(ex => ex.ViewToken)
+                                 .Union(
+                                        this.Filters.SelectMany<Filter, ViewToken>(f =>
+                                                                    {
+                                                                        return f.Expression.Flatten()
+                                                                                            .SelectMany(e => e.Operands.OfType<ViewToken>());
+                                                                    })
+                                        );
+
+            foreach (ViewToken token in viewtokens)
+                token.ViewsManager = this.Manager;
+
+            foreach (View subview in this.Subviews.Keys)
+            {
+                var subviewparams = subview.Filters.SelectMany<Filter, ParameterToken>(f =>
+                                                        {
+                                                            return f.Expression.Flatten()
+                                                                               .SelectMany(e => e.Operands.OfType<ParameterToken>());
+                                                        });
+                Dictionary<string, Field> subviewReferences = this.Subviews[subview];
+                foreach (string p in subviewReferences.Keys)
+                {
+                    Field referenceField = subviewReferences[p];
+                    ParameterToken subviewParamToken = subviewparams.FirstOrDefault(pt => pt.ParameterName == p);
+                    subviewParamToken.ReferenceField = referenceField;
+                    if (this.Aliases.ContainsKey(referenceField))
+                        subviewParamToken.ReferenceFieldAlias = this.Aliases[referenceField];
+                }
+            }
         }
 
         public void CleanupParameters()
@@ -311,6 +507,45 @@ namespace LWAS.Database
                                                                    .SelectMany(e => e.Operands.OfType<ParameterToken>());
                                             })
                                        .SingleOrDefault(p => p.ParameterName == name);
+        }
+
+        public void SyncSubviews()
+        {
+            Dictionary<View, Dictionary<string, Field>> syncdSubviews = new Dictionary<View,Dictionary<string,Field>>();
+            var firstlevelviewtokens = this.ComputedFields
+                                           .Select<ComputedField, IExpression>(cf => cf.Expression)
+                                           .OfType<AggregateExpression>()
+                                           .Select<AggregateExpression, ViewToken>(ex => ex.ViewToken)
+                                           .Union(
+                                                    this.Filters.SelectMany<Filter, ViewToken>(f =>
+                                                                                {
+                                                                                    return f.Expression.Operands
+                                                                                                       .OfType<ViewToken>();
+                                                                                })
+                                                )
+                                            .Where(vt => vt != null);
+
+            foreach (ViewToken viewToken in firstlevelviewtokens)
+            {
+                if (String.IsNullOrEmpty(viewToken.ViewName))
+                    continue;
+                View subview = this.Manager.Views[viewToken.ViewName];
+                Dictionary<string, Field> links = null;
+                if (this.Subviews.ContainsKey(subview))
+                    links = this.Subviews[subview];
+                if (null == links)
+                {
+                    links = new Dictionary<string, Field>();
+                    this.Subviews.Add(subview, links);
+                }
+
+                foreach (string p in subview.Parameters)
+                    if (!links.ContainsKey(p))
+                        links.Add(p, null);
+                foreach (string p in links.Keys)
+                    if (!subview.Parameters.Contains(p))
+                        links.Remove(p);
+            }
         }
     }
 }
