@@ -45,12 +45,29 @@ namespace LWAS.Infrastructure.Routing.Web
 
         public override void Resolve()
         {
-            if (!SIO.Path.IsPathRooted(this.OriginalPath))
-                _path = HttpContext.Current.Server.MapPath(this.OriginalPath);
-            else
-                _path = this.OriginalPath;
-            info = new SIO.DirectoryInfo(_path);
+            _path = Resolve(this.OriginalPath);
+            try
+            {
+                info = new SIO.DirectoryInfo(_path);
+            }
+            catch(Exception ex)
+            {}
             base.Resolve();
+        }
+
+        public string Resolve(string path)
+        {
+            if (!SIO.Path.IsPathRooted(path))
+                try
+                {
+                    return HttpContext.Current.Server.MapPath(path);
+                }
+                catch(Exception ex)
+                {
+                    return path;
+                }
+            else
+                return path;
         }
 
         public override IRoute ToTarget()

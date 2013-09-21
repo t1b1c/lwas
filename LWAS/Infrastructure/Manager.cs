@@ -69,41 +69,30 @@ namespace LWAS.Infrastructure
 		public Manager()
 		{
 			string type = ConfigurationManager.AppSettings["DRIVER"];
-			if (null == type)
-			{
-				throw new ManagerException("Default driver not set in config");
-			}
+			if (null == type) throw new ManagerException("Default driver not set in config");
+
 			Type driverType = Type.GetType(type, false);
-			if (null == driverType)
-			{
-				throw new ManagerException("Default driver type could not be loaded");
-			}
+			if (null == driverType) throw new ManagerException("Default driver type could not be loaded");
+
 			this.driver = (Activator.CreateInstance(driverType) as IDriver);
-			if (null == this.driver)
-			{
-				throw new ManagerException("Default driver type specified in config is not an IDriver");
-			}
+			if (null == this.driver) throw new ManagerException("Default driver type specified in config is not an IDriver");
+
 			this.driver.Watchdog = new Watchdog();
 			string aztype = ConfigurationManager.AppSettings["AUTHORIZER"];
-			if (null == aztype)
-			{
-				throw new ManagerException("Authorizer not set in config");
-			}
+			if (null == aztype) throw new ManagerException("Authorizer not set in config");
+
 			Type azType = Type.GetType(aztype, false);
-			if (null == azType)
-			{
-				throw new ManagerException("Authorizer type could not be loaded");
-			}
+			if (null == azType) throw new ManagerException("Authorizer type could not be loaded");
+
 			this.authorizer = (Activator.CreateInstance(azType) as IAuthorizer);
-			if (null == this.authorizer)
-			{
-				throw new ManagerException("Authorizer specified in config is not an IAuthorizer");
-			}
+			if (null == this.authorizer) throw new ManagerException("Authorizer specified in config is not an IAuthorizer");
+
 			this.driver.StartUp();
 		}
 		protected override void OnInit(EventArgs e)
 		{
 			base.OnInit(e);
+            
             this.Page.Init += new EventHandler(Page_Init);
 			this.Page.InitComplete += new EventHandler(this.Page_InitComplete);
 			this.Page.LoadComplete += new EventHandler(this.Page_LoadComplete);
@@ -205,10 +194,9 @@ namespace LWAS.Infrastructure
 		}
 		protected override void Render(HtmlTextWriter writer)
 		{
-			if (null != this._monitor)
-			{
-				this._monitor.Stop();
-			}
+			if (null != _monitor)
+				_monitor.Stop();
+
 			base.Render(writer);
 		}
 		public override void ExportWebPart(WebPart webPart, XmlWriter writer)
@@ -226,6 +214,19 @@ namespace LWAS.Infrastructure
 				base.ExportWebPart(webPart, writer);
 			}
 		}
+        public ISymbolWebPart NewSymbolWebPart()
+        {
+            string type = ConfigurationManager.AppSettings["SYMBOL"];
+            if (null == type) throw new ManagerException("Default webpart symbol not set in config");
+
+            Type driverType = Type.GetType(type, false);
+            if (null == driverType) throw new ManagerException("Default webpart symbol could not be loaded");
+
+            ISymbolWebPart symbol = (Activator.CreateInstance(driverType) as ISymbolWebPart);
+            if (null == symbol) throw new ManagerException("Default webpart symbol specified in config is not an ISymbolWebPart");
+
+            return symbol;
+        }
 		protected override void SaveCustomPersonalizationState(PersonalizationDictionary state)
 		{
 			object[] parts = new object[6 * base.WebParts.Count];

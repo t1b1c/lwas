@@ -235,6 +235,18 @@ namespace LWAS.Infrastructure.Storage
 			this.Streams.Keys.CopyTo(keys, 0);
 			return keys;
 		}
+
+        public override IEnumerable<string> ListAll(string filter)
+        {
+            if (String.IsNullOrEmpty(container))
+                yield break;
+            string path = container;
+            if (!Path.IsPathRooted(path))
+                path = HttpContext.Current.Server.MapPath(path);
+            foreach (string f in Directory.GetFiles(path, filter))
+                yield return Path.GetFileName(f);
+        }
+
 		public override bool HasKey(string key)
 		{
 			if (string.IsNullOrEmpty(key))

@@ -49,6 +49,8 @@ namespace LWAS.WebParts
         public ViewsManager ViewsManager { get; set; }
         public LWAS.Database.View CurrentView { get; set; }
 
+        public bool RuntimeAware { get; set; }
+
         public string SelectView 
         {
             set
@@ -93,6 +95,7 @@ namespace LWAS.WebParts
         public ViewsWebPart()
         {
             this.Hidden = true;
+            this.RuntimeAware = false;
         }
 
         public override void Initialize()
@@ -102,6 +105,10 @@ namespace LWAS.WebParts
             if (null == this.RoutingManager) throw new MissingProviderException("RoutingManager");
 
             views_config = this.RoutingManager.SettingsRoutes["VIEWS_CONFIG"].Path;
+
+            if (this.RuntimeAware && null != this.RoutingManager.RuntimeSettingsRoutes["VIEWS_CONFIG"])
+                views_config = this.RoutingManager.RuntimeSettingsRoutes["VIEWS_CONFIG"].Path;
+            
             if (String.IsNullOrEmpty(views_config)) throw new ApplicationException("VIEWS_CONFIG not found or not set");
             if (this.Agent.HasKey(views_config))
                 this.ViewsManager = new ViewsManager(views_config, this.Agent, this.ExpressionsManager);

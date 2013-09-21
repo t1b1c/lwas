@@ -22,6 +22,8 @@ using System.Web.UI.WebControls;
 using System.Web.UI.WebControls.WebParts;
 
 using LWAS.Extensible.Interfaces.Configuration;
+using LWAS.Extensible.Interfaces.WebParts;
+
 using LWAS.Infrastructure;
 using LWAS.WebParts.Templating;
 
@@ -463,16 +465,16 @@ namespace LWAS.WebParts.Zones
 			WebPart oldPart = base.WebParts[secondPart];
 			if (null != oldPart)
 			{
-				if (!(oldPart is SymbolWebPart))
+				if (!(oldPart is ISymbolWebPart))
 				{
 					throw new InvalidOperationException(string.Format("Unwanted deletion of {0}", oldPart.Title));
 				}
 				base.WebPartManager.DeleteWebPart(oldPart);
 			}
 			WebPart newPart = null;
-			if (webPart is SymbolWebPart)
+			if (webPart is ISymbolWebPart)
 			{
-				newPart = ((SymbolWebPart)webPart).Instantiate(this, base.WebParts.Count);
+				newPart = ((ISymbolWebPart)webPart).Instantiate(this, base.WebParts.Count);
 			}
 			else
 			{

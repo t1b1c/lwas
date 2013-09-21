@@ -28,6 +28,7 @@ namespace LWAS.Extensible.Interfaces.Storage
 		void Write(string key, string content);
 		void Erase(string key);
 		IList<string> List();
+        IEnumerable<string> ListAll(string filter);
 		bool HasKey(string key);
 		void ReplaceKey(string oldkey, string newkey);
 		void CleanUp();

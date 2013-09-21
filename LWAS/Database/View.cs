@@ -337,9 +337,28 @@ namespace LWAS.Database
                     else
                         firstParameter = false;
 
-                    builder.AppendFormat("{0} = '{1}'", identifier, this.Parameters[parameter] ?? "");
+                    string pval = CastToDbType(this.Parameters[parameter] ?? "", InferParamType(parameter), false);
+                    builder.AppendFormat("{0} = '{1}'", identifier, pval);
                 }
             }
+        }
+
+        public string InferParamType(string parameter)
+        {
+            var operand_field = this.Filters.SelectMany<Filter, Field>(f =>
+                                                {
+                                                    return f.Expression.Flatten()
+                                                                       .Where(e => null != e.Operands.OfType<ParameterToken>()
+                                                                                                     .FirstOrDefault(pt => pt.ParameterName == parameter)
+                                                                            )
+                                                                       .SelectMany(e => e.Operands.OfType<FieldToken>())
+                                                                       .Select(ft => this.AllFields.FirstOrDefault(af => af.Name == ft.FieldName));
+                                                })
+                                            .FirstOrDefault();
+            if (null != operand_field)
+                return operand_field.DBType;
+            else
+                return "Text";
         }
 
         public void ToUpdateSql(StringBuilder builder)
@@ -358,7 +377,7 @@ namespace LWAS.Database
             foreach (string updateParameter in this.UpdateParameters)
             {
                 TableField field = this.Source.Fields[updateParameter];
-                builder.AppendFormat("    [{0}].[{1}] = {2}", field.Table.Name, field.Name, CastToDbType(this.UpdateParameters[updateParameter], field.DBType));
+                builder.AppendFormat("    [{0}].[{1}] = {2}", field.Table.Name, field.Name, CastToDbType(this.UpdateParameters[updateParameter], field.DBType, true));
             }
 
             builder.AppendLine();
@@ -414,24 +433,39 @@ namespace LWAS.Database
             }
         }
 
-        string CastToDbType(object val, string dbtype)
+        public static string CastToDbType(object val, string dbtype, bool includeSqlCast)
         {
             string strval = (val ?? "").ToString();
             strval = strval.Replace("'", ""); // avoid sql injection
             switch (dbtype)
             {
                 case "Identifier":
-                    return String.Format("cast(''{0}'' as int)", strval);
+                    if (includeSqlCast)
+                        return String.Format("cast(''{0}'' as int)", strval);
+                    else
+                        return strval;
                 case "Text":
-                    return String.Format("cast(''{0}'' as varchar(max))", strval);
+                    if (includeSqlCast)
+                        return String.Format("cast(''{0}'' as varchar(max))", strval);
+                    else
+                        return strval;
                 case "Number":
                     decimal d = decimal.Parse(strval);
-                    return String.Format("cast(''{0}'' as decimal(18,4))", d.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    if (includeSqlCast)
+                        return String.Format("cast(''{0}'' as decimal(18,4))", d.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    else
+                        return d.ToString(System.Globalization.CultureInfo.InvariantCulture);
                 case "Date":
                     DateTime dt = DateTime.Parse(strval);
-                    return String.Format("cast(''{0}'' as smalldatetime)", dt.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    if (includeSqlCast)
+                        return String.Format("cast(''{0}'' as smalldatetime)", dt.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    else
+                        return dt.ToString(System.Globalization.CultureInfo.InvariantCulture);
                 case "Boolean":
-                    return String.Format("cast(''{0}'' as bit)", strval);
+                    if (includeSqlCast)
+                        return String.Format("cast(''{0}'' as bit)", strval);
+                    else
+                        return strval;
             }
             return "''''";
         }
@@ -445,7 +479,11 @@ namespace LWAS.Database
                                             });
 
             foreach (ParameterToken token in parameters)
+            {
                 token.View = this;
+                token.ReferenceField = null;
+                token.ReferenceFieldAlias = null;
+            }
 
             var viewtokens = this.ComputedFields
                                  .Select<ComputedField, IExpression>(cf => cf.Expression)
@@ -516,14 +554,16 @@ namespace LWAS.Database
                                            .Select<ComputedField, IExpression>(cf => cf.Expression)
                                            .OfType<AggregateExpression>()
                                            .Select<AggregateExpression, ViewToken>(ex => ex.ViewToken)
+                                           .Where(vt => vt != null)
                                            .Union(
-                                                    this.Filters.SelectMany<Filter, ViewToken>(f =>
-                                                                                {
-                                                                                    return f.Expression.Operands
-                                                                                                       .OfType<ViewToken>();
-                                                                                })
-                                                )
-                                            .Where(vt => vt != null);
+                                                    this.Filters.Where<Filter>(f => f.Expression != null)
+                                                                .SelectMany<Filter, ViewToken>(f =>
+                                                                    {
+                                                                        return f.Expression.Operands
+                                                                                            .OfType<ViewToken>();
+                                                                    })
+                                                                .Where(vt => vt != null)
+                                            );
 
             foreach (ViewToken viewToken in firstlevelviewtokens)
             {

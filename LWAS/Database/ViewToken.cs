@@ -128,5 +128,11 @@ namespace LWAS.Database
 
             builder.Append(")");
         }
+
+        public void Reset()
+        {
+            this.BeginAggregation = null;
+            this.EndAggregation = null;
+        }
     }
 }

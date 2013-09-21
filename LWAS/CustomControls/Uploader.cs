@@ -40,6 +40,7 @@ namespace LWAS.CustomControls
         public enum UploadToEnum { UploadRepo, UserRepo };
 
 		private AsyncFileUpload uploader;
+        private HiddenField filePathHidden;
 		private DirectoryContainer container;
 		private static string _storagePath;
         private string _userStorage;
@@ -48,7 +49,16 @@ namespace LWAS.CustomControls
         static object SyncRoot = new object();
 
         public string FileName { get; set; }        
-        public string FilePath { get; set; }
+
+        public string FilePath
+        {
+            get { return null != filePathHidden ? filePathHidden.Value : null; }
+            set 
+            {
+                EnsureChildControls();
+                filePathHidden.Value = value; 
+            }
+        }
 
         public UploadToEnum UploadTo
         {
@@ -98,10 +108,17 @@ namespace LWAS.CustomControls
 		protected override void CreateChildControls()
 		{
 			base.CreateChildControls();
+
+            filePathHidden = new HiddenField();
+            filePathHidden.ID = "filePathHidden";
+            this.Controls.Add(filePathHidden);
+
 			this.uploader = new AsyncFileUpload();
 			this.uploader.ID = "uploader";
 			this.Controls.Add(this.uploader);
-            this.uploader.Width = this.Width;
+            if (this.Width == default(Unit))
+                this.Width = Unit.Pixel(100);
+            this.uploader.Width = Unit.Pixel((int)this.Width.Value - 5);
 			this.uploader.UploadedComplete += new EventHandler<AsyncFileUploadEventArgs>(this.uploader_UploadedComplete);
 		}
 
@@ -183,10 +200,13 @@ namespace LWAS.CustomControls
 		}
 		protected override void Render(HtmlTextWriter writer)
 		{
-			if (!string.IsNullOrEmpty(this.FileName) || this.UseUploadedFileName)
+			if (!(this.Enabled &&
+                (!string.IsNullOrEmpty(this.FileName) || this.UseUploadedFileName)
+               ))
 			{
-				base.Render(writer);
-			}
+                this.Controls.Remove(uploader);
+            }
+            base.Render(writer);
 		}
 	}
 }

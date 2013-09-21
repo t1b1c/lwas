@@ -38,5 +38,8 @@ namespace LWAS.Extensible.Interfaces.Versioning
 
         IEnumerable<string> List(string path);
         IEnumerable<string> Revisions(string path, string file);
+
+        bool IsVersioned(string path);
+        bool IsVersioned(string path, string file);
     }
 }

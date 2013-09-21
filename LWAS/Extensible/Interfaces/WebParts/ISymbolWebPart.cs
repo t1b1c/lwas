@@ -19,7 +19,7 @@ using System.Web.UI.WebControls.WebParts;
 
 namespace LWAS.Extensible.Interfaces.WebParts
 {
-	public interface ISymbolWebPart
+	public interface ISymbolWebPart : IWebPart
 	{
 		string SymbolOf
 		{

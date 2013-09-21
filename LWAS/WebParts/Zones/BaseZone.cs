@@ -20,6 +20,8 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.WebControls.WebParts;
 
+using LWAS.Extensible.Interfaces.WebParts;
+
 using LWAS.Infrastructure;
 
 namespace LWAS.WebParts.Zones
@@ -80,7 +82,7 @@ namespace LWAS.WebParts.Zones
 			if (e.ZoneIndex < zone.WebParts.Count)
 			{
 				WebPart part = zone.WebParts[e.ZoneIndex];
-				if (part != null && part is SymbolWebPart && !part.IsStatic)
+				if (part != null && part is ISymbolWebPart && !part.IsStatic)
 				{
 					base.WebPartManager.DeleteWebPart(part);
 				}
@@ -89,18 +91,20 @@ namespace LWAS.WebParts.Zones
 		private void WebPartManager_WebPartDeleting(object sender, WebPartCancelEventArgs e)
 		{
 			WebPart part = e.WebPart;
-			if (part != null && !(part is SymbolWebPart) && part.Zone == this)
+			if (part != null && !(part is ISymbolWebPart) && part.Zone == this)
 			{
 				base.WebPartManager.AddWebPart(this.CreateEmptyWebPart(), part.Zone, part.ZoneIndex);
 			}
 		}
 		protected virtual WebPart CreateEmptyWebPart()
 		{
-			return new SymbolWebPart
-			{
-				Title = "empty", 
-				SymbolOf = typeof(SymbolWebPart).AssemblyQualifiedName
-			};
+            Manager manager = (Manager)this.WebPartManager;
+            ISymbolWebPart swp = manager.NewSymbolWebPart();
+
+			swp.Title = "empty";
+            swp.SymbolOf = swp.GetType().AssemblyQualifiedName;
+
+            return swp as WebPart;
 		}
         protected virtual UpdatePanel FindUpdatePanel()
         {

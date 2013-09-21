@@ -30,6 +30,7 @@ namespace LWAS.Infrastructure.Storage
 		public abstract void Write(string key, string content);
 		public abstract void Erase(string key);
 		public abstract IList<string> List();
+        public abstract IEnumerable<string> ListAll(string filter);
 		public abstract bool HasKey(string key);
 		public abstract void ReplaceKey(string oldkey, string newkey);
 		public abstract void CleanUp();
