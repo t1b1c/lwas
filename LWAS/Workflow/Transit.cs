@@ -15,6 +15,8 @@
 */
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI.WebControls.WebParts;
 
 using LWAS.Extensible.Interfaces.Expressions;
@@ -29,57 +31,57 @@ namespace LWAS.WorkFlow
         private string _key;
         public string Key
 		{
-			get { return this._key; }
-			set { this._key = value; }
+			get { return _key; }
+			set { _key = value; }
 		}
         
         private IExpression _expression;
         public IExpression Expression
 		{
-			get { return this._expression; }
-			set { this._expression = value; }
+			get { return _expression; }
+			set { _expression = value; }
 		}
         
         private bool _isPersistent = false;
         public bool IsPersistent
 		{
-			get { return this._isPersistent; }
-			set { this._isPersistent = value; }
+			get { return _isPersistent; }
+			set { _isPersistent = value; }
 		}
 
         private ITransitPoint _source;
         public ITransitPoint Source
 		{
-			get { return this._source; }
-			set { this._source = value; }
+			get { return _source; }
+			set { _source = value; }
 		}
         
         private ITransitPoint _destination;
         public ITransitPoint Destination
 		{
-			get { return this._destination; }
-			set { this._destination = value; }
+			get { return _destination; }
+			set { _destination = value; }
 		}
         
         private IStatePersistence _storage;
         public IStatePersistence Storage
 		{
-			get { return this._storage; }
-			set { this._storage = value; }
+			get { return _storage; }
+			set { _storage = value; }
 		}
         
         private string _title;
         public string Title
 		{
 			get { return this.UniqueID; }
-			set { this._title = value; }
+			set { _title = value; }
 		}
         
         private IMonitor _monitor;
         public IMonitor Monitor
 		{
-			get { return this._monitor; }
-			set { this._monitor = value; }
+			get { return _monitor; }
+			set { _monitor = value; }
 		}
 
         private IEvent _contextEvent;
@@ -97,106 +99,118 @@ namespace LWAS.WorkFlow
 		
         public virtual bool Run()
 		{
-			if (string.IsNullOrEmpty(this._key)) throw new InvalidOperationException("Invalid key");
-			if (null == this._storage) throw new InvalidOperationException("State persistence not set");
+			if (string.IsNullOrEmpty(_key)) throw new InvalidOperationException("Invalid key");
+			if (null == _storage) throw new InvalidOperationException("State persistence not set");
 
-		    IEvent runEvent = this._monitor.NewEventInstance("run transit " + this.Title, _contextEvent, EVENT_TYPE.Trace);
-			if (null != this._monitor)
-				this._monitor.Register(this, runEvent);
+		    IEvent runEvent = _monitor.NewEventInstance("run transit " + this.Title, _contextEvent, EVENT_TYPE.Trace);
+			if (null != _monitor)
+				_monitor.Register(this, runEvent);
 
             bool result = true;
-			if (null != this._expression)
+			if (null != _expression)
 			{
-                result = this._expression.Evaluate().IsSuccessful();
+                result = _expression.Evaluate().IsSuccessful();
                 if (result)
-                    this._monitor.Register(this, this._monitor.NewEventInstance(String.Format("expression passed: {0}", _expression.Key), runEvent, _expression.Value, EVENT_TYPE.Trace));
+                    _monitor.Register(this, _monitor.NewEventInstance(String.Format("expression passed: {0}", _expression.Key), runEvent, _expression.Value, EVENT_TYPE.Trace));
                 else
-                    this._monitor.Register(this, this._monitor.NewEventInstance(String.Format("expression failed: {0}", _expression.Key), runEvent, _expression.Value, EVENT_TYPE.Trace));
+                    _monitor.Register(this, _monitor.NewEventInstance(String.Format("expression failed: {0}", _expression.Key), runEvent, _expression.Value, EVENT_TYPE.Trace));
             }
 			if (result)
 			{
-				if (null != this._source)
+				if (null != _source)
 				{
 					object val = null;
-					if (null != this._source.Chronicler)
-					{
-						try
+                    if (_source.Expression == null)
+                    {
+                        if (null != _source.Chronicler)
                         {
-                            if (null != this._monitor)
+                            try
                             {
-                                string title = _source.Chronicler.Title;
-                                if (_source.Chronicler is WebPart)
-                                    title = ((WebPart)_source.Chronicler).ID;
-                                this._monitor.Register(this, this._monitor.NewEventInstance(String.Format("get {0}.{1}", title, this._source.Member), runEvent, val, EVENT_TYPE.Trace));
+                                if (null != _monitor)
+                                {
+                                    string title = _source.Chronicler.Title;
+                                    if (_source.Chronicler is WebPart)
+                                        title = ((WebPart)_source.Chronicler).ID;
+                                    _monitor.Register(this, _monitor.NewEventInstance(String.Format("get {0}.{1}", title, _source.Member), runEvent, val, EVENT_TYPE.Trace));
+                                }
+
+                                val = ReflectionServices.ExtractValue(_source.Chronicler, _source.Member);
                             }
-
-							val = ReflectionServices.ExtractValue(this._source.Chronicler, this._source.Member);
-						}
-						catch (Exception ex)
-						{
-							throw new ApplicationException(string.Format("extract '{0}'.'{1}' error", this._source.Chronicler, this._source.Member), ex);
-						}
-					}
-					if (null == val)
-					{
-						val = this._source.Value;
-
-                        if (null != this._monitor)
-                        {
-                            this._monitor.Register(this, this._monitor.NewEventInstance(String.Format("get {0}", this._source.Value), runEvent, val, EVENT_TYPE.Trace));
+                            catch (Exception ex)
+                            {
+                                throw new ApplicationException(string.Format("extract '{0}'.'{1}' error", _source.Chronicler, _source.Member), ex);
+                            }
                         }
-					}
-					this._storage.Push(this._key, val);
+                        if (null == val)
+                        {
+                            val = _source.Value;
+
+                            if (null != _monitor)
+                            {
+                                _monitor.Register(this, _monitor.NewEventInstance(String.Format("get {0}", _source.Value), runEvent, val, EVENT_TYPE.Trace));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var eval_result = _source.Expression.Evaluate();
+                        if (eval_result.IsSuccessful())
+                            val = _source.Expression.Value;
+                        else
+                            throw new ApplicationException("transit source expression evaluation failed", eval_result.Exceptions.FirstOrDefault());
+                    }
+                    
+					_storage.Push(_key, val);
 				}
-				if (this._destination != null && null != this._destination.Chronicler)
+				if (_destination != null && null != _destination.Chronicler)
 				{
 					object val = null;
-					if (this._storage.ContainsKey(this._key))
+					if (_storage.ContainsKey(_key))
 					{
-						val = this._storage.Pull(this._key);
+						val = _storage.Pull(_key);
 					}
-					if (null != this._monitor)
+					if (null != _monitor)
 					{
                         string title = _destination.Chronicler.Title;
                         if (_destination.Chronicler is WebPart)
                             title = ((WebPart)_destination.Chronicler).ID;
-						this._monitor.Register(this, this._monitor.NewEventInstance(String.Format("set {0}.{1}", title, this._destination.Member), runEvent, val, EVENT_TYPE.Trace));
+						_monitor.Register(this, _monitor.NewEventInstance(String.Format("set {0}.{1}", title, _destination.Member), runEvent, val, EVENT_TYPE.Trace));
 					}
-					if (this._source != null && this._source.Chronicler == null && !string.IsNullOrEmpty(this._source.Member) && null != val)
+					if (_source != null && _source.Chronicler == null && !string.IsNullOrEmpty(_source.Member) && null != val)
 					{
 						object obj;
 						try
 						{
-							obj = ReflectionServices.ExtractValue(val, this._source.Member);
+							obj = ReflectionServices.ExtractValue(val, _source.Member);
 						}
 						catch (Exception ex)
 						{
-							throw new ApplicationException(string.Format("extract '{1}' from repository key '{0}' error", this._key, this._source.Member), ex);
+							throw new ApplicationException(string.Format("extract '{1}' from repository key '{0}' error", _key, _source.Member), ex);
 						}
 						try
 						{
-							ReflectionServices.SetValue(this._destination.Chronicler, this._destination.Member, obj);
+							ReflectionServices.SetValue(_destination.Chronicler, _destination.Member, obj);
 						}
 						catch (Exception ex)
 						{
-							throw new ApplicationException(string.Format("set value to '{0}'.'{1}' error", this._destination.Chronicler.Title, this._destination.Member), ex);
+							throw new ApplicationException(string.Format("set value to '{0}'.'{1}' error", _destination.Chronicler.Title, _destination.Member), ex);
 						}
 					}
 					else
 					{
 						try
 						{
-							ReflectionServices.SetValue(this._destination.Chronicler, this._destination.Member, val);
+							ReflectionServices.SetValue(_destination.Chronicler, _destination.Member, val);
 						}
 						catch (Exception ex)
 						{
-							throw new ApplicationException(string.Format("set value to '{0}'.'{1}' error", this._destination.Chronicler.Title, this._destination.Member), ex);
+							throw new ApplicationException(string.Format("set value to '{0}'.'{1}' error", _destination.Chronicler.Title, _destination.Member), ex);
 						}
 					}
 				}
-				if (!this._isPersistent)
+				if (!_isPersistent)
 				{
-					this._storage.Erase(this._key);
+					_storage.Erase(_key);
 				}
 				result = true;
 			}

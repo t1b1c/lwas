@@ -32,15 +32,11 @@ namespace LWAS.WebParts.Parsers
 		public override IResult Parse(object source)
 		{
 			WorkFlowManagerWebPart workflowManagerWebPart = source as WorkFlowManagerWebPart;
-			if (null == workflowManagerWebPart)
-			{
-				throw new ArgumentException("source is not a WorkFlowManagerWebPart");
-			}
+			if (null == workflowManagerWebPart) throw new ArgumentException("source is not a WorkFlowManagerWebPart");
+
 			IConfiguration configuration = workflowManagerWebPart.Configuration;
-			if (null == configuration)
-			{
-				throw new ArgumentException("source does not have a configuration");
-			}
+			if (null == configuration) throw new ArgumentException("source does not have a configuration");
+
 			WebPartManager Manager = WebPartManager.GetCurrentWebPartManager(workflowManagerWebPart.Page);
 			if (configuration.Sections.ContainsKey("flows"))
 			{
@@ -58,23 +54,16 @@ namespace LWAS.WebParts.Parsers
 						foreach (IConfigurationElement conditionElement in flowElement.Elements["conditions"].Elements.Values)
 						{
 							if (flowElement.Elements["conditions"].Attributes.ContainsKey("type"))
-							{
 								ReflectionServices.SetValue(job.Conditions, "Type", flowElement.Elements["conditions"].GetAttributeReference("type").Value.ToString());
-							}
 							if (conditionElement.Attributes.ContainsKey("waitfor") && !("waitfor" == conditionElement.GetAttributeReference("type").Value.ToString()))
-							{
 								throw new InvalidOperationException("Unknown condition type " + conditionElement.GetAttributeReference("type").Value.ToString());
-							}
-							WaitForCondition condition = new WaitForCondition();
+
+                            WaitForCondition condition = new WaitForCondition();
 							condition.Monitor = workflowManagerWebPart.Monitor;
 							if (conditionElement.Attributes.ContainsKey("milestone"))
-							{
 								condition.Milestone = conditionElement.GetAttributeReference("milestone").Value.ToString();
-							}
 							if (conditionElement.Attributes.ContainsKey("sender"))
-							{
 								condition.Chronicler = (ReflectionServices.FindControlEx(conditionElement.GetAttributeReference("sender").Value.ToString(), Manager) as IChronicler);
-							}
 							condition.Target = job;
 							job.Conditions.Add(condition);
 							if (conditionElement.Elements.ContainsKey("expression"))
@@ -89,6 +78,7 @@ namespace LWAS.WebParts.Parsers
 							}
 						}
 					}
+
 					if (flowElement.Elements.ContainsKey("transits"))
 					{
 						foreach (IConfigurationElement transitElement in flowElement.GetElementReference("transits").Elements.Values)
@@ -104,26 +94,18 @@ namespace LWAS.WebParts.Parsers
 								{
 									IConfigurationElement expressionElement = transitElement.GetElementReference("expression");
 									IExpression expression = workflowManagerWebPart.ExpressionsManager.Token(expressionElement.GetAttributeReference("type").Value.ToString()) as IExpression;
-									if (null == expression)
-									{
-										throw new InvalidOperationException("Token is not an IExpression");
-									}
+									if (null == expression) throw new InvalidOperationException("Token is not an IExpression");
 									expression.Make(expressionElement, workflowManagerWebPart.ExpressionsManager);
 									transit.Expression = expression;
 								}
 								if (transitElement.Elements.ContainsKey("source"))
-								{
-									transit.Source = this.CreateTransitPoint(Manager, transitElement.GetElementReference("source"));
-								}
+                                    transit.Source = this.CreateTransitPoint(Manager, transitElement.GetElementReference("source"), workflowManagerWebPart.ExpressionsManager);
 								if (transitElement.Elements.ContainsKey("destination"))
-								{
-									transit.Destination = this.CreateTransitPoint(Manager, transitElement.GetElementReference("destination"));
-								}
+                                    transit.Destination = this.CreateTransitPoint(Manager, transitElement.GetElementReference("destination"), workflowManagerWebPart.ExpressionsManager);
 								if (transitElement.Attributes.ContainsKey("persistent"))
-								{
 									transit.IsPersistent = bool.Parse(transitElement.GetAttributeReference("persistent").Value.ToString());
-								}
-								job.Transits.Add(transit);
+
+                                job.Transits.Add(transit);
 							}
 						}
 					}
@@ -133,7 +115,7 @@ namespace LWAS.WebParts.Parsers
 			}
 			return null;
 		}
-		private TransitPoint CreateTransitPoint(WebPartManager manager, IConfigurationElement element)
+        private TransitPoint CreateTransitPoint(WebPartManager manager, IConfigurationElement element, IExpressionsManager expressionsManager)
 		{
 			bool valid = false;
 			TransitPoint transitPoint = new TransitPoint();
@@ -151,11 +133,21 @@ namespace LWAS.WebParts.Parsers
 				valid = true;
 				transitPoint.Value = element.GetAttributeReference("value").Value;
 			}
+            if (element.Elements.ContainsKey("expression"))
+            {
+                valid = true;
+
+                IConfigurationElement expressionElement = element.GetElementReference("expression");
+                IExpression expression = expressionsManager.Token(expressionElement.GetAttributeReference("type").Value.ToString()) as IExpression;
+			    if (null == expression) throw new InvalidOperationException("Token is not an IExpression");
+                expression.Make(expressionElement, expressionsManager);
+                transitPoint.Expression = expression;
+            }
+
 			if (!valid)
-			{
 				transitPoint = null;
-			}
-			return transitPoint;
+
+            return transitPoint;
 		}
 	}
 }

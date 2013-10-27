@@ -65,6 +65,18 @@ namespace LWAS.CustomControls.DataControls
 		private bool shouldHide = false;
 		public event MilestoneEventHandler MilestoneHandler;
 		public event EventHandler<Selector.SelectorErrorArgs> ErrorHandler;
+        HiddenField visibilityHidden;
+
+        public bool IsShown
+        {
+            get
+            {
+                bool ret = false;
+                bool.TryParse(visibilityHidden.Value, out ret);
+                return ret;
+            }
+            set { visibilityHidden.Value = value.ToString(); }
+        }
 
 		public virtual string Milestone
 		{
@@ -297,10 +309,16 @@ namespace LWAS.CustomControls.DataControls
 
 		protected override void OnInit(EventArgs e)
 		{
+            LinkButton dummyLink = new LinkButton();
+            dummyLink.ID = "dummyLink";
+            this.Controls.Add(dummyLink);
+            UpdatePanelDynamic linkUpdatePanel = new UpdatePanelDynamic();
+            this.Controls.Add(linkUpdatePanel);
 			_link = new LinkButton();
 			_link.ID = "selectorLauncher";
 			_link.Text = "";
-			this.Controls.Add(_link);
+            linkUpdatePanel.ContentTemplateContainer.Controls.Add(_link);
+            this.Link.Click += new EventHandler(Link_Click);
 			_container = new Panel();
 			_container.ID = "selectorContainer";
 			_container.CssClass = "selector_modalPopup";
@@ -318,6 +336,9 @@ namespace LWAS.CustomControls.DataControls
 			this.resultsSelectedIndexHidden = new HiddenField();
 			this.resultsSelectedIndexHidden.ID = "resultsSelectedIndexHidden";
 			this.UpdatePanel.ContentTemplateContainer.Controls.Add(this.resultsSelectedIndexHidden);
+            visibilityHidden = new HiddenField();
+            visibilityHidden.ID = "visibilityHidden";
+            this.UpdatePanel.ContentTemplateContainer.Controls.Add(visibilityHidden);
 			_titleLabel = new Label();
 			_titleLabel.CssClass = "selector_title";
 			this.UpdatePanel.ContentTemplateContainer.Controls.Add(_titleLabel);
@@ -365,7 +386,7 @@ namespace LWAS.CustomControls.DataControls
 			_container.DefaultButton = "searchButton";
 			this.PopupExtender = new ModalPopupExtender();
 			this.PopupExtender.ID = "popupExtender";
-			this.PopupExtender.TargetControlID = "selectorLauncher";
+            this.PopupExtender.TargetControlID = "dummyLink";
 			this.PopupExtender.PopupControlID = "selectorContainer";
 			this.PopupExtender.BackgroundCssClass = "selector_modalBackground";
 			this.PopupExtender.OkControlID = "okButton";
@@ -382,6 +403,11 @@ namespace LWAS.CustomControls.DataControls
             base.OnInit(e);
 			this.Results.SelectedIndexChanged += new EventHandler(this.Results_SelectedIndexChanged);
 		}
+
+        void Link_Click(object sender, EventArgs e)
+        {
+            Show();
+        }
 
 		protected override void OnLoad(EventArgs e)
 		{
@@ -431,7 +457,7 @@ namespace LWAS.CustomControls.DataControls
 
 		public virtual void CompleteWithData()
 		{
-            if (null != _criteria)
+            if (null != _criteria && this.IsShown)
             {
                 _criteria.UpdateItem(false);
                 if (null != _criteria.DataItem)
@@ -465,6 +491,7 @@ namespace LWAS.CustomControls.DataControls
 			if (null != this.PopupExtender)
 				this.DoShow();
 			shouldShow = true;
+            this.IsShown = true;
 		}
 
 		private void DoShow()
@@ -478,6 +505,7 @@ namespace LWAS.CustomControls.DataControls
 			if (null != this.PopupExtender)
 				this.DoHide();
 			shouldHide = true;
+            this.IsShown = false;
 		}
 
 		private void DoHide()
@@ -488,6 +516,11 @@ namespace LWAS.CustomControls.DataControls
         protected override void OnPreRender(EventArgs e)
         {
             base.OnPreRender(e);
+
+            // Won't render to the client when visible toggles to true
+            // selector is not in an update panel
+            ////if (!this.IsShown && String.IsNullOrEmpty(this.Link.Text))
+            ////    this.Visible = false;
         }
 	}
 }

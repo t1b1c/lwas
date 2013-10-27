@@ -31,7 +31,7 @@ using LWAS.Extensible.Interfaces.Routing;
 
 namespace LWAS.Infrastructure
 {
-	public class Manager : WebPartManager
+	public class Manager : WebPartManager, IReporter
 	{
 		private ManagerItems items = new ManagerItems();
 		private bool Initialized = false;
@@ -257,5 +257,11 @@ namespace LWAS.Infrastructure
 			}
 			base.SaveCustomPersonalizationState(state);
 		}
-	}
+
+        public string Title
+        {
+            get;
+            set;
+        }
+    }
 }

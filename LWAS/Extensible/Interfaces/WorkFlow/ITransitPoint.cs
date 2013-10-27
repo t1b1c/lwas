@@ -16,24 +16,15 @@
 
 using System;
 
+using LWAS.Extensible.Interfaces.Expressions;
+
 namespace LWAS.Extensible.Interfaces.WorkFlow
 {
 	public interface ITransitPoint
 	{
-		IChronicler Chronicler
-		{
-			get;
-			set;
-		}
-		string Member
-		{
-			get;
-			set;
-		}
-		object Value
-		{
-			get;
-			set;
-		}
+		IChronicler Chronicler{ get; set; }
+		string Member { get; set; }
+		object Value { get; set; }
+        IExpression Expression { get; set; }
 	}
 }

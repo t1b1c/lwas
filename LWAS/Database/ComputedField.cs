@@ -101,7 +101,7 @@ namespace LWAS.Database
             if (null != this.Expression)
                 this.Expression.ToSql(builder);
 
-            builder.AppendFormat(" as {0}", alias ?? this.Alias ?? this.Name);
+            builder.AppendFormat(" as [{0}]", alias ?? this.Alias ?? this.Name);
         }
     }
 }

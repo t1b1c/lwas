@@ -49,11 +49,13 @@ namespace LWAS.Expressions
 		}
 		public void Concatenate(IResult result)
 		{
+            if (null == result)
+                return;
+
 			if (this.Status == ResultStatus.Successful && !result.IsSuccessful())
-			{
 				this.Status = ResultStatus.Unsuccessful;
-			}
-			foreach (Exception exception in result.Exceptions)
+
+            foreach (Exception exception in result.Exceptions)
 			{
 				this._exceptions.Add(exception);
 			}

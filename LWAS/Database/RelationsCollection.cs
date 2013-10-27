@@ -112,9 +112,13 @@ namespace LWAS.Database
             if (null == builder) throw new ArgumentNullException("builder");
             LinkedList<Table> masters = MasterTables(primaryTable);
 
-            foreach (Relation relation in this.Relations)
+            // have to order relations to get a valid join order
+            foreach (Relation relation in this.Relations.OrderBy(r => r.MasterTable.Name != primaryTable.Name))
             {
-                relation.ToSql(builder, masters.Contains(relation.MasterTable) ? relation.MasterTable : relation.DetailsTable);
+                if (relation.DetailsTable == primaryTable)
+                    relation.ToSql(builder, relation.DetailsTable);
+                else
+                    relation.ToSql(builder, masters.Contains(relation.MasterTable) ? relation.MasterTable : relation.DetailsTable);
                 builder.AppendLine();
             }
         }
@@ -135,6 +139,7 @@ namespace LWAS.Database
                                                             {
                                                                 if (primaryTable == r.MasterTable)
                                                                 {
+                                                                    // check if DetailsTable is a leaf in this collection tree
                                                                     if (null != this.Relations.FirstOrDefault(r2 =>
                                                                                                     {
                                                                                                         return r2 != r &&
@@ -147,6 +152,7 @@ namespace LWAS.Database
                                                                 }
                                                                 else if (primaryTable == r.DetailsTable)
                                                                 {
+                                                                    // check if MasterTable is a leaf in this collection tree
                                                                     if (null != this.Relations.FirstOrDefault(r2 =>
                                                                                                     {
                                                                                                         return r2 != r &&

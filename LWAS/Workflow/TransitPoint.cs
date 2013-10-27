@@ -16,47 +16,16 @@
 
 using System;
 
+using LWAS.Extensible.Interfaces.Expressions;
 using LWAS.Extensible.Interfaces.WorkFlow;
 
 namespace LWAS.WorkFlow
 {
 	public class TransitPoint : ITransitPoint
 	{
-		private IChronicler _chronicler;
-		private string _member;
-		private object _value;
-		public IChronicler Chronicler
-		{
-			get
-			{
-				return this._chronicler;
-			}
-			set
-			{
-				this._chronicler = value;
-			}
-		}
-		public string Member
-		{
-			get
-			{
-				return this._member;
-			}
-			set
-			{
-				this._member = value;
-			}
-		}
-		public object Value
-		{
-			get
-			{
-				return this._value;
-			}
-			set
-			{
-				this._value = value;
-			}
-		}
-	}
+        public IChronicler Chronicler { get; set; }
+        public string Member { get; set; }
+        public object Value { get; set; }
+        public IExpression Expression { get; set; }
+    }
 }

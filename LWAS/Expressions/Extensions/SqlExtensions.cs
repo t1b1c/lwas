@@ -35,6 +35,8 @@ namespace LWAS.Expressions.Extensions
             if (null == expression) throw new ArgumentNullException("expression");
             if (null == builder) throw new ArgumentNullException("builder");
 
+            expression.Evaluate();
+
             if (expression is Any)
                 ToSql((Any)expression, builder);
             else if (expression is All)
@@ -55,6 +57,8 @@ namespace LWAS.Expressions.Extensions
                 ToSql((Greater)expression, builder);
             else if (expression is Less)
                 ToSql((Less)expression, builder);
+            else if (expression is DatePart)
+                ToSql((DatePart)expression, builder);
         }
 
         public static void ToSql(this IToken token, StringBuilder builder)
@@ -126,9 +130,9 @@ namespace LWAS.Expressions.Extensions
                 if (null != operand1 && null != operand2)
                 {
                     operand1.ToSql(builder);
-                    builder.Append(" LIKE '%' +");
+                    builder.Append(" LIKE ''%'' +");
                     operand2.ToSql(builder);
-                    builder.Append("+ '%'");
+                    builder.Append("+ ''%''");
                 }
             }
         }
@@ -257,6 +261,39 @@ namespace LWAS.Expressions.Extensions
                     builder.Append(" < ");
                     operand2.ToSql(builder);
                 }
+            }
+        }
+
+        public static void ToSql(DatePart expression, StringBuilder builder)
+        {
+            if (null == expression) throw new ArgumentNullException("expression");
+            if (null == builder) throw new ArgumentNullException("builder");
+
+            if (expression.Operands.Count > 0)
+            {
+                DatePartToken operand1 = expression.Operands
+                                                   .OfType<DatePartToken>()
+                                                   .FirstOrDefault();
+                IToken operand2 = expression.Operands
+                                            .ElementAtOrDefault(1);
+                if (null != operand1 && null != operand2)
+                {
+                    if (operand1.DatePart == DatePartToken.DatePartEnum.None)
+                        operand2.ToSql(builder);
+                    else
+                    {
+                        string spart = operand1.DatePart.ToString().ToLowerInvariant();
+                        if (operand1.DatePart == DatePartToken.DatePartEnum.DayOfWeek)
+                            spart = "weekday";
+
+                        builder.Append("DATEPART(");
+                        builder.AppendFormat("{0}, ", spart);
+                        operand2.ToSql(builder);
+                        builder.Append(")");
+                    }
+                }
+                else
+                    builder.Append("''''");
             }
         }
     }

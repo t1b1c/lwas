@@ -94,7 +94,7 @@ namespace LWAS.Database
         }
 
         // generate a subquery select of one field - the tokenizer
-        public void ToSql(StringBuilder builder)
+        public override void ToSql(StringBuilder builder)
         {
             if (null == builder) throw new ArgumentNullException("builder");
 
@@ -102,7 +102,7 @@ namespace LWAS.Database
             if (null == view)
                 return;
 
-            view.SetUpTokens();
+            view.SetUpTokens(false);
 
             builder.AppendLine("(select");
             

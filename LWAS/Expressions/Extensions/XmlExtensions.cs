@@ -78,7 +78,7 @@ namespace LWAS.Expressions.Extensions
             {
                 IConfigurationElement operandsElement = config.AddElement("operands");
                 int index = 0;
-                foreach (IToken operand in expression.Operands)
+                foreach (IToken operand in expression.Operands.Where(o => null != o))
                 {
                     IConfigurationElement operandElement = operandsElement.AddElement(index.ToString());
                     operand.ToConfiguration(operandElement);

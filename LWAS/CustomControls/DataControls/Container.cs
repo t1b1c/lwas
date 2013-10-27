@@ -393,7 +393,16 @@ namespace LWAS.CustomControls.DataControls
 						for (int i = 0; i < filter.Length; i++)
 						{
 							string member = filter[i];
-							object comparedValue = ReflectionServices.ExtractValue(data, member);
+                            object comparedValue = null;
+                            try
+                            {
+                                comparedValue = ReflectionServices.ExtractValue(data, member);
+                            }
+                            catch (Exception ex)
+                            {
+                                // if the filter is not found on the source, silently skip it
+                                continue;
+                            }
                             object filterValue = ReflectionServices.ExtractValue(item.Data, member);
 
 							if (filterValue != null && "" != filterValue.ToString())

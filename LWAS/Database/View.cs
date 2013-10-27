@@ -260,7 +260,7 @@ namespace LWAS.Database
         {
             if (null == builder) throw new ArgumentNullException("builder");
 
-            SetUpTokens();
+            SetUpTokens(true);
 
             // cmd
             builder.AppendLine("exec sp_executesql N'");
@@ -366,7 +366,7 @@ namespace LWAS.Database
             if (null == builder) throw new ArgumentNullException("builder");
             if (this.UpdateParameters.Count() == 0) throw new InvalidOperationException("No update parameters defined");
 
-            SetUpTokens();
+            SetUpTokens(true);
 
             // cmd
             builder.AppendLine("exec sp_executesql N'");
@@ -470,7 +470,7 @@ namespace LWAS.Database
             return "''''";
         }
 
-        public void SetUpTokens()
+        public void SetUpTokens(bool clearReferences)
         {
             var parameters = this.Filters.SelectMany<Filter, ParameterToken>(f =>
                                             {
@@ -481,8 +481,11 @@ namespace LWAS.Database
             foreach (ParameterToken token in parameters)
             {
                 token.View = this;
-                token.ReferenceField = null;
-                token.ReferenceFieldAlias = null;
+                if (clearReferences)
+                {
+                    token.ReferenceField = null;
+                    token.ReferenceFieldAlias = null;
+                }
             }
 
             var viewtokens = this.ComputedFields
@@ -552,6 +555,7 @@ namespace LWAS.Database
             Dictionary<View, Dictionary<string, Field>> syncdSubviews = new Dictionary<View,Dictionary<string,Field>>();
             var firstlevelviewtokens = this.ComputedFields
                                            .Select<ComputedField, IExpression>(cf => cf.Expression)
+                                           .SelectMany(ex => ex.Flatten())
                                            .OfType<AggregateExpression>()
                                            .Select<AggregateExpression, ViewToken>(ex => ex.ViewToken)
                                            .Where(vt => vt != null)

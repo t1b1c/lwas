@@ -24,6 +24,11 @@ namespace LWAS.CustomControls
 {
 	public class DateBoundField : BoundField
 	{
+        protected override void OnDataBindField(object sender, EventArgs e)
+        {
+            base.OnDataBindField(sender, e);
+        }
+
 		protected override string FormatDataValue(object dataValue, bool encode)
 		{
 			string format = this.DataFormatString;
@@ -34,7 +39,7 @@ namespace LWAS.CustomControls
 			if (dataValue != null && !string.IsNullOrEmpty(dataValue.ToString()))
 				result = ((DateTime)dataValue).ToString(format);
 			else
-				result = null;
+				result = "";
 
             return result;
 		}
@@ -45,7 +50,14 @@ namespace LWAS.CustomControls
             if (string.IsNullOrEmpty(format))
                 format = DateTimeFormatInfo.CurrentInfo.ShortDatePattern;
 
-            DateTime val = DateTime.ParseExact(cell.Text, format, CultureInfo.CurrentCulture);
+            object val = null;
+            try
+            {
+                DateTime dt = DateTime.ParseExact(cell.Text, format, CultureInfo.CurrentCulture);
+                val = dt;
+            }
+            catch (Exception ex)
+            { }
             
             string dataField = this.DataField;
             if (dictionary.Contains(dataField))

@@ -80,6 +80,7 @@
     <Compile Include="CustomControls\StatelessDropDownList.cs" />
     <Compile Include="CustomControls\StyledTextBox.cs" />
     <Compile Include="CustomControls\StyledWebPartZone.cs" />
+    <Compile Include="CustomControls\TagsList.cs" />
     <Compile Include="CustomControls\TemplateHelper.cs" />
     <Compile Include="CustomControls\UpdatePanelDynamic.cs" />
     <Compile Include="CustomControls\Uploader.cs" />
@@ -127,6 +128,8 @@
     <Compile Include="Expressions\Any.cs" />
     <Compile Include="Expressions\BasicToken.cs" />
     <Compile Include="Expressions\Contains.cs" />
+    <Compile Include="Expressions\DatePart.cs" />
+    <Compile Include="Expressions\DatePartToken.cs" />
     <Compile Include="Expressions\Equals.cs" />
     <Compile Include="Expressions\Exists.cs" />
     <Compile Include="Expressions\Expression.cs" />
