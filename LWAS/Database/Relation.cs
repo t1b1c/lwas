@@ -124,7 +124,7 @@ namespace LWAS.Database
                 this.DetailsTable.Relations.Add(this);
         }
 
-        public void ToSql(StringBuilder builder, Table primaryTable)
+        public void ToSql(StringBuilder builder, Table primaryTable, List<Table> skip)
         {
             if (null == builder) throw new ArgumentNullException("builder");
 
@@ -133,11 +133,19 @@ namespace LWAS.Database
                 null != this.DetailsTable && !String.IsNullOrEmpty(this.DetailsTable.Name) &&
                 null != this.DetailsField && !String.IsNullOrEmpty(this.DetailsField.Name))
             {
-                builder.Append("    ");
-                builder.AppendFormat("left join [{0}] on ", primaryTable == this.MasterTable ? this.DetailsTable.Name : this.MasterTable.Name);
-                this.MasterField.ToSql(builder, this.MasterField.Alias);
-                builder.Append(" = ");
-                this.DetailsField.ToSql(builder, this.DetailsField.Alias);
+                Table table = null;
+                if (!skip.Contains(this.MasterTable) && primaryTable != this.MasterTable)
+                    table = this.MasterTable;
+                if (null == table && !skip.Contains(this.DetailsTable) && primaryTable != this.DetailsTable)
+                    table = this.DetailsTable;
+                if (null != table)
+                {
+                    builder.Append("    ");
+                    builder.AppendFormat("left join [{0}] on ", table.Name);
+                    this.MasterField.ToSql(builder, this.MasterField.Alias);
+                    builder.Append(" = ");
+                    this.DetailsField.ToSql(builder, this.DetailsField.Alias);
+                }
             }
         }
     }

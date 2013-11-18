@@ -46,6 +46,12 @@ namespace LWAS.CustomControls.DataControls
 			Deleting,
 			Selecting
 		}
+        public struct CheckDefinition
+        {
+            public string Error;
+            public string Milestone;
+            public IExpression Expression;
+        }
 		private HiddenField operationHidden;
 		private IConfigurationType _templateConfig;
 		private int _itemsCount;
@@ -53,7 +59,7 @@ namespace LWAS.CustomControls.DataControls
 		private string[] _filter;
 		private ITemplatingItemsCollection _filterItems;
 		private string _command;
-		private Dictionary<string, List<Pair>> _checks = new Dictionary<string, List<Pair>>();
+        private Dictionary<string, List<CheckDefinition>> _checks = new Dictionary<string, List<CheckDefinition>>();
 		private Control _container;
 		private Dictionary<string, Control> _commanders = new Dictionary<string, Control>();
 		private Dictionary<string, Control> _selectors = new Dictionary<string, Control>();
@@ -87,6 +93,7 @@ namespace LWAS.CustomControls.DataControls
         public event EventHandler<InsertEventArgs> Insert;
         public event EventHandler<UpdateEventArgs> Update;
         public event EventHandler<DeleteEventArgs> Delete;
+        public event EventHandler<CheckEventArgs> Check;
 
 		public OperationType Operation
 		{
@@ -184,11 +191,14 @@ namespace LWAS.CustomControls.DataControls
 				this.OnCommand(this._command);
 			}
 		}
-		public Dictionary<string, List<Pair>> Checks
+        public Dictionary<string, List<CheckDefinition>> Checks
 		{
 			get { return this._checks; }
 			set { this._checks = value; }
 		}
+        
+        public bool PassLastCheck { get; set; }
+
 		public Control InnerContainer
 		{
 			get { return this._container; }
@@ -513,6 +523,11 @@ namespace LWAS.CustomControls.DataControls
             {
                 string command = initialcommand.Trim();
 
+                if ("save" == command)
+                    this.OnMilestone("saving");
+                else if ("delete" == command)
+                    this.OnMilestone("deleting");
+
                 ret = OnCheck(command);
                 if (ret)
                 {
@@ -548,57 +563,50 @@ namespace LWAS.CustomControls.DataControls
 		}
 		protected virtual bool OnCheck(string command)
 		{
-			bool result;
-			if (string.IsNullOrEmpty(command))
-			{
-				result = true;
-			}
-			else
-			{
-				if (null == this._checks)
-				{
-					result = true;
-				}
-				else
-				{
-					if (!this._checks.ContainsKey(command))
-					{
-						result = true;
-					}
-					else
-					{
-						List<Pair> list = this._checks[command];
-						if (list == null || list.Count == 0)
-						{
-							result = true;
-						}
-						else
-						{
-							foreach (Pair pair in list)
-							{
-								string error = pair.First as string;
-								if (string.IsNullOrEmpty(error))
-								{
-									throw new InvalidOperationException(string.Format("Check on command '{0}' has no error message", command));
-								}
-								IExpression expression = pair.Second as IExpression;
-								if (null == expression)
-								{
-									throw new InvalidOperationException(string.Format("Check on command '{0}' is not an IExpression", command));
-								}
-								if (!expression.Evaluate().IsSuccessful())
-								{
-									this._monitor.Register(this.Reporter, this._monitor.NewEventInstance(string.Format("container check '{0}' error", command), null, new ApplicationException(error), EVENT_TYPE.Error));
-									result = false;
-									return result;
-								}
-							}
-							result = true;
-						}
-					}
-				}
-			}
-			return result;
+			if (String.IsNullOrEmpty(command))
+				return false;
+
+            if (null != _checks &&
+                _checks.ContainsKey(command))
+            {
+                List<CheckDefinition> list = _checks[command];
+                if (list == null || list.Count == 0)
+                    return true;
+                else
+                {
+                    foreach (CheckDefinition check in list)
+                    {
+                        string error = check.Error;
+                        if (string.IsNullOrEmpty(error)) throw new InvalidOperationException(string.Format("Check on command '{0}' has no error message", command));
+
+                        IExpression expression = check.Expression;
+                        if (null != expression && !expression.Evaluate().IsSuccessful())
+                        {
+                            _monitor.Register(this.Reporter, this._monitor.NewEventInstance(string.Format("container check '{0}' error", command), null, new ApplicationException(error), EVENT_TYPE.Error));
+                            return false;
+                        }
+                        else if (!String.IsNullOrEmpty(check.Milestone))
+                        {
+                            this.PassLastCheck = true;
+                            OnMilestone(check.Milestone);
+                            if (!this.PassLastCheck)
+                                _monitor.Register(this.Reporter, this._monitor.NewEventInstance(string.Format("container check '{0}' error", command), null, new ApplicationException(error), EVENT_TYPE.Error));
+                            return this.PassLastCheck;
+                        }
+
+                    }
+                }
+            }
+
+            if (null != this.Check)
+            {
+                CheckEventArgs cea = new CheckEventArgs(command);
+                Check(this, cea);
+                if (!cea.Pass)
+                    return false;
+            }
+
+			return true;
 		}
 		protected virtual void OnCommanders()
 		{
@@ -982,7 +990,6 @@ namespace LWAS.CustomControls.DataControls
 		}
 		protected virtual void OnSave()
 		{
-			this.OnMilestone("saving");
 			string savedone = "save done";
 			ITranslationResult trares = this.Translator.Translate(null, savedone, null);
 			if (trares.IsSuccessful())
@@ -1081,7 +1088,6 @@ namespace LWAS.CustomControls.DataControls
 		protected virtual void OnDelete()
 		{
 			this.Operation = OperationType.Deleting;
-			this.OnMilestone("deleting");
 			string deletedone = "delete done";
 			ITranslationResult trares = this.Translator.Translate(null, deletedone, null);
 			if (trares.IsSuccessful())

@@ -129,10 +129,16 @@ namespace LWAS.Expressions.Extensions
                                             .ElementAtOrDefault(1);
                 if (null != operand1 && null != operand2)
                 {
+                    builder.Append("(");
+                    operand2.ToSql(builder);
+                    builder.Append(" is not null and ");
+                    operand2.ToSql(builder);
+                    builder.Append(" <> '''' and ");
                     operand1.ToSql(builder);
                     builder.Append(" LIKE ''%'' +");
                     operand2.ToSql(builder);
                     builder.Append("+ ''%''");
+                    builder.Append(")");
                 }
             }
         }

@@ -51,6 +51,7 @@
     <Compile Include="CustomControls\DataControls\Container.cs" />
     <Compile Include="CustomControls\DataControls\DataTableDataSource.cs" />
     <Compile Include="CustomControls\DataControls\DataTableDataSourceView.cs" />
+    <Compile Include="CustomControls\DataControls\Events\CheckEventArgs.cs" />
     <Compile Include="CustomControls\DataControls\Events\DeleteEventArgs.cs" />
     <Compile Include="CustomControls\DataControls\Events\InsertEventArgs.cs" />
     <Compile Include="CustomControls\DataControls\Events\MilestoneEventArgs.cs" />

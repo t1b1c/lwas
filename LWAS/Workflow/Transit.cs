@@ -153,11 +153,12 @@ namespace LWAS.WorkFlow
                     }
                     else
                     {
-                        var eval_result = _source.Expression.Evaluate();
-                        if (eval_result.IsSuccessful())
-                            val = _source.Expression.Value;
-                        else
-                            throw new ApplicationException("transit source expression evaluation failed", eval_result.Exceptions.FirstOrDefault());
+                        var eval_result = _source.Expression.Evaluate();    // 'exists' returns unsuccessful status when false
+                        val = _source.Expression.Value;
+                        //if (eval_result.IsSuccessful())
+                        //    val = _source.Expression.Value;
+                        //else
+                        //    throw new ApplicationException("transit source expression evaluation failed", eval_result.Exceptions.FirstOrDefault());
                     }
                     
 					_storage.Push(_key, val);

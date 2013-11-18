@@ -57,15 +57,11 @@ namespace LWAS.Infrastructure.Monitoring
 
 		public void Start()
 		{
-			if (!_isDisabled)
-				this.IsMonitoring = true;
+			this.IsMonitoring = true;
 		}
 
 		public void Register(IReporter reporter, IEvent e)
 		{
-            if (_isDisabled)
-                return;
-
 			if (!this.IsMonitoring) throw new InvalidOperationException("not monitoring");
 			if (null == reporter) throw new ArgumentNullException("reporter");
 			if (null == e) throw new ArgumentNullException("e");
@@ -75,9 +71,6 @@ namespace LWAS.Infrastructure.Monitoring
 
 		public void Stop()
 		{
-            if (_isDisabled)
-                return;
-
             this.IsMonitoring = false;
 			Dump();
 		}

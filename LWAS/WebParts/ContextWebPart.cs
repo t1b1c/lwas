@@ -106,11 +106,11 @@ namespace LWAS.WebParts
 			{
 				if (null == this.DataKey) throw new InvalidOperationException("DataKey not set");
 
-                if (value != null && value.Tables.Count > 0 && value.Tables[0].Rows.Count > 0)
+                if (value != null && value.Tables.Count > 0)
                 {
                     if (_data.ContainsKey(this.DataKey))
                         _data.Remove(this.DataKey);
-                    this._data.Add(this.DataKey, ReflectionServices.ToDictionary(value.Tables[0].Rows[0]));
+                    this._data.Add(this.DataKey, ReflectionServices.ToDictionary(value.Tables[0]));
                 }
 
                 this.DataKey = null;

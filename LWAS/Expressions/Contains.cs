@@ -35,37 +35,30 @@ namespace LWAS.Expressions
 			IResult result = base.Evaluate();
 			try
 			{
+                this.Value = false;
 				object target = null;
 				bool initialized = false;
 				foreach (IToken token in this.Operands)
 				{
-					BasicToken basicToken = token as BasicToken;
-					if (null == basicToken)
+					if (!initialized)
 					{
-						throw new InvalidOperationException("This operand is not a BasicToken");
-					}
-					if (target == null && !initialized)
-					{
-						target = basicToken.Value;
+						target = token.Value;
 						initialized = true;
 					}
 					else
 					{
-						if (target != basicToken.Value)
-						{
-							if ((target == null && basicToken.Value != null) || (target != null && null == basicToken.Value))
-							{
-								this.Value = false;
-							}
-							else
-							{
-								this.Value = target.ToString().Contains(basicToken.Value.ToString());
-							}
-							if (!(bool)this.Value)
-							{
-								break;
-							}
-						}
+                        if (target != token.Value)
+                        {
+                            if ((target == null && token.Value != null) || (target != null && null == token.Value))
+                                this.Value = false;
+                            else
+                                this.Value = target.ToString().ToLower().Contains(token.Value.ToString().ToLower());
+
+                            if (!(bool)this.Value)
+                                break;
+                        }
+                        else
+                            this.Value = true;
 					}
 				}
 			}

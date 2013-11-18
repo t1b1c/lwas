@@ -168,6 +168,21 @@ namespace LWAS.Infrastructure
 			}
 			return result2;
 		}
+        public static Dictionary<string, object> ToDictionary(DataTable target)
+        {
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            foreach (DataColumn column in target.Columns)
+            {
+                if (result.ContainsKey(column.ColumnName)) throw new InvalidOperationException(String.Format("ToDictionary failed. Data containes duplicate column '{0}'", column.ColumnName));
+                result.Add(column.ColumnName, null);
+            }
+            if (target.Rows.Count > 0)
+            {
+                foreach (DataColumn column in target.Columns)
+                    result[column.ColumnName] = target.Rows[0][column];
+            }
+            return result;
+        }
 		public static Dictionary<string, object> ToDictionary(DataRowView target)
 		{
 			return ReflectionServices.ToDictionary(target.Row);

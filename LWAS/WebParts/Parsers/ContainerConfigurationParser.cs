@@ -23,6 +23,8 @@ using LWAS.Extensible.Interfaces.Configuration;
 using LWAS.Extensible.Interfaces.Expressions;
 using LWAS.Extensible.Interfaces.Validation;
 
+using LWAS.CustomControls.DataControls;
+
 namespace LWAS.WebParts.Parsers
 {
 	public class ContainerConfigurationParser : ConfigurationParser
@@ -105,27 +107,28 @@ namespace LWAS.WebParts.Parsers
 					if (element.Attributes.ContainsKey("command"))
 					{
 						string command = element.GetAttributeReference("command").Value.ToString();
-						webPart.Checks.Add(command, new List<Pair>());
+						webPart.Checks.Add(command, new List<Container.CheckDefinition>());
 						foreach (IConfigurationElement checkElement in element.Elements.Values)
 						{
-							Pair pair = new Pair();
+                            Container.CheckDefinition check = new Container.CheckDefinition();
+
 							if (checkElement.Attributes.ContainsKey("error"))
-							{
-								pair.First = checkElement.GetAttributeReference("error").Value.ToString();
-							}
-							IEnumerator<IConfigurationElement> enumerator = checkElement.Elements.Values.GetEnumerator();
+								check.Error = checkElement.GetAttributeReference("error").Value.ToString();
+
+                            if (checkElement.Attributes.ContainsKey("milestone"))
+                                check.Milestone = checkElement.GetAttributeReference("milestone").Value.ToString();
+
+                            IEnumerator<IConfigurationElement> enumerator = checkElement.Elements.Values.GetEnumerator();
 							if (enumerator.MoveNext())
 							{
 								IConfigurationElement expressionElement = enumerator.Current;
 								IExpression expression = webPart.ExpressionsManager.Token(expressionElement.GetAttributeReference("type").Value.ToString()) as IExpression;
-								if (null == expression)
-								{
-									throw new InvalidOperationException("Token is not an IExpression");
-								}
+								if (null == expression) throw new InvalidOperationException("Token is not an IExpression");
+
 								expression.Make(expressionElement, webPart.ExpressionsManager);
-								pair.Second = expression;
+								check.Expression = expression;
 							}
-							webPart.Checks[command].Add(pair);
+							webPart.Checks[command].Add(check);
 						}
 					}
 				}

@@ -38,7 +38,11 @@ namespace LWAS.WebParts
 {
 	public class ContainerWebPart : BindableWebPart, IContainerWebPart, IConfigurableWebPart, IBindableWebPart, IInitializable, ILifetime, ITemplatable, IReporter
 	{
-        private Container _container;
+        Container _container;
+        public Container Container
+        {
+            get { return _container; }
+        }
 
         public IConfigurationType TemplateConfig
         {
@@ -87,7 +91,7 @@ namespace LWAS.WebParts
             get { return _container.Command; }
             set { _container.Command = value; }
 		}
-		public Dictionary<string, List<Pair>> Checks
+		public Dictionary<string, List<Container.CheckDefinition>> Checks
 		{
 			get { return _container.Checks; }
             set { _container.Checks = value; }
@@ -167,6 +171,11 @@ namespace LWAS.WebParts
             get { return _container.Template; }
             set { _container.Template = value; }
 		}
+        public bool PassLastCheck
+        {
+            get { return _container.PassLastCheck; }
+            set { _container.PassLastCheck = value; }
+        }
 
 		public ContainerWebPart()
 		{
