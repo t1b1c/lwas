@@ -60,6 +60,12 @@ namespace LWAS.CustomControls
 			}
 		}
 
+        public string Watermark
+        {
+            get { return this.Attributes["placeholder"]; }
+            set { this.Attributes["placeholder"] = value; }
+        }
+
         // there's a bug in TextBox which doesn't set back the posted value if it's ReadOnly
         // regardless of submitdisabledcontrols setting on form
         protected override bool LoadPostData(string postDataKey, System.Collections.Specialized.NameValueCollection postCollection)

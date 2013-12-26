@@ -70,7 +70,9 @@ namespace LWAS.Expressions.Extensions
                 IBasicToken basicToken = token as IBasicToken;
                 basicToken.Evaluate();
                 if (basicToken.Value != null)
-                    builder.AppendFormat("'{0}'", basicToken.Value.ToString());
+                {
+                    builder.AppendFormat("{0}", basicToken.Value.ToString());
+                }
             }
             else
             {

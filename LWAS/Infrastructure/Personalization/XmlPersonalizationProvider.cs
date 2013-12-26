@@ -29,76 +29,53 @@ namespace LWAS.Infrastructure.Personalization
 	public class XmlPersonalizationProvider : PersonalizationProvider
 	{
         private static object SyncRoot = new object();
-		private bool _isEnabled = false;
-		private string _applicationName;
-		public static string StorageTemplate
+
+        public static string StorageTemplate
 		{
-			get
-			{
-				return Path.GetFileNameWithoutExtension(HttpContext.Current.Request.PhysicalPath);
-			}
+			get { return Path.GetFileNameWithoutExtension(HttpContext.Current.Request.PhysicalPath); }
 		}
-		public static string StorageKey
+		
+        public static string StorageKey
 		{
 			get
 			{
 				string screenKey = ConfigurationManager.AppSettings["SCREEN"];
-				if (string.IsNullOrEmpty(screenKey))
-				{
-					throw new InvalidOperationException("QueryString SCREEN key not defined in web.config!");
-				}
+				if (string.IsNullOrEmpty(screenKey)) throw new InvalidOperationException("QueryString SCREEN key not defined in web.config!");
+
 				string screen = HttpContext.Current.Request.QueryString[screenKey];
 				string result;
 				if (string.IsNullOrEmpty(screen))
-				{
 					result = XmlPersonalizationProvider.StorageTemplate;
-				}
 				else
-				{
 					result = screen;
-				}
-				return result;
+
+                return result;
 			}
 		}
-		public bool IsEnabled
-		{
-			get
-			{
-				return this._isEnabled;
-			}
-			set
-			{
-				this._isEnabled = value;
-			}
-		}
-		public override string ApplicationName
-		{
-			get
-			{
-				return this._applicationName;
-			}
-			set
-			{
-				this._applicationName = value;
-			}
-		}
+
+        public bool IsEnabled { get; set; }
+        public override string ApplicationName { get; set; }
+
 		public XmlPersonalizationProvider()
 		{
-			bool.TryParse(ConfigurationManager.AppSettings["DESIGN"], out this._isEnabled);
+            bool enabled = true;
+			bool.TryParse(ConfigurationManager.AppSettings["DESIGN"], out enabled);
+            this.IsEnabled = enabled;
 		}
+
 		protected virtual string GetScreenUniqueIdentifier()
 		{
 			return Path.Combine(HttpContext.Current.Request.PhysicalPath, XmlPersonalizationProvider.StorageKey);
 		}
+
 		public override void SavePersonalizationState(PersonalizationState state)
 		{
-			if (this._isEnabled)
+			if (this.IsEnabled)
 			{
 				DictionaryPersonalizationState dictionaryState = state as DictionaryPersonalizationState;
 				if (null == dictionaryState)
-				{
-					throw new ArgumentException("state is not a DictionaryPersonalizationState");
-				}
+                    throw new ArgumentException("state is not a DictionaryPersonalizationState");
+
 				if (!dictionaryState.ReadOnly)
 				{
 					StringBuilder personalizationBuilder = new StringBuilder();
@@ -159,7 +136,7 @@ namespace LWAS.Infrastructure.Personalization
             lock (SyncRoot)
             {
                 Dictionary<string, PersonalizationDictionary> cachedstates = cache[suid] as Dictionary<string, PersonalizationDictionary>;
-                if (_isEnabled || null == cachedstates)
+                if ((this.IsEnabled && !state.ReadOnly)  || null == cachedstates)
                 {
                     string storage = PersonalizationStorage.Instance.Read(XmlPersonalizationProvider.StorageKey, XmlPersonalizationProvider.StorageTemplate);
                     if (!string.IsNullOrEmpty(storage))

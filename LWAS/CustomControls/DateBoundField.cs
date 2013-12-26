@@ -36,10 +36,20 @@ namespace LWAS.CustomControls
 				format = DateTimeFormatInfo.CurrentInfo.ShortDatePattern;
 
             string result;
-			if (dataValue != null && !string.IsNullOrEmpty(dataValue.ToString()))
-				result = ((DateTime)dataValue).ToString(format);
-			else
-				result = "";
+            if (dataValue != null && !string.IsNullOrEmpty(dataValue.ToString()))
+            {
+                DateTime dt;
+                if (dataValue is DateTime)
+                    dt = (DateTime)dataValue;
+                else
+                    DateTime.TryParse(dataValue.ToString(), out dt);
+                if (dt != default(DateTime))
+                    result = dt.ToString(format);
+                else
+                    result = "";
+            }
+            else
+                result = "";
 
             return result;
 		}

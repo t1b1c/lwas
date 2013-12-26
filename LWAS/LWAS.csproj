@@ -86,6 +86,7 @@
     <Compile Include="CustomControls\UpdatePanelDynamic.cs" />
     <Compile Include="CustomControls\Uploader.cs" />
     <Compile Include="Database\ComputedField.cs" />
+    <Compile Include="Database\Expressions\Eval.cs" />
     <Compile Include="Database\FieldToken.cs" />
     <Compile Include="Database\Expressions\Add.cs" />
     <Compile Include="Database\Expressions\Divide.cs" />

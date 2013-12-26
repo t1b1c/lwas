@@ -320,8 +320,18 @@ namespace LWAS.WebParts.Templating
                                 {
                                     try
                                     {
-                                        if (string.IsNullOrEmpty(cellControlName) || propertyName != this.KnownTypes[cellControlName].ReadOnlyProperty || (propertyName == this.KnownTypes[cellControlName].ReadOnlyProperty && defaultValue != null && !string.IsNullOrEmpty(defaultValue.ToString())))
-                                            ReflectionServices.SetValue(cellControl, propertyName, defaultValue);
+                                        if (string.IsNullOrEmpty(cellControlName) ||
+                                            propertyName != this.KnownTypes[cellControlName].ReadOnlyProperty ||
+                                            (propertyName == this.KnownTypes[cellControlName].ReadOnlyProperty && defaultValue != null && !string.IsNullOrEmpty(defaultValue.ToString())))
+                                        {
+                                            if (propertyName == "Watermark")
+                                            {
+                                                if (null != defaultValue && !String.IsNullOrEmpty(defaultValue.ToString()))
+                                                    ReflectionServices.SetValue(cellControl, propertyName, defaultValue);
+                                            }
+                                            else
+                                                ReflectionServices.SetValue(cellControl, propertyName, defaultValue);
+                                        }
                                     }
                                     catch (Exception ex)
                                     {
@@ -439,7 +449,15 @@ namespace LWAS.WebParts.Templating
 										container.ApplyStyle(invalidStyle);
 								}
                                 if (this.IsDesignEnabled && propertyName == this.KnownTypes[cellControlName].WatermarkProperty)
-                                    container.Attributes.Add("watermark", pull);
+                                {
+                                     // StyleTextBox has its own Watermark feature
+                                    if (typeof(StyledTextBox).IsInstanceOfType(cellControl))
+                                    {
+                                        ReflectionServices.SetValue(cellControl, "Watermark", pull);
+                                    }
+                                    else
+                                        container.Attributes.Add("watermark", pull);
+                                }
 							}
 						}
 					}

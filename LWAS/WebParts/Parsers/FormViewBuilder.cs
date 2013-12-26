@@ -157,7 +157,7 @@ namespace LWAS.WebParts.Parsers
 			{
 				case "Text":
 				{
-					control = new TextBox();
+					control = new StyledTextBox();
 					break;
 				}
 				case "Date":

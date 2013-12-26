@@ -25,115 +25,84 @@ namespace LWAS.Infrastructure.Personalization
 {
 	public class DictionaryPersonalizationState : PersonalizationState
 	{
-		private Dictionary<string, PersonalizationDictionary> _states;
-		private bool _readOnly = false;
-		public Dictionary<string, PersonalizationDictionary> States
-		{
-			get
-			{
-				return this._states;
-			}
-			set
-			{
-				this._states = value;
-			}
-		}
-		public bool ReadOnly
-		{
-			get
-			{
-				return this._readOnly;
-			}
-			set
-			{
-				this._readOnly = value;
-			}
-		}
+        public Dictionary<string, PersonalizationDictionary> States { get; set; }
+        public bool ReadOnly { get; set; }
 		public override bool IsEmpty
 		{
-			get
-			{
-				return 0 == this._states.Count;
-			}
+			get { return 0 == this.States.Count; }
 		}
+
 		public DictionaryPersonalizationState(WebPartManager manager) : base(manager)
 		{
-			this._states = new Dictionary<string, PersonalizationDictionary>();
+			this.States = new Dictionary<string, PersonalizationDictionary>();
 		}
-		public override void ApplyWebPartManagerPersonalization()
+
+        public override void ApplyWebPartManagerPersonalization()
 		{
-			if (this._states.ContainsKey(base.WebPartManager.ID))
-			{
-				this.ApplyPersonalization(base.WebPartManager, this._states[base.WebPartManager.ID]);
-			}
+			if (this.States.ContainsKey(base.WebPartManager.ID))
+				this.ApplyPersonalization(base.WebPartManager, this.States[base.WebPartManager.ID]);
 		}
-		public override void ApplyWebPartPersonalization(WebPart webPart)
+		
+        public override void ApplyWebPartPersonalization(WebPart webPart)
 		{
-			if (this._states.ContainsKey(webPart.ID))
-			{
-				this.ApplyPersonalization(webPart, this._states[webPart.ID]);
-			}
+			if (this.States.ContainsKey(webPart.ID))
+				this.ApplyPersonalization(webPart, this.States[webPart.ID]);
 		}
-		public virtual void ApplyPersonalization(Control target, PersonalizationDictionary personalizations)
+
+        public virtual void ApplyPersonalization(Control target, PersonalizationDictionary personalizations)
 		{
 			if (target is ITrackingPersonalizable)
-			{
 				((ITrackingPersonalizable)target).BeginLoad();
-			}
-			if (target is IPersonalizable)
-			{
+
+            if (target is IPersonalizable)
 				((IPersonalizable)target).Load(personalizations);
-			}
-			if (target is IVersioningPersonalizable)
-			{
+
+            if (target is IVersioningPersonalizable)
 				((IVersioningPersonalizable)target).Load(personalizations);
-			}
-			foreach (string key in personalizations.Keys)
+
+            foreach (string key in personalizations.Keys)
 			{
 				if (null != target.GetType().GetProperty(key))
-				{
 					ReflectionServices.SetValue(target, key, personalizations[key].Value, true);
-				}
 			}
-			if (target is ITrackingPersonalizable)
-			{
+
+            if (target is ITrackingPersonalizable)
 				((ITrackingPersonalizable)target).EndLoad();
-			}
 		}
-		public override void ExtractWebPartManagerPersonalization()
+		
+        public override void ExtractWebPartManagerPersonalization()
 		{
 			this.ExtractPersonalization(base.WebPartManager);
 			base.SetDirty();
 		}
-		public override void ExtractWebPartPersonalization(WebPart webPart)
+		
+        public override void ExtractWebPartPersonalization(WebPart webPart)
 		{
 			this.ExtractPersonalization(webPart);
 		}
-		public virtual void ExtractPersonalization(Control source)
+		
+        public virtual void ExtractPersonalization(Control source)
 		{
-			if (!this._states.ContainsKey(source.ID))
-			{
-				this._states.Add(source.ID, new PersonalizationDictionary());
-			}
-			PersonalizationDictionary personalizations = this._states[source.ID];
-			if (source is ITrackingPersonalizable)
-			{
+			if (!this.States.ContainsKey(source.ID))
+				this.States.Add(source.ID, new PersonalizationDictionary());
+
+            PersonalizationDictionary personalizations = this.States[source.ID];
+			
+            if (source is ITrackingPersonalizable)
 				((ITrackingPersonalizable)source).BeginSave();
-			}
-			if (source is IPersonalizable)
-			{
+
+            if (source is IPersonalizable)
 				((IPersonalizable)source).Save(personalizations);
-			}
-			this.FillPersonalizationDictionary(source, PersonalizableAttribute.GetPersonalizableProperties(source.GetType()), personalizations);
-			if (source is ITrackingPersonalizable)
-			{
+
+            this.FillPersonalizationDictionary(source, PersonalizableAttribute.GetPersonalizableProperties(source.GetType()), personalizations);
+			
+            if (source is ITrackingPersonalizable)
 				((ITrackingPersonalizable)source).EndSave();
-			}
-			if (!this._states.ContainsKey(source.ID))
-			{
-				this._states.Add(source.ID, personalizations);
-			}
+
+            if (!this.States.ContainsKey(source.ID))
+				this.States.Add(source.ID, personalizations);
 		}
+
 		public void FillPersonalizationDictionary(Control control, ICollection propertyInfos, PersonalizationDictionary personalizations)
 		{
 			foreach (PropertyInfo propertyInfo in propertyInfos)
@@ -141,55 +110,45 @@ namespace LWAS.Infrastructure.Personalization
 				PersonalizableAttribute attribute = (PersonalizableAttribute)Attribute.GetCustomAttribute(propertyInfo, typeof(PersonalizableAttribute));
 				PersonalizationEntry entry = new PersonalizationEntry(ReflectionServices.ExtractValue(control, propertyInfo.Name), attribute.Scope, attribute.IsSensitive);
 				if (!personalizations.Contains(propertyInfo.Name))
-				{
 					personalizations.Add(propertyInfo.Name, entry);
-				}
 				else
-				{
 					personalizations[propertyInfo.Name] = entry;
-				}
 			}
 		}
-		public override string GetAuthorizationFilter(string webPartID)
+
+        public override string GetAuthorizationFilter(string webPartID)
 		{
 			string result;
-			if (null == this._states)
-			{
+			if (null == this.States)
 				result = string.Empty;
-			}
 			else
 			{
-				if (!this._states.ContainsKey(webPartID))
-				{
+				if (!this.States.ContainsKey(webPartID))
 					result = string.Empty;
-				}
 				else
 				{
-					if (!this._states[webPartID].Contains("AuthorizationFilter"))
-					{
+					if (!this.States[webPartID].Contains("AuthorizationFilter"))
 						result = string.Empty;
-					}
 					else
-					{
-						result = this._states[webPartID]["AuthorizationFilter"].Value.ToString();
-					}
+						result = this.States[webPartID]["AuthorizationFilter"].Value.ToString();
 				}
 			}
 			return result;
 		}
+
 		public override void SetWebPartDirty(WebPart webPart)
 		{
 		}
+
 		public override void SetWebPartManagerDirty()
 		{
 		}
+
 		public bool IsPartPresent(string id)
 		{
 			bool ret = false;
 			if (id == base.WebPartManager.ID)
-			{
 				ret = true;
-			}
 			else
 			{
 				WebPart part = base.WebPartManager.WebParts[id];
@@ -197,12 +156,11 @@ namespace LWAS.Infrastructure.Personalization
 				{
 					ret = true;
 					if (part.IsClosed)
-					{
 						ret = false;
-					}
 				}
 			}
-			return ret;
+
+            return ret;
 		}
 	}
 }
