@@ -54,7 +54,7 @@ namespace LWAS.Database.Expressions.Aggregate
                 this.ViewToken.Reset();
                 this.ViewToken.BeginAggregation += new EventHandler<ViewToken.ViewTokenEventArgs>(ViewToken_BeginAggregation);
                 this.ViewToken.EndAggregation += new EventHandler<ViewToken.ViewTokenEventArgs>(ViewToken_EndAggregation);
-                this.ViewToken.ToSql(builder);
+                this.ViewToken.ToSql(builder, true);
             }
         }
 

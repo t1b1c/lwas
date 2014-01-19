@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright 2006-2013 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,30 +15,35 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Web.UI;
 
-using LWAS.Extensible.Interfaces.Expressions;
-using LWAS.Expressions;
-
-namespace LWAS.Database.Expressions.Aggregate
+namespace LWAS.WebParts.Editors
 {
-    public class Sum : AggregateExpression
-    {
-        public override string Key
-        {
-            get { return "sum"; }
-        }
-
-        public override void BeginAggregation(StringBuilder builder)
-        {
-            builder.Append(" isnull(sum(");
-        }
-
-        public override void EndAggregation(StringBuilder builder)
-        {
-            builder.Append("), 0)");
-        }
-    }
+	public abstract class CRUDDataSourceView : DataSourceView
+	{
+		public override bool CanInsert
+		{
+			get
+			{
+				return true;
+			}
+		}
+		public override bool CanUpdate
+		{
+			get
+			{
+				return true;
+			}
+		}
+		public override bool CanDelete
+		{
+			get
+			{
+				return true;
+			}
+		}
+		public CRUDDataSourceView(IDataSource owner, string viewName) : base(owner, viewName)
+		{
+		}
+	}
 }

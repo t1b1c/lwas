@@ -66,6 +66,11 @@ namespace LWAS.Database
                 this.IsPrimaryKey = isPrimaryKey;
         }
 
+        public override void ToSql(StringBuilder builder)
+        {
+            ToSql(builder, null);
+        }
+
         public override void ToSql(StringBuilder builder, string alias)
         {
             if (null == builder) throw new ArgumentNullException("builder");

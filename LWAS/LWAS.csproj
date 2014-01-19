@@ -309,6 +309,16 @@
     <Compile Include="WebParts\DataBinding\BindingResult.cs" />
     <Compile Include="WebParts\DataSourceProviderWebPart.cs" />
     <Compile Include="WebParts\EditableWebPart.cs" />
+    <Compile Include="WebParts\Editors\AccessDataSource.cs" />
+    <Compile Include="WebParts\Editors\AccessRolesView.cs" />
+    <Compile Include="WebParts\Editors\AccessView.cs" />
+    <Compile Include="WebParts\Editors\CRUDDataSourceView.cs" />
+    <Compile Include="WebParts\Editors\NoEditView.cs" />
+    <Compile Include="WebParts\Editors\RolesDataSource.cs" />
+    <Compile Include="WebParts\Editors\RolesView.cs" />
+    <Compile Include="WebParts\Editors\RoleUsersView.cs" />
+    <Compile Include="WebParts\Editors\UsersDataSource.cs" />
+    <Compile Include="WebParts\Editors\UsersView.cs" />
     <Compile Include="WebParts\EmptyConfiguration.cs" />
     <Compile Include="WebParts\FormViewWebPart.cs" />
     <Compile Include="WebParts\GridViewWebPart.cs" />

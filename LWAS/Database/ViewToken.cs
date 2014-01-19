@@ -93,8 +93,13 @@ namespace LWAS.Database
 
         }
 
-        // generate a subquery select of one field - the tokenizer
         public override void ToSql(StringBuilder builder)
+        {
+            ToSql(builder, false);
+        }
+
+        // generate a subquery select of one field - the tokenizer
+        public void ToSql(StringBuilder builder, bool ignoreAlias)
         {
             if (null == builder) throw new ArgumentNullException("builder");
 
@@ -109,7 +114,10 @@ namespace LWAS.Database
             if (null != this.BeginAggregation)
                 BeginAggregation(this, new ViewTokenEventArgs() { Builder = builder });
             string alias = view.Aliases.ContainsKey(field) ? view.Aliases[field] : null;
-            field.ToSql(builder, alias);
+            if (ignoreAlias)
+                field.ToSql(builder);
+            else
+                field.ToSql(builder, alias);
             if (null != this.EndAggregation)
                 EndAggregation(this, new ViewTokenEventArgs() { Builder = builder });
             builder.AppendLine();

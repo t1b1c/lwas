@@ -91,6 +91,7 @@ namespace LWAS.Database
 
         public abstract void ReadAttributes(XElement element);
         public abstract void WriteAttributes(XmlTextWriter writer);
+        public abstract void ToSql(StringBuilder builder);
         public abstract void ToSql(StringBuilder builder, string alias);
 
     }

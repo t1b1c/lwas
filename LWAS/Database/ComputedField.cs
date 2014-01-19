@@ -94,12 +94,18 @@ namespace LWAS.Database
                 this.Expression.ToXml(writer);
         }
 
-        public override void ToSql(StringBuilder builder, string alias)
+        public override void ToSql(StringBuilder builder)
         {
             if (null == builder) throw new ArgumentNullException("builder");
 
             if (null != this.Expression)
                 this.Expression.ToSql(builder);
+
+        }
+
+        public override void ToSql(StringBuilder builder, string alias)
+        {
+            ToSql(builder);
 
             builder.AppendFormat(" as [{0}]", alias ?? this.Alias ?? this.Name);
         }

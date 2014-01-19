@@ -233,6 +233,8 @@ namespace LWAS.Database
             {
                 foreach (XElement subviewElement in subviewsElement.Elements("subview"))
                 {
+                    if (!this.Manager.Views.ContainsKey(subviewElement.Attribute("name").Value))
+                        throw new InvalidOperationException(String.Format("Subview not found. Failed to load view '{0}' at subview '{1}'", this.Name, subviewElement.Attribute("name").Value));
                     View subview = this.Manager.Views[subviewElement.Attribute("name").Value];
                     Dictionary<string, Field> subviewparams = new Dictionary<string, Field>();
                     foreach (XElement subviewparamElement in subviewElement.Elements("parameter"))
@@ -314,14 +316,17 @@ namespace LWAS.Database
                 bool firstParameter = true;
                 foreach (string parameter in this.Parameters)
                 {
-                    string identifier = this.Parameters.SqlIdentifier(parameter);
+                    if (!String.IsNullOrEmpty(parameter)) // can be empty if this is a subview and this parameter is linked with a field of the superview
+                    {
+                        string identifier = this.Parameters.SqlIdentifier(parameter);
 
-                    if (!firstParameter)
-                        builder.Append(", ");
-                    else
-                        firstParameter = false;
+                        if (!firstParameter)
+                            builder.Append(", ");
+                        else
+                            firstParameter = false;
 
-                    builder.AppendFormat("{0} varchar(max)", identifier);
+                        builder.AppendFormat("{0} varchar(max)", identifier);
+                    }
                 }
 
                 builder.AppendLine("',");
@@ -330,15 +335,21 @@ namespace LWAS.Database
                 firstParameter = true;
                 foreach (string parameter in this.Parameters)
                 {
-                    string identifier = this.Parameters.SqlIdentifier(parameter);
+                    if (!String.IsNullOrEmpty(parameter)) // can be empty if this is a subview and this parameter is linked with a field of the superview
+                    {
+                        string identifier = this.Parameters.SqlIdentifier(parameter);
 
-                    if (!firstParameter)
-                        builder.Append(", ");
-                    else
-                        firstParameter = false;
+                        if (!firstParameter)
+                            builder.Append(", ");
+                        else
+                            firstParameter = false;
 
-                    string pval = CastToDbType(this.Parameters[parameter] ?? "", InferParamType(parameter), false);
-                    builder.AppendFormat("{0} = '{1}'", identifier, pval);
+                        string pval = CastToDbType(this.Parameters[parameter] ?? "", InferParamType(parameter), false);
+                        if (pval == "null")
+                            builder.AppendFormat("{0} = null", identifier);
+                        else
+                            builder.AppendFormat("{0} = '{1}'", identifier, pval);
+                    }
                 }
             }
         }
@@ -358,7 +369,21 @@ namespace LWAS.Database
             if (null != operand_field)
                 return operand_field.DBType;
             else
-                return "Text";
+            {
+                // this parameter could be used in a subview
+                var dbtype = this.Subviews.Keys
+                                 .Select(v =>
+                                     {
+                                         return v.InferParamType(parameter);
+                                     })
+                                 .Where(t => !String.IsNullOrEmpty(t))
+                                 .FirstOrDefault();
+
+                if (!String.IsNullOrEmpty(dbtype))
+                    return dbtype;
+                else
+                    return "Text";
+            }
         }
 
         public void ToUpdateSql(StringBuilder builder)
@@ -377,8 +402,10 @@ namespace LWAS.Database
             foreach (string updateParameter in this.UpdateParameters)
             {
                 TableField field = this.Source.Fields[updateParameter];
-                builder.AppendFormat("    [{0}].[{1}] = {2}", field.Table.Name, field.Name, CastToDbType(this.UpdateParameters[updateParameter], field.DBType, true));
+                builder.AppendFormat("    [{0}].[{1}] = {2},", field.Table.Name, field.Name, CastToDbType(this.UpdateParameters[updateParameter], field.DBType, true));
+                builder.AppendLine();
             }
+            builder.Remove(builder.Length - 3, 3);
 
             builder.AppendLine();
             builder.AppendLine("from");
@@ -456,11 +483,16 @@ namespace LWAS.Database
                     else
                         return d.ToString(System.Globalization.CultureInfo.InvariantCulture);
                 case "Date":
-                    DateTime dt = DateTime.Parse(strval);
-                    if (includeSqlCast)
-                        return String.Format("cast(''{0}'' as smalldatetime)", dt.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    if (String.IsNullOrEmpty(strval))
+                        return "null";
                     else
-                        return dt.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    {
+                        DateTime dt = DateTime.Parse(strval);
+                        if (includeSqlCast)
+                            return String.Format("cast(''{0}'' as smalldatetime)", dt.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                        else
+                            return dt.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    }
                 case "Boolean":
                     if (includeSqlCast)
                         return String.Format("cast(''{0}'' as bit)", strval);
@@ -517,7 +549,7 @@ namespace LWAS.Database
                     Field referenceField = subviewReferences[p];
                     ParameterToken subviewParamToken = subviewparams.FirstOrDefault(pt => pt.ParameterName == p);
                     subviewParamToken.ReferenceField = referenceField;
-                    if (this.Aliases.ContainsKey(referenceField))
+                    if (null != referenceField && this.Aliases.ContainsKey(referenceField))
                         subviewParamToken.ReferenceFieldAlias = this.Aliases[referenceField];
                 }
             }
@@ -590,6 +622,11 @@ namespace LWAS.Database
                     if (!subview.Parameters.Contains(p))
                         links.Remove(p);
             }
+
+            // remove unused subviews
+            foreach (View sv in this.Subviews.Keys.ToArray())
+                if (null == firstlevelviewtokens.FirstOrDefault(vt => vt.ViewName == sv.Name))
+                    this.Subviews.Remove(sv);
         }
     }
 }

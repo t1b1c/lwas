@@ -38,20 +38,38 @@ namespace LWAS.Database
 
             writer.WriteStartElement("views");
             List<View> views = this.Values.ToList();
-            var orderedviews = views.OrderBy(v => v.Subviews.Count > 0)
-                                  .ThenBy(v =>
-                                    {
-                                        if (null != views.FirstOrDefault(av => av.Subviews.ContainsKey(v)))
-                                        {
-                                            int firstparent = views.Where(av => av.Subviews.ContainsKey(v))
-                                                                    .Min(ap => views.IndexOf(ap));
-                                            return views.IndexOf(v) <= firstparent;
-                                        }
-                                        return false;
-                                    })
-                                   .ThenBy(v => v.Name);
+            
+            // init a linked list with base views
+            LinkedList<View> linkedviews = new LinkedList<View>(views.Where(v => v.Subviews.Count == 0)
+                                                                     .OrderBy(v => v.Name));
 
-            foreach (View view in orderedviews)
+            foreach (var super in views.Where(v => v.Subviews.Count > 0)
+                                        .OrderBy(v =>
+                                        {
+                                            if (null != views.FirstOrDefault(av => av.Subviews.ContainsKey(v)))
+                                            {
+                                                int firstparent = views.Where(av => av.Subviews.ContainsKey(v))
+                                                                        .Min(ap => views.IndexOf(ap));
+                                                return views.IndexOf(v) <= firstparent;
+                                            }
+                                            return false;
+                                        }))
+            {
+                // find the latest view that's a subview to this view
+                var last = linkedviews.LastOrDefault(sv => super.Subviews.Keys.Contains(sv));
+
+                if (null != last)
+                {
+                    // get the linked node
+                    var last_node = linkedviews.Find(last);
+                    // add the view after last subview
+                    linkedviews.AddAfter(last_node, super);
+                }
+                else
+                    linkedviews.AddLast(super);
+            }
+
+            foreach (View view in linkedviews)
                 view.ToXml(writer);
             writer.WriteEndElement();   // views
         }
