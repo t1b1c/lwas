@@ -67,32 +67,31 @@ namespace LWAS.CustomControls
 						ccount, 
 						fieldElement.ConfigKey
 					});
-					if (!map.ContainsKey(id))
-					{
-						throw new ApplicationException("Can't find control " + id);
-					}
-					Control fieldControl = map[id];
-					foreach (IConfigurationElement propertyElement in fieldElement.Elements.Values)
-					{
-						if (propertyElement.Attributes.ContainsKey("pull") && propertyElement.Attributes.ContainsKey("member"))
-						{
-							string pull = propertyElement.GetAttributeReference("pull").Value.ToString();
-							string member = propertyElement.GetAttributeReference("member").Value.ToString();
-							if (!values.Contains(pull))
-							{
-								values.Add(pull, ReflectionServices.ExtractValue(fieldControl, member));
-							}
-						}
-						if (propertyElement.Attributes.ContainsKey("push") && propertyElement.Attributes.ContainsKey("member"))
-						{
-							string push = propertyElement.GetAttributeReference("push").Value.ToString();
-							string member = propertyElement.GetAttributeReference("member").Value.ToString();
-							if (!values.Contains(push))
-							{
-								values.Add(push, ReflectionServices.ExtractValue(fieldControl, member));
-							}
-						}
-					}
+                    if (map.ContainsKey(id))
+                    {
+                        Control fieldControl = map[id];
+                        foreach (IConfigurationElement propertyElement in fieldElement.Elements.Values)
+                        {
+                            if (propertyElement.Attributes.ContainsKey("pull") && propertyElement.Attributes.ContainsKey("member"))
+                            {
+                                string pull = propertyElement.GetAttributeReference("pull").Value.ToString();
+                                string member = propertyElement.GetAttributeReference("member").Value.ToString();
+                                if (!values.Contains(pull))
+                                {
+                                    values.Add(pull, ReflectionServices.ExtractValue(fieldControl, member));
+                                }
+                            }
+                            if (propertyElement.Attributes.ContainsKey("push") && propertyElement.Attributes.ContainsKey("member"))
+                            {
+                                string push = propertyElement.GetAttributeReference("push").Value.ToString();
+                                string member = propertyElement.GetAttributeReference("member").Value.ToString();
+                                if (!values.Contains(push))
+                                {
+                                    values.Add(push, ReflectionServices.ExtractValue(fieldControl, member));
+                                }
+                            }
+                        }
+                    }
 					ccount++;
 				}
 				rcount++;

@@ -37,8 +37,14 @@ namespace LWAS.Database
 
         public View View { get; set; }
         public string ParameterName { get; set; }
-        public Field ReferenceField { get; set; }
+        Field _referenceField;
+        public Field ReferenceField 
+        {
+            get { return _referenceField; }
+            set { _referenceField = value; }
+        }
         public string ReferenceFieldAlias { get; set; }
+        public string Identifier { get; set; }
 
         public ParameterToken()
         { }
@@ -84,7 +90,11 @@ namespace LWAS.Database
             if (null == builder) throw new ArgumentNullException("builder");
 
             if (null == this.ReferenceField)
-                builder.AppendFormat("{0}", this.View.Parameters.SqlIdentifier(this.ParameterName));
+            {
+                if (String.IsNullOrEmpty(this.Identifier))
+                    this.Identifier = this.View.Parameters.SqlIdentifier(this.ParameterName);
+                builder.AppendFormat("{0}", this.Identifier);
+            }
             else
                 this.ReferenceField.ToSql(builder, this.ReferenceFieldAlias);
         }

@@ -26,6 +26,18 @@ namespace LWAS.Database
     public class ParametersCollection : IEnumerable<string>
     {
         Dictionary<string, object> parameters = new Dictionary<string, object>();
+        ParametersCollection linked_collection;
+
+        public ParametersCollection()
+        {
+        }
+
+        public ParametersCollection(ParametersCollection collection)
+        {
+            linked_collection = collection;
+            foreach (string key in collection)
+                parameters.Add(key, collection[key]);
+        }
 
         public object this[string key]
         {
@@ -40,7 +52,19 @@ namespace LWAS.Database
                 if (!parameters.ContainsKey(key))
                     parameters.Add(key, null);
                 parameters[key] = value;
+
+                if (null != linked_collection)
+                    linked_collection[key] = value;
             }
+        }
+
+        public ParametersCollection Append(IEnumerable<string> list)
+        {
+            foreach (string p in list)
+                if (!parameters.ContainsKey(p))
+                    parameters.Add(p, null);
+
+            return this;
         }
 
         public bool Contains(string name)

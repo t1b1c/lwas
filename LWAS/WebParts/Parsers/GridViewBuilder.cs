@@ -93,6 +93,11 @@ namespace LWAS.WebParts.Parsers
                             field = new DateBoundField();
                             break;
                         }
+                    case "Number":
+                        {
+                            field = new NumberBoundField();
+                            break;
+                        }
                     case "DropDownList":
                         {
                             field = new DropDownListField();
@@ -119,8 +124,10 @@ namespace LWAS.WebParts.Parsers
                 {
                     field.HtmlEncode = false;
                 }
-                field.DataField = element.Attributes["DataMember"].Value.ToString();
-                field.HeaderText = element.Attributes["HeaderText"].Value.ToString();
+                if (element.Attributes.ContainsKey("DataMember"))
+                    field.DataField = element.Attributes["DataMember"].Value.ToString(); ;
+                if (element.Attributes.ContainsKey("HeaderText"))
+                    field.HeaderText = element.Attributes["HeaderText"].Value.ToString(); ;
                 if (element.Attributes.ContainsKey("FormatString"))
                 {
                     try

@@ -85,52 +85,58 @@ namespace LWAS.WebParts.Parsers
                         }
 						count++;
 					}
-                    Control cellControl = this.CreateControl(controlElement.GetAttributeReference("type").Value.ToString(), mode);
-					cellControl.ID = tc.ID + controlElement.ConfigKey;
-					foreach (IConfigurationElement controlPropertyElement in controlElement.Elements.Values)
-					{
-						string propertyName = controlPropertyElement.GetAttributeReference("member").Value.ToString();
-						if (controlPropertyElement.Attributes.ContainsKey("value"))
-						{
-							ReflectionServices.SetValue(cellControl, propertyName, controlPropertyElement.GetAttributeReference("value").Value);
-						}
-						if (controlPropertyElement.Attributes.ContainsKey("isList") && (bool)controlPropertyElement.GetAttributeReference("isList").Value)
-						{
-							ListItemCollection list = ReflectionServices.ExtractValue(cellControl, propertyName) as ListItemCollection;
-							if (null == list)
-							{
-								throw new InvalidOperationException(string.Format("Member '{0}' is not a ListItemCollection", propertyName));
-                            }
-                            if (controlPropertyElement.Attributes.ContainsKey("hasEmpty") && (bool)controlPropertyElement.GetAttributeReference("hasEmpty").Value)
+                    string type = null;
+                    if (controlElement.Attributes.ContainsKey("type"))
+                        type = controlElement.GetAttributeReference("type").Value.ToString();
+                    if (!String.IsNullOrEmpty(type))
+                    {
+                        Control cellControl = this.CreateControl(type, mode);
+                        cellControl.ID = tc.ID + controlElement.ConfigKey;
+                        foreach (IConfigurationElement controlPropertyElement in controlElement.Elements.Values)
+                        {
+                            string propertyName = controlPropertyElement.GetAttributeReference("member").Value.ToString();
+                            if (controlPropertyElement.Attributes.ContainsKey("value"))
                             {
-                                if (list is ListItemCollection)
-                                    ((ListItemCollection)list).Add("");
+                                ReflectionServices.SetValue(cellControl, propertyName, controlPropertyElement.GetAttributeReference("value").Value);
                             }
-							foreach (IConfigurationElement listItemElement in controlPropertyElement.Elements.Values)
-							{
-								list.Add(new ListItem(listItemElement.GetAttributeReference("text").Value.ToString(), listItemElement.GetAttributeReference("value").Value.ToString()));
-							}
-						}
-						if (controlPropertyElement.Attributes.ContainsKey("pull"))
-						{
-							string pull = controlPropertyElement.GetAttributeReference("pull").Value.ToString();
-							IBindingItem bindingItem = binder.NewBindingItemInstance();
-							bindingItem.Source = null;
-							bindingItem.SourceProperty = pull;
-							bindingItem.Target = cellControl;
-							bindingItem.TargetProperty = propertyName;
-							binder.BindingItems.Add(bindingItem);
-							if (cellControl is BaseDataBoundControl)
-							{
-								this._boundControls.Add(pull, cellControl);
-								if (!this._dataSources.ContainsKey(pull))
-								{
-									this._dataSources.Add(pull, null);
-								}
-							}
-						}
-					}
-					tc.Controls.Add(cellControl);
+                            if (controlPropertyElement.Attributes.ContainsKey("isList") && (bool)controlPropertyElement.GetAttributeReference("isList").Value)
+                            {
+                                ListItemCollection list = ReflectionServices.ExtractValue(cellControl, propertyName) as ListItemCollection;
+                                if (null == list)
+                                {
+                                    throw new InvalidOperationException(string.Format("Member '{0}' is not a ListItemCollection", propertyName));
+                                }
+                                if (controlPropertyElement.Attributes.ContainsKey("hasEmpty") && (bool)controlPropertyElement.GetAttributeReference("hasEmpty").Value)
+                                {
+                                    if (list is ListItemCollection)
+                                        ((ListItemCollection)list).Add("");
+                                }
+                                foreach (IConfigurationElement listItemElement in controlPropertyElement.Elements.Values)
+                                {
+                                    list.Add(new ListItem(listItemElement.GetAttributeReference("text").Value.ToString(), listItemElement.GetAttributeReference("value").Value.ToString()));
+                                }
+                            }
+                            if (controlPropertyElement.Attributes.ContainsKey("pull"))
+                            {
+                                string pull = controlPropertyElement.GetAttributeReference("pull").Value.ToString();
+                                IBindingItem bindingItem = binder.NewBindingItemInstance();
+                                bindingItem.Source = null;
+                                bindingItem.SourceProperty = pull;
+                                bindingItem.Target = cellControl;
+                                bindingItem.TargetProperty = propertyName;
+                                binder.BindingItems.Add(bindingItem);
+                                if (cellControl is BaseDataBoundControl)
+                                {
+                                    this._boundControls.Add(pull, cellControl);
+                                    if (!this._dataSources.ContainsKey(pull))
+                                    {
+                                        this._dataSources.Add(pull, null);
+                                    }
+                                }
+                            }
+                        }
+                        tc.Controls.Add(cellControl);
+                    }
 					tr.Cells.Add(tc);
 				}
 				table.Rows.Add(tr);
@@ -165,6 +171,11 @@ namespace LWAS.WebParts.Parsers
 					control = new MaskedCalendar();
 					break;
 				}
+                case "Number":
+                {
+                    control = new NumberTextBox();
+                    break;
+                }
 				case "DropDownList":
 				{
 					control = new StatelessDropDownList();
@@ -212,7 +223,12 @@ namespace LWAS.WebParts.Parsers
 				{
 					control = new MaskedCalendar();
 					break;
-				}
+                }
+                case "Number":
+                {
+                    control = new NumberTextBox();
+                    break;
+                }
 				case "DropDownList":
 				{
 					control = new StatelessDropDownList();

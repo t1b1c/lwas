@@ -34,6 +34,8 @@ namespace LWAS.CustomControls
             }
         }
 
+        public string CommandArgument { get; set; }
+
 		private string _selectedValue;
 		public override string SelectedValue
 		{
@@ -85,7 +87,7 @@ namespace LWAS.CustomControls
         protected override void RaisePostDataChangedEvent()
         {
             if (this.AutoPostBack && this.UniqueID == this.Page.Request.Form["__EVENTTARGET"])
-                RaiseBubbleEvent(this, new CommandEventArgs(_commandName, null));
+                RaiseBubbleEvent(this, new CommandEventArgs(_commandName, this.CommandArgument));
         }
 		public override void DataBind()
 		{

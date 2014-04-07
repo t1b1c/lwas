@@ -25,6 +25,7 @@ using LWAS.Extensible.Interfaces.Expressions;
 using LWAS.Extensible.Interfaces.Configuration;
 
 using LWAS.Infrastructure.Configuration;
+using LWAS.Database;
 
 namespace LWAS.Expressions.Extensions
 {
@@ -71,7 +72,7 @@ namespace LWAS.Expressions.Extensions
                 basicToken.Evaluate();
                 if (basicToken.Value != null)
                 {
-                    builder.AppendFormat("{0}", basicToken.Value.ToString());
+                    builder.AppendFormat("{0}", basicToken.Value.ToString().Replace("'", "''"));
                 }
             }
             else
@@ -173,8 +174,19 @@ namespace LWAS.Expressions.Extensions
             if (expression.Operands.Count > 0)
             {
                 IToken operand = expression.Operands.First();
-                operand.ToSql(builder);
-                builder.Append(" IS NOT NULL");
+                if (operand is ViewToken)
+                {
+                    builder.Append(" exists (");
+                    ViewToken viewToken = operand as ViewToken;
+                    View view = viewToken.ViewsManager.Views[viewToken.ViewName];
+                    view.ToSql(builder, true);
+                    builder.Append(")");
+                }
+                else
+                {
+                    operand.ToSql(builder);
+                    builder.Append(" IS NOT NULL");
+                }
             }
         }
 
@@ -227,8 +239,19 @@ namespace LWAS.Expressions.Extensions
             if (expression.Operands.Count > 0)
             {
                 IToken operand = expression.Operands.First();
-                operand.ToSql(builder);
-                builder.Append(" IS NULL");
+                if (operand is ViewToken)
+                {
+                    builder.Append(" not exists (");
+                    ViewToken viewToken = operand as ViewToken;
+                    View view = viewToken.ViewsManager.Views[viewToken.ViewName];
+                    view.ToSql(builder, true);
+                    builder.Append(")");
+                }
+                else
+                {
+                    operand.ToSql(builder);
+                    builder.Append(" IS NULL");
+                }
             }
         }
 

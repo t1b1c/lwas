@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="CustomControls\Breadcrumb.cs" />
     <Compile Include="CustomControls\ComboBoxLessBuggy.cs" />
+    <Compile Include="CustomControls\NumberBoundField.cs" />
     <Compile Include="CustomControls\DataControls\Container.cs" />
     <Compile Include="CustomControls\DataControls\DataTableDataSource.cs" />
     <Compile Include="CustomControls\DataControls\DataTableDataSourceView.cs" />

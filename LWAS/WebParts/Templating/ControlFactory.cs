@@ -270,6 +270,8 @@ namespace LWAS.WebParts.Templating
 							}
 							btn.CommandArgument = index;
 						}
+                        if (cellControl is StatelessDropDownList)
+                            ((StatelessDropDownList)cellControl).CommandArgument = index;
 					}
 					if (null != registry)
 					{
