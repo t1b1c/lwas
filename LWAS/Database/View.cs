@@ -520,7 +520,8 @@ namespace LWAS.Database
                     else
                         return strval;
                 case "Number":
-                    decimal d = decimal.Parse(strval);
+                    decimal d;
+                    decimal.TryParse(strval, out d);
                     if (includeSqlCast)
                         return String.Format("cast(''{0}'' as decimal(18,4))", d.ToString(System.Globalization.CultureInfo.InvariantCulture));
                     else
@@ -563,31 +564,7 @@ namespace LWAS.Database
                 }
             }
 
-            // tokens in computed fields
-            var viewtokens = this.ComputedFields
-                                 .Select<ComputedField, IExpression>(cf => cf.Expression)
-                                 .SelectMany(e => e.Flatten())
-                                 .OfType<AggregateExpression>()
-                                 .Select<AggregateExpression, ViewToken>(ex => ex.ViewToken)
-                                 .Union(
-                                        this.Filters.SelectMany<Filter, ViewToken>(f =>
-                                                                    {
-                                                                        return f.Expression.Flatten()
-                                                                                            .SelectMany(e => e.Operands.OfType<ViewToken>());
-                                                                    })
-                                        );
-
-            // tokens in filters
-            viewtokens.Union(this.Filters
-                                .Where<Filter>(f => f.Expression != null)
-                                .SelectMany(f => f.Expression.Flatten())
-                                .SelectMany<IExpression, ViewToken>(e =>
-                                {
-                                    return e.Operands
-                                            .OfType<ViewToken>();
-                                })
-                                .Where(vt => vt != null)
-                            );
+            var viewtokens = SubviewsTokens();
 
             foreach (ViewToken token in viewtokens)
                 token.ViewsManager = this.Manager;
@@ -641,40 +618,14 @@ namespace LWAS.Database
                                                 return f.Expression.Flatten()
                                                                    .SelectMany(e => e.Operands.OfType<ParameterToken>());
                                             })
-                                       .SingleOrDefault(p => p.ParameterName == name);
+                                       .FirstOrDefault(p => p.ParameterName == name);
         }
 
         public void SyncSubviews()
         {
             Dictionary<View, Dictionary<string, Field>> syncdSubviews = new Dictionary<View,Dictionary<string,Field>>();
 
-            // find the subviews used in aggregate expressions in computed fields and filters
-            var viewtokens = this.ComputedFields
-                                           .Select<ComputedField, IExpression>(cf => cf.Expression)
-                                           .SelectMany(ex => ex.Flatten())
-                                           .OfType<AggregateExpression>()
-                                           .Select<AggregateExpression, ViewToken>(ex => ex.ViewToken)
-                                           .Where(vt => vt != null)
-                                           .Union(
-                                                    this.Filters.Where<Filter>(f => f.Expression != null)
-                                                                .Select(f => f.Expression)
-                                                                .SelectMany(ex => ex.Flatten())
-                                                                .OfType<AggregateExpression>()
-                                                                .Select<AggregateExpression, ViewToken>(ex => ex.ViewToken)
-                                                                .Where(vt => vt != null)
-                                            );
-
-            // find the subviews used in filters
-            viewtokens.Union(this.Filters
-                                           .Where<Filter>(f => f.Expression != null)
-                                           .SelectMany(f => f.Expression.Flatten())
-                                           .SelectMany<IExpression, ViewToken>(e =>
-                                               {
-                                                   return e.Operands
-                                                           .OfType<ViewToken>();
-                                               })
-                                           .Where(vt => vt != null)
-                                      );
+            var viewtokens = SubviewsTokens();
 
             foreach (ViewToken vt in viewtokens)
             {
@@ -704,6 +655,51 @@ namespace LWAS.Database
             foreach (View sv in this.Subviews.Keys.ToArray())
                 if (null == viewtokens.FirstOrDefault(vt => vt.ViewName == sv.Name))
                     this.Subviews.Remove(sv);
+        }
+
+        IEnumerable<ViewToken> SubviewsTokens()
+        {
+            // find the subviews used in computed fields
+            var viewtokens = this.ComputedFields
+                                .Select<ComputedField, IExpression>(cf => cf.Expression)
+                                .SelectMany(ex => ex.Flatten())
+                                .OfType<AggregateExpression>()
+                                .Select<AggregateExpression, ViewToken>(ex => ex.ViewToken)
+                                .Where(vt => vt != null)
+                // some types of expression (i.e. exists) have ViewTokens operands
+                                .Union(this.ComputedFields
+                                            .Select<ComputedField, IExpression>(cf => cf.Expression)
+                                            .SelectMany(ex => ex.Flatten())
+                                            .SelectMany<IExpression, ViewToken>(e =>
+                                            {
+                                                return e.Operands
+                                                        .OfType<ViewToken>();
+                                            })
+                                            .Where(vt => vt != null)
+                                    );
+
+            // find the subviews used in filters
+            viewtokens = viewtokens.Union(this.Filters.Where<Filter>(f => f.Expression != null)
+                                                    .Select(f => f.Expression)
+                                                    .SelectMany(ex => ex.Flatten())
+                                                    .OfType<AggregateExpression>()
+                                                    .Select<AggregateExpression, ViewToken>(ex => ex.ViewToken)
+                                                    .Where(vt => vt != null)
+                                        )
+                // some types of expression (i.e. exists) have ViewTokens operands
+                                    .Union(this.Filters
+                                               .Where<Filter>(f => f.Expression != null)
+                                               .SelectMany(f => f.Expression.Flatten())
+                                               .SelectMany<IExpression, ViewToken>(e =>
+                                               {
+                                                   return e.Operands
+                                                           .OfType<ViewToken>();
+                                               })
+                                               .Where(vt => vt != null)
+                                            )
+                                    .ToList(); // need this to have results when viewtokens from computed fields is empty
+
+            return viewtokens;
         }
 
         public IEnumerable<View> FlattenSubviews()

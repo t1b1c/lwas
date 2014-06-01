@@ -21,6 +21,7 @@ using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.WebControls.WebParts;
+using System.Data;
 
 using LWAS.Extensible.Exceptions;
 using LWAS.Extensible.Interfaces;
@@ -166,6 +167,15 @@ namespace LWAS.WebParts
 		{
             set { _container.ReceiveData = value; }
 		}
+        public IEnumerable RawData 
+        {
+            get { return _container.RawData; }
+            set { _container.RawData = value; }
+        }
+        public DataSet FilteredData
+        {
+            get { return _container.FilteredData; }
+        }
 		public ITemplatingProvider Template
 		{
             get { return _container.Template; }

@@ -133,10 +133,14 @@ namespace LWAS.WebParts.Templating
 			}
 			if (table.Rows.Count > 0)
 			{
-				if (table.Rows[0].Cells.Count > 0)
-				{
-					table.Rows[0].Cells[0].Controls.Add(statusPanel);
-				}
+                if (!(table.Rows[0].Cells.Count > 0))
+                {
+                    TableCell firstcell = new TableCell();
+                    firstcell.ID = table.Rows[0].ID + "firstcell";
+                    table.Rows[0].Cells.Add(firstcell);
+                }
+
+                table.Rows[0].Cells[0].Controls.Add(statusPanel);
 			}
 		}
 		public override void Extract(Control container, IConfigurationType config, ITemplatable templatable, IBinder binder, IEnumerable registry, ITemplatingItem item, int itemIndex, int itemsCount, WebPartManager manager)

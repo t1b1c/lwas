@@ -32,6 +32,7 @@ namespace LWAS.CustomControls
 		private Style _normalStyle = new Style();
 		private Style _readOnlyStyle = new Style();
 		private bool _readOnly = false;
+        private bool _simpleImput = false;
 		[Themeable(true)]
 		public Style NormalStyle
 		{
@@ -138,6 +139,20 @@ namespace LWAS.CustomControls
 				}
 			}
 		}
+        public bool SimpleInput
+        {
+            get { return _simpleImput; }
+            set
+            {
+                _simpleImput = value;
+                if (null != this.calDate)
+                    this.calDate.Enabled = !value;
+                if (null != this.maskDate)
+                    this.maskDate.Enabled = !value;
+                if (null != this.maskTime)
+                    this.maskTime.Enabled = !value;
+            }
+        }
 		protected override void OnInit(EventArgs e)
 		{
 			base.OnInit(e);
@@ -148,7 +163,7 @@ namespace LWAS.CustomControls
 			base.CreateChildControls();
 			this.txtDate = new StyledTextBox();
 			this.txtDate.ID = "txtDate";
-			this.txtDate.Width = Unit.Pixel(70);
+            this.txtDate.CssClass = "masked_calendar_date";
 			this.txtDate.ReadOnly = this._readOnly;
 			if (this._readOnly)
 			{
@@ -161,7 +176,7 @@ namespace LWAS.CustomControls
 			this.Controls.Add(this.txtDate);
 			this.txtTime = new StyledTextBox();
 			this.txtTime.ID = "txtTime";
-			this.txtTime.Width = Unit.Pixel(35);
+            this.txtTime.CssClass = "masked_calendar_time";
 			this.txtTime.Visible = false;
 			this.txtTime.ReadOnly = this._readOnly;
 			if (this._readOnly)

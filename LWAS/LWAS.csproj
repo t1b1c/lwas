@@ -371,6 +371,7 @@
     <Compile Include="WebParts\Zones\CustomChromeZone.cs" />
     <Compile Include="WebParts\Zones\DivChrome.cs" />
     <Compile Include="WebParts\Zones\DynamicZonesProvider.cs" />
+    <Compile Include="WebParts\Zones\PopupZone.cs" />
     <Compile Include="WebParts\Zones\RenderlessTable.cs" />
     <Compile Include="WebParts\Zones\TableZone.cs" />
     <Compile Include="WebParts\Zones\TableZoneEventArgs.cs" />

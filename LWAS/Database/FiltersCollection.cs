@@ -75,15 +75,14 @@ namespace LWAS.Database
                 if (!isFirst)
                 {
                     if (!String.IsNullOrEmpty(this.Cluster))
-                        builder.AppendFormat("{0} (", this.Cluster);
+                        builder.AppendFormat("{0} ", this.Cluster);
                     else
-                        builder.Append("and (");
+                        builder.Append("and ");
                 }
+                builder.Append("(");
                 filter.ToSql(builder);
-                if (!isFirst)
-                    builder.AppendLine(")");
-                else
-                    builder.AppendLine();
+                builder.AppendLine(")");
+
                 isFirst = false;
             }
         }

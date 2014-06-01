@@ -66,6 +66,14 @@ namespace LWAS.Database
                 this.Relations.Remove(relation);
         }
 
+        public void Remove(Table table)
+        {
+            var rels = this.Relations.Where(r => r.MasterTable == table || r.DetailsTable == table)
+                                     .ToArray();
+            foreach (var r in rels)
+                Remove(r);
+        }
+
         public Relation this[string name]
         {
             get

@@ -28,14 +28,8 @@ namespace LWAS.WebParts.Zones
         private HiddenField _activeWebPartHidden;
         public string ActiveWebPart
         {
-            get
-            {
-                return this._activeWebPartHidden.Value;
-            }
-            set
-            {
-                this._activeWebPartHidden.Value = value;
-            }
+            get { return this._activeWebPartHidden.Value; }
+            set { this._activeWebPartHidden.Value = value; }
         }
 
         protected override void OnInit(EventArgs e)
@@ -50,14 +44,12 @@ namespace LWAS.WebParts.Zones
             this._activeWebPartHidden = new HiddenField();
             this.Controls.Add(this._activeWebPartHidden);
         }
+
         protected override void RaisePostBackEvent(string eventArgument)
         {
             if (!string.IsNullOrEmpty(eventArgument))
             {
-                string[] args = eventArgument.Split(new char[]
-				{
-					':'
-				});
+                string[] args = eventArgument.Split(new char[] { ':' });
                 string verb = args[0];
                 if ("activate" == verb)
                 {
@@ -66,6 +58,7 @@ namespace LWAS.WebParts.Zones
             }
             base.RaisePostBackEvent(eventArgument);
         }
+
         protected override void OnPreRender(EventArgs e)
         {
             string script = "";
@@ -106,6 +99,7 @@ namespace LWAS.WebParts.Zones
 
             base.OnPreRender(e);
         }
+
         protected override void Render(HtmlTextWriter writer)
         {
             if (this.WebPartManager.DisplayMode != WebPartManager.EditDisplayMode &&
@@ -114,6 +108,7 @@ namespace LWAS.WebParts.Zones
 
             base.Render(writer);
         }
+
         protected override void RenderBody(HtmlTextWriter writer)
         {
             writer.AddAttribute(HtmlTextWriterAttribute.Class, "tabzone_tabcontainer");
@@ -146,6 +141,7 @@ namespace LWAS.WebParts.Zones
             writer.RenderEndTag();
             base.RenderBody(writer);
         }
+
         protected override void RenderContainerClass(HtmlTextWriter writer, WebPart webPart)
         {
             if (webPart == null || webPart.ID == this.ActiveWebPart)

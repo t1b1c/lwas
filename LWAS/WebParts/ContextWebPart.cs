@@ -52,6 +52,10 @@ namespace LWAS.WebParts
         {
             get { return DateTime.Now; }
         }
+        public DateTime Today
+        {
+            get { return DateTime.Today; }
+        }
 		public object Login
 		{
 			get

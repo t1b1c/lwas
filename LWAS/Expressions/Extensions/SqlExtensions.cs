@@ -185,7 +185,9 @@ namespace LWAS.Expressions.Extensions
                 else
                 {
                     operand.ToSql(builder);
-                    builder.Append(" IS NOT NULL");
+                    builder.Append(" IS NOT NULL AND ");
+                    operand.ToSql(builder);
+                    builder.Append(" <> ''''");
                 }
             }
         }
@@ -250,7 +252,9 @@ namespace LWAS.Expressions.Extensions
                 else
                 {
                     operand.ToSql(builder);
-                    builder.Append(" IS NULL");
+                    builder.Append(" IS NULL OR ");
+                    operand.ToSql(builder);
+                    builder.Append(" = ''''");
                 }
             }
         }

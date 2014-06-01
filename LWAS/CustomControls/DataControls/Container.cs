@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Data;
 
 using LWAS.Extensible.Exceptions;
 using LWAS.Extensible.Interfaces;
@@ -269,6 +270,11 @@ namespace LWAS.CustomControls.DataControls
 		{
 			set { this.OnReceiveData(value); }
 		}
+        public IEnumerable RawData { get; set; }
+        public DataSet FilteredData
+        {
+            get { return ApplyFilterOnData(); }
+        }
 		public ITemplatingProvider Template
 		{
 			get { return this._template; }
@@ -1214,6 +1220,29 @@ namespace LWAS.CustomControls.DataControls
 				this.FinishRunningTotals();
 			}
 		}
+        protected DataSet ApplyFilterOnData()
+        {
+            if (null == this.RawData) throw new InvalidOperationException("No RawData upon to apply filter");
+            if (!(this.RawData is IDataReader)) throw new InvalidOperationException("Raw data must be a Reader");
+
+            DataSet ds = new DataSet();
+            ds.Load((IDataReader)this.RawData, LoadOption.OverwriteChanges, "data");
+
+            if (ds.Tables.Count > 0)
+            {
+                DataTable table = ds.Tables[0];
+                if (table.Rows.Count > 0)
+                {
+                    DataRow[] rows = new DataRow[table.Rows.Count];
+                    table.Rows.CopyTo(rows, 0);
+                    foreach (DataRow dr in rows)
+                        if (!this.IsFilterMatch(dr))
+                            table.Rows.Remove(dr);
+                }
+            }
+            
+            return ds;
+        }
 		protected virtual void OnPersist()
 		{
 			if (null != this.Page)
