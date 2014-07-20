@@ -152,6 +152,10 @@ namespace LWAS.WebParts
 				this.ConnectionsRegistry.Add(connNode.Attributes["key"].Value, connNode.Attributes["string"].Value);
 			}
 		}
+        public void Execute(string key)
+        {
+            OnExecute(key);
+        }
 		protected void OnExecute(string key)
 		{
 			this.EnsureReaderClosed();

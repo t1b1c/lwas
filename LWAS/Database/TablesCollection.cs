@@ -50,7 +50,14 @@ namespace LWAS.Database
             {
                 Table table = new Table(this.Manager);
                 table.FromXml(tableElement);
-                this.Add(table.Name, table);
+                try
+                {
+                    this.Add(table.Name, table);
+                }
+                catch (Exception ex)
+                {
+                    throw new ApplicationException(String.Format("Failed to register table '{0}'", table.Name), ex);
+                }
             }
         }
 
