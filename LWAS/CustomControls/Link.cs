@@ -24,6 +24,8 @@ namespace LWAS.CustomControls
 {
 	public class Link : HyperLink
 	{
+        public bool PrettyUrl { get; set; }
+
 		private Dictionary<string, object> _parameters = new Dictionary<string, object>();
 		public Dictionary<string, object> Parameters
 		{
@@ -39,6 +41,7 @@ namespace LWAS.CustomControls
                     this._parameters = value;
 			}
 		}
+
 		public string AddParameter
 		{
 			set
@@ -46,30 +49,56 @@ namespace LWAS.CustomControls
 				this._parameters.Add(value, null);
 			}
 		}
+
 		protected override void Render(HtmlTextWriter writer)
 		{
-			string url = base.NavigateUrl;
-			bool first = true;
-			if (url.IndexOf("?") < 0 && this.Parameters.Count > 0)
-			{
-				url += "?";
-			}
-			else
-			{
-				first = false;
-			}
-			foreach (string parameter in this.Parameters.Keys)
-			{
-				url += (first ? "" : "&");
-				url = url + HttpUtility.UrlEncode(parameter) + "=";
-				url += ((this.Parameters[parameter] == null) ? string.Empty : HttpUtility.UrlEncode(this.Parameters[parameter].ToString()));
-				if (first)
-				{
-					first = false;
-				}
-			}
-			base.NavigateUrl = url;
+            if (this.PrettyUrl)
+                base.NavigateUrl = BuildPrettyUrl();
+            else
+                base.NavigateUrl = BuildClassicUrl();
+
 			base.Render(writer);
 		}
+
+        string BuildPrettyUrl()
+        {
+            string url = base.NavigateUrl;
+            if (!url.EndsWith("/"))
+                url += "/";
+            foreach(string parameter in this.Parameters.Keys)
+            {
+                object pval = this.Parameters[parameter] ?? String.Empty;
+                if (!String.IsNullOrEmpty(pval.ToString()))
+                    url += pval.ToString() + "/";
+            }
+
+            return url;
+        }
+
+        string BuildClassicUrl()
+        {
+            string url = base.NavigateUrl;
+            bool first = true;
+            if (url.IndexOf("?") < 0 && this.Parameters.Count > 0)
+            {
+                url += "?";
+            }
+            else
+            {
+                first = false;
+            }
+            foreach (string parameter in this.Parameters.Keys)
+            {
+                url += (first ? "" : "&");
+                url = url + HttpUtility.UrlEncode(parameter) + "=";
+                url += ((this.Parameters[parameter] == null) ? string.Empty : HttpUtility.UrlEncode(this.Parameters[parameter].ToString()));
+                if (first)
+                {
+                    first = false;
+                }
+            }
+
+            return url;
+        }
 	}
 }

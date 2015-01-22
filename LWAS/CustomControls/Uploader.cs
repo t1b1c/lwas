@@ -27,7 +27,9 @@ using LWAS.Infrastructure.Security;
 
 namespace LWAS.CustomControls
 {
-	public class Uploader : CompositeControl
+    public enum UploadToEnum { UploadRepo, UserRepo };
+    
+    public class Uploader : CompositeControl
 	{
         public class UploaderEventArgs : EventArgs
         {
@@ -37,7 +39,6 @@ namespace LWAS.CustomControls
                 this.FileName = fileName;
             }
         }
-        public enum UploadToEnum { UploadRepo, UserRepo };
 
 		private AsyncFileUpload uploader;
         private HiddenField filePathHidden;
@@ -47,6 +48,7 @@ namespace LWAS.CustomControls
         private UploadToEnum _uploadTo;
         public event EventHandler<UploaderEventArgs> FileUploaded;
         static object SyncRoot = new object();
+        Button hiddenCommand;
 
         public string FileName { get; set; }        
 
@@ -120,6 +122,12 @@ namespace LWAS.CustomControls
                 this.Width = Unit.Pixel(100);
             this.uploader.Width = Unit.Pixel((int)this.Width.Value - 5);
 			this.uploader.UploadedComplete += new EventHandler<AsyncFileUploadEventArgs>(this.uploader_UploadedComplete);
+
+            hiddenCommand = new Button();
+            hiddenCommand.ID = "hiddenCommand";
+            hiddenCommand.CommandName = "view";
+            hiddenCommand.Style.Add(HtmlTextWriterStyle.Display, "none");
+            this.Controls.Add(hiddenCommand);
 		}
 
         protected override void OnInit(EventArgs e)
@@ -140,6 +148,8 @@ namespace LWAS.CustomControls
 
             if (this.RedirectAfterUpload)
                 Redirect();
+            else
+                Command();
         }
 
         private void Redirect()
@@ -147,6 +157,14 @@ namespace LWAS.CustomControls
             string url = this.Page.Request.Url.ToString();
             string script = @"function uploadComplete() { window.location.href = '" + url + @"'; }";
             ToolkitScriptManager.RegisterClientScriptBlock(this, typeof(Uploader), "redirect on upload", script, true);
+
+            uploader.OnClientUploadComplete = "uploadComplete";
+        }
+
+        void Command()
+        {
+            string script = @"function uploadComplete() { document.getElementById('"+hiddenCommand.ClientID+"').click(); }";
+            ToolkitScriptManager.RegisterClientScriptBlock(this, typeof(Uploader), "command on upload", script, true);
 
             uploader.OnClientUploadComplete = "uploadComplete";
         }

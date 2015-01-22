@@ -201,7 +201,6 @@ namespace LWAS.WebParts
             _container.ID = "container";
             this.Controls.Add(_container);
 
-            base.TranslationTargets.Add("_message", _container.Message);
             _container.Recover += new EventHandler<RecoverEventArgs>(_container_Recover);
             _container.RequestData += new EventHandler(_container_RequestData);
             _container.Milestone += new EventHandler<MilestoneEventArgs>(_container_Milestone);
@@ -291,6 +290,9 @@ namespace LWAS.WebParts
 			if (null == this.FilterItems)throw new InitializationException("FilterItems collection not set");
 			if (null == this.Monitor)throw new MissingProviderException("Monitor");
 
+            _container.InitEx();
+            base.TranslationTargets.Clear();
+            base.TranslationTargets.Add("_message", _container.Message);
 			this.ConfigurationParser.Parse(this);
 			base.Initialize();
             _container.InitProviders(this.Binder, this.ValidationManager, this, this, this.Translator);

@@ -18,92 +18,69 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Web;
 
 using LWAS.Extensible.Interfaces.Monitoring;
 using LWAS.Infrastructure;
 using LWAS.Infrastructure.Security;
+using LWAS.Database;
 
 namespace LWAS.WebParts
 {
 	public class ContextWebPart : InitializableWebPart, IReporter
 	{
-		private string _adminMail;
-        private string _url;
-		private object _currentPart;
-		private string _currentPath;
-		private Dictionary<string, Dictionary<string, object>> _data = new Dictionary<string, Dictionary<string, object>>();
-		private IMonitor _monitor;
-		public string AdminMail
+        private IMonitor _monitor;
+        public IMonitor Monitor
+        {
+            get { return _monitor; }
+            set { _monitor = null; }
+        }
+
+        public object Temp { get; set; }
+
+        private string _adminMail;
+        public string AdminMail
 		{
-			get
-			{
-				return this._adminMail;
-			}
-			set
-			{
-			}
+			get { return _adminMail; }
+			set { }
 		}
+
+        private string _url;
         public string Url
         {
             get { return _url; }
             set { }
         }
+
         public DateTime Now
         {
             get { return DateTime.Now; }
         }
+
         public DateTime Today
         {
             get { return DateTime.Today; }
         }
+
 		public object Login
 		{
-			get
-			{
-				return User.CurrentUser.Name;
-			}
+			get { return User.CurrentUser.Name; }
 		}
-		public object SetPart
-		{
-			set
-			{
-				this._currentPart = value;
-			}
-		}
-		public string SetPath
-		{
-			set
-			{
-				this._currentPath = value;
-			}
-		}
-		public string ValueOf
+
+        Dictionary<string, Dictionary<string, object>> _data = new Dictionary<string, Dictionary<string, object>>();
+        public Dictionary<string, Dictionary<string, object>> Data
 		{
 			get
 			{
-				if (this._currentPart != null && !string.IsNullOrEmpty(this._currentPath))
-				{
-					object o = ReflectionServices.ExtractValue(this._currentPart, this._currentPath);
-				}
-				return null;
-			}
-		}
-		public Dictionary<string, Dictionary<string, object>> Data
-		{
-			get
-			{
-				if (null == this._data)
-				{
+				if (null == _data)
 					throw new InvalidOperationException("No context data");
-				}
-				return this._data;
+
+                return _data;
 			}
 		}
-		public string DataKey
-		{
-			get;
-			set;
-		}
+
+		public string DataKey { get; set; }
+
 		public DataSet DataSource
 		{
 			set
@@ -120,6 +97,7 @@ namespace LWAS.WebParts
                 this.DataKey = null;
 			}
 		}
+
         public Dictionary<string, object> DataItem
         {
             set
@@ -136,38 +114,72 @@ namespace LWAS.WebParts
                 this.DataKey = null;
             }
         }
-		public IMonitor Monitor
-		{
-			get
-			{
-				return this._monitor;
-			}
-			set
-			{
-				this._monitor = null;
-			}
-		}
-        public object Temp
+
+        ParametersCollection _navigateParameters;
+        public ParametersCollection NavigateParameters
         {
-            get;
-            set;
+            get
+            {
+                if (null == _navigateParameters)
+                    _navigateParameters = new ParametersCollection();
+                return _navigateParameters;
+            }
         }
+
         public string NavigateTo
         {
             set
             {
-                this.Page.Response.Redirect(value, false); // let the lifecycle to complete
+                string destination = value;
+                if (!String.IsNullOrEmpty(destination))
+                {
+                    destination = AddParametersToNavigateUrl(destination);
+
+                    this.Page.Response.Redirect(destination, false); // let the lifecycle to complete
+                }
             }
         }
+
 		public ContextWebPart()
 		{
 			this.Hidden = true;
-			this._adminMail = ConfigurationManager.AppSettings["SUPER_ROLE_MAIL"];
+			_adminMail = ConfigurationManager.AppSettings["SUPER_ROLE_MAIL"];
 		}
+
 		public override void Initialize()
 		{
             base.Initialize();
-            this._url = this.Page.Request.Url.GetLeftPart(UriPartial.Authority) + this.Page.ResolveUrl(this.Page.Request.ApplicationPath);
+            _url = this.Page.Request.Url.GetLeftPart(UriPartial.Authority) + this.Page.ResolveUrl(this.Page.Request.ApplicationPath);
 		}
+
+        string AddParametersToNavigateUrl(string url)
+        {
+            bool first = true;
+            if (url.IndexOf("?") < 0 && !this.NavigateParameters.IsEmpty)
+                url += "?";
+            else
+                first = false;
+
+            foreach (string parameter in this.NavigateParameters)
+            {
+
+                string pname = "{?}".Replace("?", parameter);
+                object pval = this.NavigateParameters[parameter] ?? String.Empty;
+
+                if (url.Contains(pname))
+                    url = url.Replace(pname, HttpUtility.UrlEncode(pval.ToString()));
+                else
+                {
+                    url += (first ? "" : "&");
+                    url = url + HttpUtility.UrlEncode(parameter) + "=";
+                    url += ((this.NavigateParameters[parameter] == null) ? string.Empty : HttpUtility.UrlEncode(pval.ToString()));
+                }
+
+                if (first)
+                    first = false;
+            }
+
+            return url;
+        }
 	}
 }

@@ -17,25 +17,36 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using LWAS.Extensible.Interfaces.Configuration;
 using LWAS.Extensible.Interfaces.DataBinding;
 
 namespace LWAS.Extensible.Interfaces.WebParts
 {
+    public enum TemplatingMode { Grid, Form }
+
 	public interface ITemplatingProvider
 	{
-		void CreateCommanders(Control container, IConfigurationType config, ITemplatable templatable, Dictionary<string, Control> commanders);
-		void CreateSelectors(Control container, IConfigurationType config, ITemplatable templatable, Dictionary<string, Control> selectors);
-		void CreateFilter(Control container, IConfigurationType config, ITemplatingItemsCollection filters, IBinder binder, ITemplatable templatable);
-		void ExtractFilter(Control container, IConfigurationType config, ITemplatingItemsCollection filters);
-		void CreateHeader(Control container, IConfigurationType config, ITemplatable templatable);
-		void CreateFooter(Control container, IConfigurationType config, ITemplatable templatable);
-		void InstantiateGroupIn(Control container, IConfigurationType config, IBinder binder, int itemIndex, ITemplatingItem item, ITemplatable templatable);
-		void InstantiateIn(Control container, IConfigurationType config, IBinder binder, int itemIndex, ITemplatingItem item, ITemplatable templatable);
-		void InstantiateTotalsIn(Control container, IConfigurationType config, IBinder binder, int itemIndex, ITemplatingItem item, ITemplatable templatable);
-		void ExtractItems(Control container, IConfigurationType config, int itemsCount, ITemplatingItemsCollection items);
-		void PopulateItem(Control container, IConfigurationType config, ITemplatingItem item, string prefix);
+        TemplatingMode Mode { get; set; }
+        Control InnerContainer { get; set; }
+        Control SelectorsHolder { get; }
+        Control CommandersHolder { get; }
+        Label Message { get; }
+        
+		void CreateCommanders(IConfigurationType config, ITemplatable templatable, Dictionary<string, Control> commanders);
+		void CreateSelectors(IConfigurationType config, ITemplatable templatable, Dictionary<string, Control> selectors);
+		void CreateFilter(IConfigurationType config, ITemplatingItemsCollection filters, IBinder binder, ITemplatable templatable);
+		void ExtractFilter(IConfigurationType config, ITemplatingItemsCollection filters);
+		void CreateHeader(IConfigurationType config, ITemplatable templatable);
+		void CreateFooter(IConfigurationType config, ITemplatable templatable);
+		void InstantiateGroupIn(IConfigurationType config, IBinder binder, int itemIndex, ITemplatingItem item, ITemplatable templatable);
+		void InstantiateIn(IConfigurationType config, IBinder binder, int itemIndex, ITemplatingItem item, ITemplatable templatable);
+		void InstantiateTotalsIn(IConfigurationType config, IBinder binder, int itemIndex, ITemplatingItem item, ITemplatable templatable);
+		void ExtractItems(IConfigurationType config, int itemsCount, ITemplatingItemsCollection items);
+		void PopulateItem(IConfigurationType config, ITemplatingItem item, string prefix);
 		ITemplatingItem NewTemplatingItemInstance();
+
+        void Init(Control container, Style messageStyle);
 	}
 }

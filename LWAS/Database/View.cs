@@ -403,6 +403,7 @@ namespace LWAS.Database
             var parent_expressions_corresponding_fields = parent_expressions_fields.Select(ft =>
                                                                                             this.AllFields
                                                                                                 .Union(sub_views.SelectMany(sv => sv.AllFields))
+                                                                                                .OfType<TableField>()
                                                                                                 .FirstOrDefault(af => af.Name == ft.FieldName)
                                                                                         )
                                                                                    .ToList();
@@ -562,6 +563,18 @@ namespace LWAS.Database
                     token.ReferenceField = null;
                     token.ReferenceFieldAlias = null;
                 }
+            }
+
+            var used_parameters = this.ComputedFields.SelectMany(c => 
+                                                        {
+                                                            return c.Expression
+                                                                    .Flatten()
+                                                                    .SelectMany(e => e.Operands.OfType<ParameterToken>());
+                                                        });
+
+            foreach (ParameterToken used_token in used_parameters)
+            {
+                used_token.View = this;
             }
 
             var viewtokens = SubviewsTokens();

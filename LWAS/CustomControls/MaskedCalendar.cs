@@ -33,30 +33,21 @@ namespace LWAS.CustomControls
 		private Style _readOnlyStyle = new Style();
 		private bool _readOnly = false;
         private bool _simpleImput = false;
+
 		[Themeable(true)]
 		public Style NormalStyle
 		{
-			get
-			{
-				return this._normalStyle;
-			}
-			set
-			{
-				this._normalStyle = value;
-			}
+			get { return this._normalStyle; }
+			set { this._normalStyle = value; }
 		}
+
 		[Themeable(true)]
 		public Style ReadOnlyStyle
 		{
-			get
-			{
-				return this._readOnlyStyle;
-			}
-			set
-			{
-				this._readOnlyStyle = value;
-			}
+			get { return this._readOnlyStyle; }
+			set { this._readOnlyStyle = value; }
 		}
+
 		public string Text
 		{
 			get
@@ -73,6 +64,7 @@ namespace LWAS.CustomControls
 				}
 			}
 		}
+
 		public bool EnableTime
 		{
 			get
@@ -88,6 +80,7 @@ namespace LWAS.CustomControls
 				}
 			}
 		}
+
 		public string Date
 		{
 			get
@@ -116,6 +109,7 @@ namespace LWAS.CustomControls
 				}
 			}
 		}
+
 		public bool ReadOnly
 		{
 			get
@@ -139,6 +133,7 @@ namespace LWAS.CustomControls
 				}
 			}
 		}
+
         public bool SimpleInput
         {
             get { return _simpleImput; }
@@ -153,11 +148,13 @@ namespace LWAS.CustomControls
                     this.maskTime.Enabled = !value;
             }
         }
+
 		protected override void OnInit(EventArgs e)
 		{
 			base.OnInit(e);
 			this.EnsureChildControls();
 		}
+
 		protected override void CreateChildControls()
 		{
 			base.CreateChildControls();

@@ -86,6 +86,7 @@
     <Compile Include="CustomControls\TemplateHelper.cs" />
     <Compile Include="CustomControls\UpdatePanelDynamic.cs" />
     <Compile Include="CustomControls\Uploader.cs" />
+    <Compile Include="CustomControls\Uploader2.cs" />
     <Compile Include="Database\ComputedField.cs" />
     <Compile Include="Database\Expressions\Eval.cs" />
     <Compile Include="Database\FieldToken.cs" />

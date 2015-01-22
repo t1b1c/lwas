@@ -20,6 +20,7 @@ using System.Linq;
 using System.Xml;
 using System.Text;
 using System.Xml.Linq;
+using System.Web.UI;
 
 using LWAS.Extensible.Interfaces.Expressions;
 using LWAS.Extensible.Interfaces.Configuration;
@@ -93,7 +94,11 @@ namespace LWAS.Expressions.Extensions
                     IConfigurationElement sourceElement = config.AddElement("source");
                     if (null != basicToken.Source)
                     {
-                        sourceElement.AddAttribute("id").Value = basicToken.Source;
+                        if (basicToken.Source is Control)
+                            sourceElement.AddAttribute("id").Value = ((Control)basicToken.Source).ID;
+                        else
+                            sourceElement.AddAttribute("id").Value = basicToken.Source;
+                        
                         if (!String.IsNullOrEmpty(basicToken.Member))
                             sourceElement.AddAttribute("member").Value = basicToken.Member;
                     }

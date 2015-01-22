@@ -16,11 +16,19 @@
 
 using System;
 using System.Web.UI.WebControls;
+using LWAS.Extensible.Interfaces.WebParts;
 
 namespace LWAS.CustomControls.DataControls
 {
     public class Grid : Container
     {
+        public override void InitEx()
+        {
+            this.Template.Mode = TemplatingMode.Grid;
+
+            base.InitEx();
+        }
+
         protected override void OnInsert()
         {
             if (base.Operation != OperationType.Inserting)

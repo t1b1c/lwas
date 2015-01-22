@@ -16,14 +16,18 @@
 
 using System;
 using System.Collections;
+using LWAS.Extensible.Interfaces.WebParts;
 
 namespace LWAS.CustomControls.DataControls
 {
     public class Form : Container
     {
-        protected override void OnInit(EventArgs e)
+        public override void InitEx()
         {
-            base.OnInit(e);
+            this.Template.Mode = TemplatingMode.Form;
+
+            base.InitEx();
+
             base.DisableFilters = true;
             base.DisablePaginater = true;
         }

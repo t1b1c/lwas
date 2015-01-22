@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using System.Web.UI.WebControls.WebParts;
 
 using LWAS.Extensible.Interfaces;
@@ -42,53 +43,127 @@ namespace LWAS.WebParts.Templating
 				this.manager = WebPartManager.GetCurrentWebPartManager(this._page);
 			}
 		}
-		public virtual void CreateCommanders(Control container, IConfigurationType config, ITemplatable templatable, Dictionary<string, Control> commanders)
+
+        public TemplatingMode Mode { get; set; }
+
+        private Control _container;
+        public Control InnerContainer
+        {
+            get { return _container; }
+            set { _container = value; }
+        }
+
+        private Control _selectorsHolder;
+        public Control SelectorsHolder
+        {
+            get { return _selectorsHolder; }
+        }
+
+        private Control _commandersHolder;
+        public Control CommandersHolder
+        {
+            get { return _commandersHolder; }
+        }
+
+        private Label _message;
+        public Label Message
+        {
+            get { return _message; }
+        }
+
+        public void Init(Control target, Style messageStyle)
+        {
+
+            UpdatePanel messageUpdatePanel = new UpdatePanel();
+            messageUpdatePanel.ID = "messageUpdatePanel";
+            Table messageTable = new Table();
+            TableRow messageRow = new TableRow();
+            TableCell messageCell = new TableCell();
+            messageCell.ApplyStyle(messageStyle);
+            _message = new Label();
+            messageCell.Controls.Add(this._message);
+            messageRow.Cells.Add(messageCell);
+            messageTable.Rows.Add(messageRow);
+            messageUpdatePanel.ContentTemplateContainer.Controls.Add(messageTable);
+            target.Controls.Add(messageUpdatePanel);
+
+            UpdatePanel commandersUpdatePanel = new UpdatePanel();
+            commandersUpdatePanel.ID = "commandersUpdatePanel";
+            Panel commandersWrapper = new Panel();
+            commandersWrapper.CssClass = "table-responsive";
+            commandersUpdatePanel.ContentTemplateContainer.Controls.Add(commandersWrapper);
+            _commandersHolder = new Table();
+            _commandersHolder.ID = "commandersHolder";
+            ((Table)_commandersHolder).CssClass = "";
+            commandersWrapper.Controls.Add(_commandersHolder);
+            target.Controls.Add(commandersUpdatePanel);
+
+            _selectorsHolder = new Table();
+            _selectorsHolder.ID = "selectorsHolder";
+            target.Controls.Add(this._selectorsHolder);
+            if (null == this._container)
+            {
+                UpdatePanel updatePanel = new UpdatePanel();
+                updatePanel.ID = "containerUpdatePanel";
+                Panel wrapper = new Panel();
+                wrapper.CssClass = "table-responsive";
+                updatePanel.ContentTemplateContainer.Controls.Add(wrapper);
+                Table innerTable = new Table();
+                innerTable.ID = "innerTable";
+                innerTable.CssClass = "table table-striped table-hover table-condensed";
+                wrapper.Controls.Add(innerTable);
+                target.Controls.Add(updatePanel);
+                _container = innerTable;
+            }
+        }
+
+		public virtual void CreateCommanders(IConfigurationType config, ITemplatable templatable, Dictionary<string, Control> commanders)
 		{
-			CommandersTemplate.Instance.Create(container, config, templatable, commanders, this.manager);
+			CommandersTemplate.Instance.Create(_commandersHolder, config, templatable, commanders, this.manager);
 		}
-		public virtual void CreateSelectors(Control container, IConfigurationType config, ITemplatable templatable, Dictionary<string, Control> selectors)
+		public virtual void CreateSelectors(IConfigurationType config, ITemplatable templatable, Dictionary<string, Control> selectors)
 		{
-			SelectorsTemplate.Instance.Create(container, config, templatable, selectors, this.manager);
+			SelectorsTemplate.Instance.Create(_selectorsHolder, config, templatable, selectors, this.manager);
 		}
-		public virtual void CreateFilter(Control container, IConfigurationType config, ITemplatingItemsCollection filters, IBinder binder, ITemplatable templatable)
+		public virtual void CreateFilter(IConfigurationType config, ITemplatingItemsCollection filters, IBinder binder, ITemplatable templatable)
 		{
-			FiltersTemplate.Instance.Create(container, config, templatable, filters, binder, this.manager);
+			FiltersTemplate.Instance.Create(_container, config, templatable, filters, binder, this.manager);
 		}
-		public virtual void ExtractFilter(Control container, IConfigurationType config, ITemplatingItemsCollection filters)
+		public virtual void ExtractFilter(IConfigurationType config, ITemplatingItemsCollection filters)
 		{
-			FiltersTemplate.Instance.Extract(container, config, filters, this.manager);
+			FiltersTemplate.Instance.Extract(_container, config, filters, this.manager);
 		}
-		public virtual void CreateHeader(Control container, IConfigurationType config, ITemplatable templatable)
+		public virtual void CreateHeader(IConfigurationType config, ITemplatable templatable)
 		{
-			HeaderTemplate.Instance.Create(container, config, templatable, this.manager);
+			HeaderTemplate.Instance.Create(_container, config, templatable, this.manager);
 		}
-		public virtual void CreateFooter(Control container, IConfigurationType config, ITemplatable templatable)
+		public virtual void CreateFooter(IConfigurationType config, ITemplatable templatable)
 		{
-			FooterTemplate.Instance.Create(container, config, templatable, this.manager);
+			FooterTemplate.Instance.Create(_container, config, templatable, this.manager);
 		}
-		public virtual void InstantiateGroupIn(Control container, IConfigurationType config, IBinder binder, int itemIndex, ITemplatingItem item, ITemplatable templatable)
+		public virtual void InstantiateGroupIn(IConfigurationType config, IBinder binder, int itemIndex, ITemplatingItem item, ITemplatable templatable)
 		{
-			GroupingTemplate.Instance.Create(container, config, templatable, binder, item, itemIndex, this.manager);
+			GroupingTemplate.Instance.Create(_container, config, templatable, binder, item, itemIndex, this.manager);
 		}
-		public virtual void InstantiateIn(Control container, IConfigurationType config, IBinder binder, int itemIndex, ITemplatingItem item, ITemplatable templatable)
+		public virtual void InstantiateIn(IConfigurationType config, IBinder binder, int itemIndex, ITemplatingItem item, ITemplatable templatable)
 		{
-			ItemTemplate.Instance.Create(container, config, templatable, binder, item, itemIndex, this.manager);
+			ItemTemplate.Instance.Create(_container, config, templatable, binder, item, itemIndex, this.manager);
 		}
-		public virtual void InstantiateTotalsIn(Control container, IConfigurationType config, IBinder binder, int itemIndex, ITemplatingItem item, ITemplatable templatable)
+		public virtual void InstantiateTotalsIn(IConfigurationType config, IBinder binder, int itemIndex, ITemplatingItem item, ITemplatable templatable)
 		{
-			TotalsTemplate.Instance.Create(container, config, templatable, binder, item, itemIndex, this.manager);
+			TotalsTemplate.Instance.Create(_container, config, templatable, binder, item, itemIndex, this.manager);
 		}
-		public virtual void ExtractItems(Control container, IConfigurationType config, int itemsCount, ITemplatingItemsCollection items)
+		public virtual void ExtractItems(IConfigurationType config, int itemsCount, ITemplatingItemsCollection items)
 		{
-			ItemTemplate.Instance.Extract(container, config, null, null, items, null, -1, itemsCount, this.manager);
+			ItemTemplate.Instance.Extract(_container, config, null, null, items, null, -1, itemsCount, this.manager);
 		}
 		public ITemplatingItem NewTemplatingItemInstance()
 		{
 			return new TemplatingItem();
 		}
-		public void PopulateItem(Control container, IConfigurationType config, ITemplatingItem item, string prefix)
+		public void PopulateItem(IConfigurationType config, ITemplatingItem item, string prefix)
 		{
-			ItemTemplate.Instance.PopulateItem(container, config, item, prefix);
+			ItemTemplate.Instance.PopulateItem(_container, config, item, prefix);
 		}
 	}
 }

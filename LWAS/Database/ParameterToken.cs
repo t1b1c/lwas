@@ -96,7 +96,8 @@ namespace LWAS.Database
                 builder.AppendFormat("{0}", this.Identifier);
             }
             else
-                this.ReferenceField.ToSql(builder, this.ReferenceFieldAlias);
+                //this.ReferenceField.ToSql(builder, this.ReferenceFieldAlias); 
+                this.ReferenceField.ToSql(builder, null); // parameter is used only in 'where', no need to alias it
         }
     }
 }

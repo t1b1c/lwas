@@ -62,43 +62,35 @@ namespace LWAS.WebParts.Templating
 			else
 			{
 				table = new Table();
-			}
-			table.ApplyStyle(templatable.DetailsStyle);
-			Panel statusPanel = new Panel();
-			HiddenField hiddenReadOnly = new HiddenField();
-			hiddenReadOnly.ID = itemIndex.ToString() + "-readOnly";
-			HiddenField arg_BA_0 = hiddenReadOnly;
-			bool flag = item.IsReadOnly;
-			arg_BA_0.Value = flag.ToString();
-			statusPanel.Controls.Add(hiddenReadOnly);
-			HiddenField hiddenNew = new HiddenField();
-			hiddenNew.ID = itemIndex.ToString() + "-new";
-			HiddenField arg_FF_0 = hiddenNew;
-			flag = item.IsNew;
-			arg_FF_0.Value = flag.ToString();
-			statusPanel.Controls.Add(hiddenNew);
-			HiddenField hiddenCurrent = new HiddenField();
-			hiddenCurrent.ID = itemIndex.ToString() + "-current";
-			HiddenField arg_145_0 = hiddenCurrent;
-			flag = item.IsCurrent;
-			arg_145_0.Value = flag.ToString();
-			statusPanel.Controls.Add(hiddenCurrent);
-			HiddenField hiddenHasChanges = new HiddenField();
-			hiddenHasChanges.ID = itemIndex.ToString() + "-hasChanges";
-			HiddenField arg_18B_0 = hiddenHasChanges;
-			flag = item.HasChanges;
-			arg_18B_0.Value = flag.ToString();
-			statusPanel.Controls.Add(hiddenHasChanges);
-			HiddenField hiddenIsValid = new HiddenField();
-			hiddenIsValid.ID = itemIndex.ToString() + "-isValid";
-			HiddenField arg_1D1_0 = hiddenIsValid;
-			flag = item.IsValid;
-			arg_1D1_0.Value = flag.ToString();
-			statusPanel.Controls.Add(hiddenIsValid);
-			HiddenField hiddenInvalidMember = new HiddenField();
-			hiddenInvalidMember.ID = itemIndex.ToString() + "-invalidMember";
-			hiddenInvalidMember.Value = item.InvalidMember;
-			statusPanel.Controls.Add(hiddenInvalidMember);
+            }
+            table.ApplyStyle(templatable.DetailsStyle);
+
+            Panel statusPanel = new Panel();
+            HiddenField hiddenReadOnly = new HiddenField();
+            hiddenReadOnly.ID = itemIndex.ToString() + "-readOnly";
+            hiddenReadOnly.Value = item.IsReadOnly.ToString();
+            statusPanel.Controls.Add(hiddenReadOnly);
+            HiddenField hiddenNew = new HiddenField();
+            hiddenNew.ID = itemIndex.ToString() + "-new";
+            hiddenNew.Value = item.IsNew.ToString();
+            statusPanel.Controls.Add(hiddenNew);
+            HiddenField hiddenCurrent = new HiddenField();
+            hiddenCurrent.ID = itemIndex.ToString() + "-current";
+            hiddenCurrent.Value = item.IsCurrent.ToString();
+            statusPanel.Controls.Add(hiddenCurrent);
+            HiddenField hiddenHasChanges = new HiddenField();
+            hiddenHasChanges.ID = itemIndex.ToString() + "-hasChanges";
+            hiddenHasChanges.Value = item.HasChanges.ToString();
+            statusPanel.Controls.Add(hiddenHasChanges);
+            HiddenField hiddenIsValid = new HiddenField();
+            hiddenIsValid.ID = itemIndex.ToString() + "-isValid";
+            hiddenIsValid.Value = item.IsValid.ToString();
+            statusPanel.Controls.Add(hiddenIsValid);
+            HiddenField hiddenInvalidMember = new HiddenField();
+            hiddenInvalidMember.ID = itemIndex.ToString() + "-invalidMember";
+            hiddenInvalidMember.Value = item.InvalidMember;
+            statusPanel.Controls.Add(hiddenInvalidMember);
+
 			if (null != item)
 			{
 				item.BoundControls.Clear();

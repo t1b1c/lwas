@@ -61,13 +61,9 @@ namespace LWAS.CustomControls.DataControls
 		private ITemplatingItemsCollection _filterItems;
 		private string _command;
         private Dictionary<string, List<CheckDefinition>> _checks = new Dictionary<string, List<CheckDefinition>>();
-		private Control _container;
 		private Dictionary<string, Control> _commanders = new Dictionary<string, Control>();
 		private Dictionary<string, Control> _selectors = new Dictionary<string, Control>();
 		private Dictionary<string, object> _dataSources = new Dictionary<string, object>();
-		private Control _selectorsHolder;
-		private Control _commandersHolder;
-		private Label _message;
 		private Paginater _paginater;
 		private bool _disablePaginater = false;
 		private bool _disableFilters = false;
@@ -200,11 +196,6 @@ namespace LWAS.CustomControls.DataControls
         
         public bool PassLastCheck { get; set; }
 
-		public Control InnerContainer
-		{
-			get { return this._container; }
-			set { this._container = value; }
-		}
 		public Dictionary<string, Control> Commanders
 		{
 			get { return this._commanders; }
@@ -219,18 +210,10 @@ namespace LWAS.CustomControls.DataControls
 		{
 			get { return this._dataSources; }
 		}
-		public Control SelectorsHolder
-		{
-			get { return this._selectorsHolder; }
-		}
-		public Control CommandersHolder
-		{
-			get { return this._commandersHolder; }
-		}
+		
 		public Label Message
 		{
-			get { return this._message; }
-			set { this._message = value; }
+			get { return this.Template.Message; }
 		}
 		public Paginater Paginater
 		{
@@ -469,49 +452,28 @@ namespace LWAS.CustomControls.DataControls
 			}
 			return result;
 		}
-		protected override void OnInit(EventArgs e)
+		public virtual void InitEx()
 		{
-			base.OnInit(e);
-			UpdatePanel messageUpdatePanel = new UpdatePanel();
-			messageUpdatePanel.ID = "messageUpdatePanel";
-			Table messageTable = new Table();
-			TableRow messageRow = new TableRow();
-			TableCell messageCell = new TableCell();
-			messageCell.ApplyStyle(this.MessageStyle);
-			this._message = new Label();
-			messageCell.Controls.Add(this._message);
-			messageRow.Cells.Add(messageCell);
-			messageTable.Rows.Add(messageRow);
-			messageUpdatePanel.ContentTemplateContainer.Controls.Add(messageTable);
-			this.Controls.Add(messageUpdatePanel);
-			UpdatePanel commandersUpdatePanel = new UpdatePanel();
-			commandersUpdatePanel.ID = "commandersUpdatePanel";
-			this._commandersHolder = new Table();
-			this._commandersHolder.ID = "commandersHolder";
-			commandersUpdatePanel.ContentTemplateContainer.Controls.Add(this._commandersHolder);
-			this.Controls.Add(commandersUpdatePanel);
-			this._selectorsHolder = new Table();
-			this._selectorsHolder.ID = "selectorsHolder";
-			this.Controls.Add(this._selectorsHolder);
-			if (null == this._container)
-			{
-				UpdatePanel updatePanel = new UpdatePanel();
-				updatePanel.ID = "containerUpdatePanel";
-				Table innerTable = new Table();
-				innerTable.ID = "innerTable";
-				updatePanel.ContentTemplateContainer.Controls.Add(innerTable);
-				this.Controls.Add(updatePanel);
-				this._container = innerTable;
-			}
-			this._paginater = new Paginater();
-			this.Paginater.Changed += new EventHandler(this.Paginater_Changed);
-			this.Controls.Add(this._paginater);
-			UpdatePanel operationUpdatePanel = new UpdatePanel();
-			operationUpdatePanel.ID = "operationUpdatePanel";
-			this.Controls.Add(operationUpdatePanel);
-			this.operationHidden = new HiddenField();
-			this.operationHidden.ID = "operationHidden";
-			operationUpdatePanel.ContentTemplateContainer.Controls.Add(this.operationHidden);
+            this.Template.Init(this, this.MessageStyle);
+
+            // paginater
+            if (null == _paginater)
+            {
+                _paginater = new Paginater();
+                this.Paginater.Changed += new EventHandler(this.Paginater_Changed);
+                this.Controls.Add(_paginater);
+            }
+
+            // operation state
+            if (null == operationHidden)
+            {
+                UpdatePanel operationUpdatePanel = new UpdatePanel();
+                operationUpdatePanel.ID = "operationUpdatePanel";
+                this.Controls.Add(operationUpdatePanel);
+                operationHidden = new HiddenField();
+                operationHidden.ID = "operationHidden";
+                operationUpdatePanel.ContentTemplateContainer.Controls.Add(this.operationHidden);
+            }
 		}
 		private void Paginater_Changed(object sender, EventArgs e)
 		{
@@ -616,113 +578,59 @@ namespace LWAS.CustomControls.DataControls
 		}
 		protected virtual void OnCommanders()
 		{
-			if (null != this._templateConfig)
+			if (null != _templateConfig)
 			{
-				this._template.CreateCommanders(this._commandersHolder, this._templateConfig, this.Templatable, this._commanders);
+				_template.CreateCommanders(this._templateConfig, this.Templatable, this._commanders);
 			}
 		}
 		protected virtual void OnSelectors()
 		{
 			if (null != this._templateConfig)
 			{
-				this._template.CreateSelectors(this._selectorsHolder, this._templateConfig, this.Templatable, this._selectors);
+				this._template.CreateSelectors(this._templateConfig, this.Templatable, this._selectors);
 			}
 		}
 		protected virtual void OnFilter()
 		{
-			if (null != this._templateConfig)
-			{
-				if (this._container is Table)
-				{
-					this._template.CreateFilter(this._container, this._templateConfig, this.FilterItems, this.Binder, this.Templatable);
-				}
-				else
-				{
-					Control filter = ReflectionServices.FindControlEx("filter", this);
-					if (null != filter)
-					{
-						filter.Controls.Clear();
-					}
-					else
-					{
-						filter = new Panel();
-						filter.ID = "filter";
-						this.Controls.AddAt(0, filter);
-					}
-					this._template.CreateFilter(filter, this._templateConfig, this.FilterItems, this.Binder, this.Templatable);
-				}
-			}
+            if (null != this._templateConfig)
+            {
+                this._template.CreateFilter(this._templateConfig, this.FilterItems, this.Binder, this.Templatable);
+            }
 		}
 		protected virtual void OnHeader()
 		{
-			if (null != this._templateConfig)
-			{
-				if (this._container is Table)
-				{
-					this._template.CreateHeader(this._container, this._templateConfig, this.Templatable);
-				}
-				else
-				{
-					Control header = ReflectionServices.FindControlEx("header", this);
-					if (null != header)
-					{
-						header.Controls.Clear();
-					}
-					else
-					{
-						header = new Panel();
-						header.ID = "header";
-						this.Controls.AddAt(1, header);
-					}
-					this._template.CreateHeader(header, this._templateConfig, this.Templatable);
-				}
-			}
+            if (null != this._templateConfig)
+            {
+                this._template.CreateHeader(this._templateConfig, this.Templatable);
+            }
 		}
 		protected virtual void OnFooter()
 		{
-			if (null != this._templateConfig)
-			{
-				if (this._container is Table)
-				{
-					this._template.CreateFooter(this._container, this._templateConfig, this.Templatable);
-				}
-				else
-				{
-					Control footer = ReflectionServices.FindControlEx("footer", this);
-					if (null != footer)
-					{
-						footer.Controls.Clear();
-					}
-					else
-					{
-						footer = new Panel();
-						footer.ID = "footer";
-						this.Controls.Add(footer);
-					}
-					this._template.CreateFooter(footer, this._templateConfig, this.Templatable);
-				}
-			}
+            if (null != this._templateConfig)
+            {
+                this._template.CreateFooter(this._templateConfig, this.Templatable);
+            }
 		}
 		protected virtual void OnInstantiateGroup(ITemplatingItem item)
 		{
 			if (this.IsRecovered || !this.Page.IsPostBack)
 			{
-				this._template.InstantiateGroupIn(this._container, this._templateConfig, this.Binder, this._items.IndexOf(item), item, this.Templatable);
+				this._template.InstantiateGroupIn(this._templateConfig, this.Binder, this._items.IndexOf(item), item, this.Templatable);
 			}
 			else
 			{
-				this._template.InstantiateGroupIn(this._container, this._templateConfig, null, this._items.IndexOf(item), item, this.Templatable);
+				this._template.InstantiateGroupIn(this._templateConfig, null, this._items.IndexOf(item), item, this.Templatable);
 			}
 		}
 		protected virtual void OnInstantiate(ITemplatingItem item)
 		{
 			if (this.IsRecovered || !this.Page.IsPostBack)
 			{
-				this._template.InstantiateIn(this._container, this._templateConfig, this.Binder, this._items.IndexOf(item), item, this.Templatable);
+				this._template.InstantiateIn(this._templateConfig, this.Binder, this._items.IndexOf(item), item, this.Templatable);
 			}
 			else
 			{
-				this._template.InstantiateIn(this._container, this._templateConfig, null, this._items.IndexOf(item), item, this.Templatable);
+				this._template.InstantiateIn(this._templateConfig, null, this._items.IndexOf(item), item, this.Templatable);
 			}
 		}
 		protected virtual void OnBindControls()
@@ -779,20 +687,20 @@ namespace LWAS.CustomControls.DataControls
 		{
 			if (this.IsRecovered || !this.Page.IsPostBack)
 			{
-				this._template.InstantiateTotalsIn(this._container, this._templateConfig, this.Binder, this._items.IndexOf(item), item, this.Templatable);
+				this._template.InstantiateTotalsIn(this._templateConfig, this.Binder, this._items.IndexOf(item), item, this.Templatable);
 			}
 			else
 			{
-				this._template.InstantiateTotalsIn(this._container, this._templateConfig, null, this._items.IndexOf(item), item, this.Templatable);
+				this._template.InstantiateTotalsIn(this._templateConfig, null, this._items.IndexOf(item), item, this.Templatable);
 			}
 		}
 		protected virtual void OnExtract()
 		{
 			if (!this.DisableFilters)
 			{
-				this._template.ExtractFilter(this._container, this._templateConfig, this._filterItems);
+				this._template.ExtractFilter(this._templateConfig, this._filterItems);
 			}
-			this._template.ExtractItems(this._container, this._templateConfig, this._itemsCount, this._items);
+			this._template.ExtractItems(this._templateConfig, this._itemsCount, this._items);
 		}
 		protected virtual void OnRebuild()
 		{
@@ -831,13 +739,14 @@ namespace LWAS.CustomControls.DataControls
 		}
 		protected virtual void OnRecover()
 		{
-			this._paginater.IsFrozen = (this.Operation != OperationType.Viewing);
             RecoverEventArgs rea = new RecoverEventArgs();
             if (null != this.Recover)
                 Recover(this, rea);
 
             if (rea.Cancel)
                 return;
+
+            this._paginater.IsFrozen = (this.Operation != OperationType.Viewing);
 
 			this.OnBindControls();
 			this.OnExtract();
@@ -874,57 +783,47 @@ namespace LWAS.CustomControls.DataControls
 			}
 			if (bStructureOnly)
 			{
-				if (this._selectorsHolder is Table)
-				{
-					((Table)this._selectorsHolder).Rows.Clear();
-				}
+				if (this.Template.SelectorsHolder is Table)
+                    ((Table)this.Template.SelectorsHolder).Rows.Clear();
 				else
-				{
-					this._selectorsHolder.Controls.Clear();
-				}
-				if (this._commandersHolder is Table)
-				{
-					((Table)this._commandersHolder).Rows.Clear();
-				}
+                    this.Template.SelectorsHolder.Controls.Clear();
+
+                if (this.Template.CommandersHolder is Table)
+                    ((Table)this.Template.CommandersHolder).Rows.Clear();
 				else
-				{
-					this._commandersHolder.Controls.Clear();
-				}
-				this.OnCommanders();
+                    this.Template.CommandersHolder.Controls.Clear();
+
+                this.OnCommanders();
 				this.OnSelectors();
 			}
 			else
 			{
-				if (this._container is Table)
-				{
-					((Table)this._container).Rows.Clear();
-				}
+				if (this.Template.InnerContainer is Table)
+                    ((Table)this.Template.InnerContainer).Rows.Clear();
 				else
-				{
-					this._container.Controls.Clear();
-				}
-				if (!this.DisableFilters)
+                    this.Template.InnerContainer.Controls.Clear();
+
+                if (!this.DisableFilters)
 				{
 					this.OnFilter();
 				}
+
 				this.OnHeader();
-				foreach (ITemplatingItem item in this._items)
+				
+                foreach (ITemplatingItem item in this._items)
 				{
                     this.ContextItem = item;
 					if (item.IsGrouping)
-					{
 						this.OnInstantiateGroup(item);
-					}
-					if (item.IsTotals)
-					{
+
+                    if (item.IsTotals)
 						this.OnInstantiateTotals(item);
-					}
 					else
-					{
 						this.OnInstantiate(item);
-					}
+
                     this.ContextItem = null;
 				}
+
 				this.OnFooter();
 			}
 			if (!bStructureOnly)
@@ -961,7 +860,7 @@ namespace LWAS.CustomControls.DataControls
 		}
 		protected virtual void OnView()
 		{
-			this._message.Text = "";
+			this.Message.Text = "";
 			this.Operation = OperationType.Viewing;
 			this.NeedsRefresh = true;
 			for (int i = 0; i < this.Items.Count; i++)
@@ -972,7 +871,7 @@ namespace LWAS.CustomControls.DataControls
 		protected virtual void OnInsert()
 		{
 			ITemplatingItem newItem = this._items.Add(false, true, true, true);
-			this._template.PopulateItem(this._container, this._templateConfig, newItem, null);
+			this._template.PopulateItem(this._templateConfig, newItem, null);
 			newItem.HasChanges = true;
 			this.Operation = OperationType.Inserting;
 			this.OnMilestone("item");
@@ -1089,7 +988,7 @@ namespace LWAS.CustomControls.DataControls
 		}
 		protected virtual void OnValidationSucceed(IResult result)
 		{
-			this._message.Text = "";
+			this.Message.Text = "";
 		}
 		protected virtual void OnDelete()
 		{

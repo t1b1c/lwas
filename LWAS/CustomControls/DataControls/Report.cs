@@ -17,18 +17,22 @@
 using System;
 using System.Collections;
 using System.Web.UI.WebControls;
+using LWAS.Extensible.Interfaces.WebParts;
 
 namespace LWAS.CustomControls.DataControls
 {
     public class Report : Container
     {
-        protected override void OnInit(EventArgs e)
+        public override void InitEx()
         {
-            base.OnInit(e);
+            this.Template.Mode = TemplatingMode.Grid;
+
+            base.InitEx();
+
             base.DisableFilters = true;
-            //base.DisablePaginater = true;
             this.Paginater.PageSize = 25;
         }
+
         protected override bool OnBubbleEvent(object source, EventArgs args)
         {
             CommandEventArgs cea = args as CommandEventArgs;
