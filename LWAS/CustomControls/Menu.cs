@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2013 TIBIC SOLUTIONS
+ * Copyright 2006-2015 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,15 @@
 using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Classic = System.Web.UI.WebControls;
-using AjaxControlToolkit;
+using System.Web.UI.HtmlControls;
 
 namespace LWAS.CustomControls
 {
 	public class Menu : CompositeControl, IButtonControl
 	{
-        WebControl label;
-        Panel labelWrapper;
-        Classic.BulletedList commandsList = new Classic.BulletedList();
-        DropDownExtender dropDownExtender;
+        HtmlButton label;
+        Panel container;
+        BulletedList commandsList = new BulletedList();
 
         public ListItemCollection Commands
         {
@@ -56,10 +54,7 @@ namespace LWAS.CustomControls
                 _text = value;
                 if (this.ChildControlsCreated)
                 {
-                    if (label is ITextControl)
-                        ((ITextControl)label).Text = _text;
-                    else if (label is LinkButton)
-                        ((LinkButton)label).Text = _text;
+                    label.InnerHtml = _text + @" <span class=""caret""></span>";
                 }
             }
         }
@@ -100,47 +95,40 @@ namespace LWAS.CustomControls
         {
             base.CreateChildControls();
 
-            labelWrapper = new Panel();
-            labelWrapper.ID = "labelWrapper";
-            labelWrapper.CssClass = "menu_label_wrapper";
-            labelWrapper.Width = this.Width;
-            labelWrapper.Height = this.Height;
-            this.Controls.Add(labelWrapper);
+            container = new Panel();
+            container.ID = "container";
+            container.CssClass = "dropdown";
+            container.Width = this.Width;
+            container.Height = this.Height;
+            this.Controls.Add(container);
 
+            label = new HtmlButton();
+            label.ID = "label";
             if (this.DisplayMode == BulletedListDisplayMode.HyperLink || !this.ActiveLabel)
             {
-                label = new Label();
-                label.ID = "label";
-                label.CssClass = "menu_label";
-                ((Label)label).Text = this.Label;
             }
             else
             {
-                label = new LinkButton();
-                label.ID = "label";
-                label.CssClass = "menu_link";
-                ((LinkButton)label).Click += (s, e) =>
+                label.ServerClick += (s, e) =>
                     {
                         if (!this.BubblesMilestones)
                             OnMenuClick(this.Label, this.Argument);
                         else
                             OnMenuClick(this.CommandName, this.CommandArgument);
                     };
-                ((LinkButton)label).Text = this.Label;
             }
-            if (null != this.LabelWidth)
-                label.Width = this.LabelWidth;
-            else
-                label.Width = this.Width;
-            if (null != this.LabelHeight)
-                label.Height = this.LabelHeight;
-            else
-                label.Height = this.Height;
-            labelWrapper.Controls.Add(label);
+            label.Attributes["class"] = "btn btn-default dropdown-toggle";
+            label.Attributes["type"] = "button";
+            label.Attributes["data-toggle"] = "dropdown";
+            label.Attributes["aria-haspopup"] = "true";
+            label.Attributes["aria-expanded"] = "false";
+            label.InnerHtml = this.Label + @" <span class=""caret""></span>";
+            container.Controls.Add(label);
 
             commandsList.ID = "commandsList";
-            commandsList.CssClass = "menu_commands";
-            commandsList.Style.Add("display", "none");
+            commandsList.CssClass = "dropdown-menu";
+            commandsList.Attributes.Add("role", "menu");
+            commandsList.Attributes.Add("aria-labelledby", label.ClientID);
             commandsList.DisplayMode = this.DisplayMode;
             if (this.DisplayMode == BulletedListDisplayMode.LinkButton)
             {
@@ -156,16 +144,7 @@ namespace LWAS.CustomControls
                         }
                     };
             }
-            this.Controls.Add(commandsList);
-
-            dropDownExtender = new DropDownExtender();
-            dropDownExtender.ID = "dropDownExtender";
-            //dropDownExtender.BehaviorID = this.ID + "Behaviour";
-            dropDownExtender.TargetControlID = "labelWrapper";
-            dropDownExtender.DropDownControlID = "commandsList";
-            dropDownExtender.Enabled = this.Enabled;
-            this.Controls.Add(dropDownExtender);
-            dropDownExtender.HighlightBackColor = System.Drawing.Color.Transparent;
+            container.Controls.Add(commandsList);
         }
 
         void OnMenuClick(string command, string argument)

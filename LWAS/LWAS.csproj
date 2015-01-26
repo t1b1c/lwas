@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>LWAS</RootNamespace>
     <AssemblyName>LWAS</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,16 +31,15 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AjaxControlToolkit">
-      <HintPath>..\_lib\AjaxControlToolkit.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
@@ -47,7 +47,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CustomControls\Breadcrumb.cs" />
-    <Compile Include="CustomControls\ComboBoxLessBuggy.cs" />
     <Compile Include="CustomControls\NumberBoundField.cs" />
     <Compile Include="CustomControls\DataControls\Container.cs" />
     <Compile Include="CustomControls\DataControls\DataTableDataSource.cs" />
@@ -85,7 +84,6 @@
     <Compile Include="CustomControls\TagsList.cs" />
     <Compile Include="CustomControls\TemplateHelper.cs" />
     <Compile Include="CustomControls\UpdatePanelDynamic.cs" />
-    <Compile Include="CustomControls\Uploader.cs" />
     <Compile Include="CustomControls\Uploader2.cs" />
     <Compile Include="Database\ComputedField.cs" />
     <Compile Include="Database\Expressions\Eval.cs" />

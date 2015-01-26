@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2013 TIBIC SOLUTIONS
+ * Copyright 2006-2015 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.WebControls.WebParts;
-
-using AjaxControlToolkit;
 
 namespace LWAS.WebParts.Zones
 {
@@ -94,7 +92,7 @@ namespace LWAS.WebParts.Zones
                 script += "        document.getElementById(tabs[i]).className = 'tabzone_inactivetab';  \n";
                 script += "    document.getElementById(id).className = 'tablezone_container'; \n";
                 script += "}    \n";
-                ToolkitScriptManager.RegisterClientScriptBlock(this, this.GetType(), "toggle tabs", script, true);
+                ScriptManager.RegisterClientScriptBlock(this, this.GetType(), "toggle tabs", script, true);
             }
 
             base.OnPreRender(e);

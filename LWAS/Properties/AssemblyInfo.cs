@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("TIBIC SOLUTIONS")]
 [assembly: AssemblyProduct("LWAS")]
-[assembly: AssemblyCopyright("2006-2013 TIBIC SOLUTIONS")]
+[assembly: AssemblyCopyright("2006-2015 TIBIC SOLUTIONS")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

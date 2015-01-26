@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2013 TIBIC SOLUTIONS
+ * Copyright 2006-2015 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ using System;
 using System.Threading;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using AjaxControlToolkit;
 
 namespace LWAS.CustomControls
 {
@@ -26,9 +25,6 @@ namespace LWAS.CustomControls
 	{
 		private StyledTextBox txtDate;
 		private StyledTextBox txtTime;
-		private MaskedEditExtender maskDate;
-		private MaskedEditExtender maskTime;
-		private CalendarExtender calDate;
 		private Style _normalStyle = new Style();
 		private Style _readOnlyStyle = new Style();
 		private bool _readOnly = false;
@@ -123,10 +119,6 @@ namespace LWAS.CustomControls
 				{
 					this.txtDate.ReadOnly = value;
 				}
-				if (null != this.calDate)
-				{
-					this.calDate.Enabled = !value;
-				}
 				if (null != this.txtTime)
 				{
 					this.txtTime.ReadOnly = value;
@@ -140,12 +132,6 @@ namespace LWAS.CustomControls
             set
             {
                 _simpleImput = value;
-                if (null != this.calDate)
-                    this.calDate.Enabled = !value;
-                if (null != this.maskDate)
-                    this.maskDate.Enabled = !value;
-                if (null != this.maskTime)
-                    this.maskTime.Enabled = !value;
             }
         }
 
@@ -158,9 +144,13 @@ namespace LWAS.CustomControls
 		protected override void CreateChildControls()
 		{
 			base.CreateChildControls();
+
+            Panel container = new Panel();
+            container.CssClass = "maskedcalendar-container";
+            this.Controls.Add(container);
+
 			this.txtDate = new StyledTextBox();
 			this.txtDate.ID = "txtDate";
-            this.txtDate.CssClass = "masked_calendar_date";
 			this.txtDate.ReadOnly = this._readOnly;
 			if (this._readOnly)
 			{
@@ -170,10 +160,11 @@ namespace LWAS.CustomControls
 			{
 				this.txtDate.ApplyStyle(this._normalStyle);
 			}
-			this.Controls.Add(this.txtDate);
+            container.Controls.Add(this.txtDate);
+            this.txtDate.CssClass += " masked_calendar_date";
+
 			this.txtTime = new StyledTextBox();
 			this.txtTime.ID = "txtTime";
-            this.txtTime.CssClass = "masked_calendar_time";
 			this.txtTime.Visible = false;
 			this.txtTime.ReadOnly = this._readOnly;
 			if (this._readOnly)
@@ -184,27 +175,8 @@ namespace LWAS.CustomControls
 			{
 				this.txtTime.ApplyStyle(this._normalStyle);
 			}
-			this.Controls.Add(this.txtTime);
-			this.maskDate = new MaskedEditExtender();
-			this.maskDate.ID = "maskDate";
-			this.maskDate.TargetControlID = "txtDate";
-			this.maskDate.MaskType = MaskedEditType.Date;
-			this.maskDate.Mask = "99/99/9999";
-			this.Controls.Add(this.maskDate);
-			this.maskTime = new MaskedEditExtender();
-			this.maskTime.ID = "maskTime";
-			this.maskTime.TargetControlID = "txtTime";
-			this.maskTime.MaskType = MaskedEditType.Time;
-			this.maskTime.Mask = "99:99";
-			this.maskTime.AcceptAMPM = false;
-			this.Controls.Add(this.maskTime);
-			this.calDate = new CalendarExtender();
-			this.calDate.ID = "calDate";
-			this.calDate.TargetControlID = "txtDate";
-			this.Controls.Add(this.calDate);
-			this.calDate.Enabled = !this._readOnly;
-			this.calDate.Format = Thread.CurrentThread.CurrentCulture.DateTimeFormat.ShortDatePattern;
-			this.maskDate.CultureName = Thread.CurrentThread.CurrentCulture.Name;
+            container.Controls.Add(this.txtTime);
+            this.txtTime.CssClass += " masked_calendar_time";
 		}
 	}
 }

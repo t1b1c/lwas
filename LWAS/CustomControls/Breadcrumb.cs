@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2013 TIBIC SOLUTIONS
+ * Copyright 2006-2015 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ using System.Linq;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using System.Collections.Generic;
-
-using AjaxControlToolkit;
 
 using LWAS.Extensible.Interfaces.Storage;
 

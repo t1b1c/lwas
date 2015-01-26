@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2013 TIBIC SOLUTIONS
+ * Copyright 2006-2015 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,19 +20,16 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using AjaxControlToolkit;
-
 namespace LWAS.CustomControls
 {
     public class Popup : CompositeControl
     {
         HiddenField isShownHidden;
-        protected HiddenField dummy;
-        protected Table topTable;
+        protected Panel container;
+        protected Panel headerPanel;
         protected Button okButton;
         protected Button cancelButton;
         protected Panel contentPanel;
-        protected ModalPopupExtender popupExtender;
 
         string _okText;
         [Themeable(true)]
@@ -89,48 +86,51 @@ namespace LWAS.CustomControls
             isShownHidden.ID = "isShownHidden";
             this.Controls.Add(isShownHidden);
 
-            this.dummy = new HiddenField();
-            this.dummy.ID = "dummy";
-            this.Controls.Add(dummy);
+            container = new Panel();
+            container.ID = "Modal";
+            container.CssClass = "modal fade";
+            container.Attributes["tabindex"] = "-1";
+            container.Attributes["role"] = "dialog";
+            container.Attributes["aria-hidden"] = "true";
+            container.Attributes["show"] = "false";
+            this.Controls.Add(container);
 
-            this.contentPanel = new Panel();
-            this.contentPanel.ID = "contentPanel";
-            this.contentPanel.CssClass = "popup_modalPopup";
-            this.contentPanel.Style.Add("display", "none");
-            this.Controls.Add(contentPanel);
+            container.Controls.Add(new LiteralControl(@"
+  <div class=""modal-dialog"">
+    <div class=""modal-content"">
+      <div class=""modal-header"">
+"           ));
 
-            this.topTable = new Table();
-            this.topTable.ID = "topTable";
-            this.topTable.CssClass = "popup_topTable";
-            this.contentPanel.Controls.Add(topTable);
+            headerPanel = new Panel();
+            headerPanel.ID = "headerPanel";
+            container.Controls.Add(headerPanel);
 
-            TableRow topRow = new TableRow();
-            this.topTable.Rows.Add(topRow);
-
-            TableCell okCell = new TableCell();
-            topRow.Cells.Add(okCell);
             this.okButton = new Button();
             this.okButton.ID = "okButton";
             this.okButton.Text = _okText;
-            this.okButton.CssClass = "popup_OKButton";
-            okCell.Controls.Add(okButton);
+            this.okButton.CssClass = "btn btn-primary";
+            headerPanel.Controls.Add(okButton);
 
-            TableCell cancelCell = new TableCell();
-            topRow.Cells.Add(cancelCell);
             this.cancelButton = new Button();
             this.cancelButton.ID = "cancelButton";
             this.cancelButton.Text = _cancelText;
-            this.cancelButton.CssClass = "popup_CancelButton";
-            cancelCell.Controls.Add(this.cancelButton);
+            this.cancelButton.CssClass = "btn btn-default";
+            headerPanel.Controls.Add(this.cancelButton);
 
-            this.contentPanel.Controls.Add(new LiteralControl("<p><hr /></p>"));
+            container.Controls.Add(new LiteralControl(@"
+      </div>
+      <div class=""modal-body"">
+"           ));
 
-            this.popupExtender = new ModalPopupExtender();
-            this.popupExtender.ID = "popupExtender";
-            this.popupExtender.TargetControlID = this.dummy.ID;
-            this.popupExtender.PopupControlID = this.contentPanel.ID;
-            this.popupExtender.BackgroundCssClass = "popup_modalBackground";
-            this.Controls.Add(this.popupExtender);
+            contentPanel = new Panel();
+            contentPanel.ID = "contentPanel";
+            container.Controls.Add(contentPanel);
+
+            container.Controls.Add(new LiteralControl(@"
+      </div>
+    </div>
+  </div>
+"           ));
         }
 
         private void Page_Load(object sender, EventArgs e)
@@ -140,7 +140,7 @@ namespace LWAS.CustomControls
 
         protected virtual void OnPageLoad()
         {
-            this.popupExtender.Hide();
+            container.Attributes["show"] = "false";
 
             if (this.IsShown)
                 Display();
@@ -168,7 +168,7 @@ namespace LWAS.CustomControls
 
         public virtual void Display()
         {
-            this.popupExtender.Show();
+            container.Attributes["show"] = "true";
         }
 
         public virtual void Show()
@@ -178,7 +178,7 @@ namespace LWAS.CustomControls
 
         public virtual void Hide()
         {
-            this.popupExtender.Hide();
+            container.Attributes["show"] = "false";
             this.IsShown = false;
         }
 

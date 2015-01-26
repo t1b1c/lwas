@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2013 TIBIC SOLUTIONS
+ * Copyright 2006-2015 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,11 @@ using System.Web;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using AjaxControlToolkit;
 
 namespace LWAS.CustomControls
 {
+    public enum UploadToEnum { UploadRepo, UserRepo };
+    
     public class Uploader2 : CompositeControl
     {
         private FileUpload fileUpload;
@@ -127,7 +128,7 @@ namespace LWAS.CustomControls
     });
     ";
 
-                ToolkitScriptManager.RegisterClientScriptBlock(this, typeof(Uploader2), this.ID, script, true);
+                ScriptManager.RegisterClientScriptBlock(this, typeof(Uploader2), this.ID, script, true);
             }
         }
     }

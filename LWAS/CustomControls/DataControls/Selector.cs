@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2013 TIBIC SOLUTIONS
+ * Copyright 2006-2015 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using AjaxControlToolkit;
 
 using LWAS.Extensible.Interfaces.WorkFlow;
 using LWAS.Extensible.Interfaces.DataBinding;
@@ -42,15 +41,15 @@ namespace LWAS.CustomControls.DataControls
 		private string _okText;
 		private string _cancelText;
 		private Panel _container;
-		private Panel _searchPanel;
 		private Panel _buttonsPanel;
 		private LinkButton _link;
 		private OneClickButton _searchButton;
 		private Button _okButton;
 		private Button _cancelButton;
-		protected UpdatePanelDynamic UpdatePanel;
-		protected ModalPopupExtender PopupExtender;
-		private FormView _criteria;
+
+        protected UpdatePanelDynamic UpdatePanel;
+		
+        private FormView _criteria;
 		private DataTableDataSource _criteriaDataSource;
 		private DataTable _criteriaStorage;
 		private DataGridView _results;
@@ -126,13 +125,6 @@ namespace LWAS.CustomControls.DataControls
 		{
 			get { return _container; }
 			set { _container = value; }
-		}
-
-		[Themeable(true)]
-		public Panel SearchPanel
-		{
-			get { return _searchPanel; }
-			set { _searchPanel = value; }
 		}
 
 		[Themeable(true)]
@@ -309,9 +301,7 @@ namespace LWAS.CustomControls.DataControls
 
 		protected override void OnInit(EventArgs e)
 		{
-            LinkButton dummyLink = new LinkButton();
-            dummyLink.ID = "dummyLink";
-            this.Controls.Add(dummyLink);
+            // selector's own launcher
             UpdatePanelDynamic linkUpdatePanel = new UpdatePanelDynamic();
             this.Controls.Add(linkUpdatePanel);
 			_link = new LinkButton();
@@ -319,86 +309,129 @@ namespace LWAS.CustomControls.DataControls
 			_link.Text = "";
             linkUpdatePanel.ContentTemplateContainer.Controls.Add(_link);
             this.Link.Click += new EventHandler(Link_Click);
-			_container = new Panel();
-			_container.ID = "selectorContainer";
-			_container.CssClass = "selector_modalPopup";
-			_container.Style.Add("display", "none");
-			_searchPanel = new Panel();
-			_searchPanel.ID = "searchPanel";
-			_searchPanel.CssClass = "selector_searchpanel";
-			_container.Controls.Add(_searchPanel);
-			_buttonsPanel = new Panel();
-			_buttonsPanel.ID = "buttonsPanel";
-			_buttonsPanel.CssClass = "selector_buttonspanel";
-			_container.Controls.Add(_buttonsPanel);
-			this.UpdatePanel = new UpdatePanelDynamic();
-			this.UpdatePanel.ID = "updatePanel";
-			this.resultsSelectedIndexHidden = new HiddenField();
-			this.resultsSelectedIndexHidden.ID = "resultsSelectedIndexHidden";
-			this.UpdatePanel.ContentTemplateContainer.Controls.Add(this.resultsSelectedIndexHidden);
+
+            // hiddens
+            this.UpdatePanel = new UpdatePanelDynamic();
+            this.UpdatePanel.ID = "UpdatePanel";
             visibilityHidden = new HiddenField();
             visibilityHidden.ID = "visibilityHidden";
             this.UpdatePanel.ContentTemplateContainer.Controls.Add(visibilityHidden);
+            _criteriaDataSource = new DataTableDataSource();
+            _criteriaDataSource.ID = "criteriaDataSource";
+            this.UpdatePanel.ContentTemplateContainer.Controls.Add(_criteriaDataSource);
+            this.resultsSelectedIndexHidden = new HiddenField();
+            this.resultsSelectedIndexHidden.ID = "resultsSelectedIndexHidden";
+            this.UpdatePanel.ContentTemplateContainer.Controls.Add(this.resultsSelectedIndexHidden);
+            
+            // bootstrap framing
+            _container = new Panel();
+			_container.ID = "selectorContainer";
+            _container.CssClass = "modal";
+            _container.Attributes["tabindex"] = "-1";
+            _container.Attributes["role"] = "dialog";
+            _container.Attributes["aria-hidden"] = "true";
+            _container.Attributes["data-show"] = "false";
+            this.UpdatePanel.ContentTemplateContainer.Controls.Add(_container);
+
+            _container.Controls.Add(new LiteralControl(@"
+  <div class=""modal-dialog"">
+    <div class=""modal-content"">
+      <div class=""modal-header"">
+"));
+            _container.Controls.Add(new LiteralControl(@"<div class=""row"">"));
+            _container.Controls.Add(new LiteralControl(@"<div class=""col-xs-12"">"));
+            _container.Controls.Add(new LiteralControl("<h3>"));
 			_titleLabel = new Label();
-			_titleLabel.CssClass = "selector_title";
-			this.UpdatePanel.ContentTemplateContainer.Controls.Add(_titleLabel);
-			_criteriaDataSource = new DataTableDataSource();
-			_criteriaDataSource.ID = "criteriaDataSource";
-			this.UpdatePanel.ContentTemplateContainer.Controls.Add(_criteriaDataSource);
-			Panel criteriaPanel = new Panel();
-			criteriaPanel.CssClass = "selector_criteriaPanel";
+            _titleLabel.CssClass = "modal-title";
+            _container.Controls.Add(_titleLabel);
+            _container.Controls.Add(new LiteralControl("</h3>"));
+            _container.Controls.Add(new LiteralControl(@"</div>")); // col
+            _container.Controls.Add(new LiteralControl(@"</div>")); // row
+
+            _container.Controls.Add(new LiteralControl(@"<div class=""row"">"));
+            Panel criteriaPanel = new Panel();
+			criteriaPanel.CssClass = "col-xs-12";
 			_criteria = new FormView();
 			_criteria.ID = "Criteria";
-			_criteria.CssClass = "selector_criteria";
 			_criteria.DefaultMode = FormViewMode.Edit;
 			criteriaPanel.Controls.Add(_criteria);
-			this.UpdatePanel.ContentTemplateContainer.Controls.Add(criteriaPanel);
+            _container.Controls.Add(criteriaPanel);
+
+            _container.Controls.Add(new LiteralControl(@"</div>")); // row
+            _container.Controls.Add(new LiteralControl(@"<div class=""row"">"));
+
 			Panel searchButtonPanel = new Panel();
-			searchButtonPanel.CssClass = "selector_searchButtonPanel";
+            searchButtonPanel.CssClass = "col-xs-12";
 			_searchButton = new OneClickButton();
 			_searchButton.ID = "searchButton";
 			_searchButton.Text = _searchText;
 			_searchButton.Click += new EventHandler(this.searchButton_Click);
+            _searchButton.CssClass = "btn btn-primary";
 			searchButtonPanel.Controls.Add(_searchButton);
-			this.UpdatePanel.ContentTemplateContainer.Controls.Add(searchButtonPanel);
+            _container.Controls.Add(searchButtonPanel);
+
+            _container.Controls.Add(new LiteralControl(@"</div>")); // row
+
+            _container.Controls.Add(new LiteralControl(@"
+      </div>
+      <div class=""modal-body"">
+"));
 			Panel resultsContainer = new Panel();
 			resultsContainer.ID = "resultsContainer";
-			resultsContainer.CssClass = "selector_results";
+            resultsContainer.CssClass = "table-responsive";
 			_results = new DataGridView();
 			_results.ID = "Results";
+            _results.CssClass = "table table-striped table-condensed gridview";
 			_results.AutoGenerateSelectButton = true;
 			
             if (null != _selectorSource)
 				_results.DataSource = _selectorSource;
 
             resultsContainer.Controls.Add(_results);
-			this.UpdatePanel.ContentTemplateContainer.Controls.Add(resultsContainer);
-			_searchPanel.Controls.Add(this.UpdatePanel);
+			_container.Controls.Add(resultsContainer);
+
+            _container.Controls.Add(new LiteralControl(@"
+      </div>
+      <div class=""modal-footer"">
+"));
+
+            _buttonsPanel = new Panel();
+            _buttonsPanel.ID = "buttonsPanel";
+            _container.Controls.Add(_buttonsPanel);
+
 			_okButton = new Button();
 			_okButton.ID = "okButton";
 			_okButton.Text = _okText;
+            _okButton.CssClass = "btn btn-default";
 			_buttonsPanel.Controls.Add(_okButton);
+            _okButton.Click += (s, ee) =>
+                        {
+                            this.Hide();
+                        };
+
 			_cancelButton = new Button();
 			_cancelButton.ID = "cancelButton";
 			_cancelButton.Text = _cancelText;
-			_buttonsPanel.Controls.Add(_cancelButton);
-			this.Controls.Add(_container);
-			_container.DefaultButton = "searchButton";
-			this.PopupExtender = new ModalPopupExtender();
-			this.PopupExtender.ID = "popupExtender";
-            this.PopupExtender.TargetControlID = "dummyLink";
-			this.PopupExtender.PopupControlID = "selectorContainer";
-			this.PopupExtender.BackgroundCssClass = "selector_modalBackground";
-			this.PopupExtender.OkControlID = "okButton";
-			this.PopupExtender.CancelControlID = "cancelButton";
-			this.PopupExtender.DropShadow = true;
-			this.PopupExtender.PopupDragHandleControlID = "selectorContainer";
-			this.Controls.Add(this.PopupExtender);
+            _cancelButton.CssClass = "btn btn-default";
+            _buttonsPanel.Controls.Add(_cancelButton);
+            _cancelButton.Click += (s, ee) =>
+                            {
+                                this.Hide();
+                            };
+
+            _container.DefaultButton = "searchButton";
+
+            _container.Controls.Add(new LiteralControl(@"
+      </div>
+    </div>
+  </div>
+"));
+            this.Controls.Add(this.UpdatePanel);
 			
-            if (this.shouldShow)
-				this.DoShow();
-			if (this.shouldHide)
-				this.DoHide();
+            if (shouldShow)
+				DoShow();
+			if (shouldHide)
+				DoHide();
 
             base.OnInit(e);
 			this.Results.SelectedIndexChanged += new EventHandler(this.Results_SelectedIndexChanged);
@@ -443,8 +476,8 @@ namespace LWAS.CustomControls.DataControls
 
 		private void Results_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			this.PopupExtender.Hide();
-			this.OnMilestone("select");
+            this.Container.Attributes["data-show"] = "false";
+            this.OnMilestone("select");
 			this.resultsSelectedIndexHidden.Value = _results.SelectedIndex.ToString();
 			this.ResetSelectIndex = true;
 		}
@@ -488,7 +521,7 @@ namespace LWAS.CustomControls.DataControls
 
 		public void Show()
 		{
-			if (null != this.PopupExtender)
+			if (null != this.Container)
 				this.DoShow();
 			shouldShow = true;
             this.IsShown = true;
@@ -496,13 +529,13 @@ namespace LWAS.CustomControls.DataControls
 
 		private void DoShow()
 		{
-			this.PopupExtender.Show();
-			ScriptManager.GetCurrent(this.Page).SetFocus(_criteria);
+            this.Container.Attributes["data-show"] = "true";
+            ScriptManager.GetCurrent(this.Page).SetFocus(_criteria);
 		}
 
 		public void Hide()
 		{
-			if (null != this.PopupExtender)
+			if (null != this.Container)
 				this.DoHide();
 			shouldHide = true;
             this.IsShown = false;
@@ -510,12 +543,15 @@ namespace LWAS.CustomControls.DataControls
 
 		private void DoHide()
 		{
-			this.PopupExtender.Hide();
+            this.Container.Attributes["data-show"] = "false";
 		}
 
         protected override void OnPreRender(EventArgs e)
         {
             base.OnPreRender(e);
+
+            if (!this.IsShown)
+                DoHide();
 
             // Won't render to the client when visible toggles to true
             // selector is not in an update panel

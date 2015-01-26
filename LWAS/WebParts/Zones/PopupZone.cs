@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2013 TIBIC SOLUTIONS
+ * Copyright 2006-2015 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.WebControls.WebParts;
 using System.Linq;
-
-using AjaxControlToolkit;
 
 using LWAS.Extensible.Interfaces.WorkFlow;
 
@@ -79,10 +77,6 @@ namespace LWAS.WebParts.Zones
         {
             base.OnPreRender(e);
 
-            string id = null;
-            if (!String.IsNullOrEmpty(this.ActiveWebPart))
-                id = this.WebParts[this.ActiveWebPart].ClientID;
-
             string js = @"
 Sys.WebForms.PageRequestManager.getInstance().add_endRequest(EndRequest);
 function EndRequest(sender, args)
@@ -95,26 +89,13 @@ function EndRequest(sender, args)
 
 function registerPopup(id) {
     var popup = $('#' + id).parents('.popupzone_part').first();
-    popup.switchClass('popup_hidden', 'popup_shown');
-    popup.overlay({
-
-    // custom top position
-    top: 100,
-    left: 750,
-
-    // disable this for modal dialog-type of overlays
-    closeOnClick: false,
-
-    // load it immediately after the construction
-    load: false
-
-    });
+    popup.removeClass('popup_hidden');
+    popup.addClass('popup_shown');
     
-    popup.overlay().load();
-    popup.draggable();
+    popup.colorbox({inline:true, width:'50%'});
 }
 ";
-            ToolkitScriptManager.RegisterStartupScript(this, typeof(Page), "overlay components", js, true);
+            ScriptManager.RegisterStartupScript(this, typeof(Page), "overlay components", js, true);
         }
 
         protected override void Render(HtmlTextWriter writer)
