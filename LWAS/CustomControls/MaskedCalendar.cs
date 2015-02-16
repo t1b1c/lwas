@@ -18,6 +18,7 @@ using System;
 using System.Threading;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Text.RegularExpressions;
 
 namespace LWAS.CustomControls
 {
@@ -135,6 +136,15 @@ namespace LWAS.CustomControls
             }
         }
 
+        static string DateMask;
+        static string TimeMask;
+
+        static MaskedCalendar()
+        {
+            DateMask = Regex.Replace(Thread.CurrentThread.CurrentCulture.DateTimeFormat.ShortDatePattern, "[A-Za-z ]", "9");
+            TimeMask = Regex.Replace(Thread.CurrentThread.CurrentCulture.DateTimeFormat.ShortTimePattern, "[A-Za-z ]", "9");
+        }
+
 		protected override void OnInit(EventArgs e)
 		{
 			base.OnInit(e);
@@ -161,6 +171,8 @@ namespace LWAS.CustomControls
 				this.txtDate.ApplyStyle(this._normalStyle);
 			}
             container.Controls.Add(this.txtDate);
+            txtDate.Attributes.Add("data-mask", DateMask);
+            txtDate.Attributes.Add("placeholder", Thread.CurrentThread.CurrentCulture.DateTimeFormat.ShortDatePattern);
             this.txtDate.CssClass += " masked_calendar_date";
 
 			this.txtTime = new StyledTextBox();
@@ -176,6 +188,8 @@ namespace LWAS.CustomControls
 				this.txtTime.ApplyStyle(this._normalStyle);
 			}
             container.Controls.Add(this.txtTime);
+            txtTime.Attributes.Add("data-mask", TimeMask);
+            txtTime.Attributes.Add("placeholder", Thread.CurrentThread.CurrentCulture.DateTimeFormat.ShortTimePattern);
             this.txtTime.CssClass += " masked_calendar_time";
 		}
 	}

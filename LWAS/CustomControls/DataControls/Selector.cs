@@ -381,7 +381,7 @@ namespace LWAS.CustomControls.DataControls
             resultsContainer.CssClass = "table-responsive";
 			_results = new DataGridView();
 			_results.ID = "Results";
-            _results.CssClass = "table table-striped table-condensed gridview";
+            _results.CssClass = "table table-striped table-condensed gridview lwas-selector-results";
 			_results.AutoGenerateSelectButton = true;
 			
             if (null != _selectorSource)
