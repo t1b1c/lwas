@@ -1,5 +1,5 @@
 /*
- * Copyrigt 2013 Tiberiu Craciun, tiberiu.craciun@gmail.com
+ * Copyrigt 2013-2015 Tiberiu Craciun, tiberiu.craciun@gmail.com
  * All rights reserved
 */
 
