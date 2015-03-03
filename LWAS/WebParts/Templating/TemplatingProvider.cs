@@ -73,46 +73,85 @@ namespace LWAS.WebParts.Templating
 
         public void Init(Control target, Style messageStyle)
         {
-
-            UpdatePanel messageUpdatePanel = new UpdatePanel();
-            messageUpdatePanel.ID = "messageUpdatePanel";
-            Table messageTable = new Table();
-            TableRow messageRow = new TableRow();
-            TableCell messageCell = new TableCell();
-            messageCell.ApplyStyle(messageStyle);
-            _message = new Label();
-            messageCell.Controls.Add(this._message);
-            messageRow.Cells.Add(messageCell);
-            messageTable.Rows.Add(messageRow);
-            messageUpdatePanel.ContentTemplateContainer.Controls.Add(messageTable);
-            target.Controls.Add(messageUpdatePanel);
-
-            UpdatePanel commandersUpdatePanel = new UpdatePanel();
-            commandersUpdatePanel.ID = "commandersUpdatePanel";
-            Panel commandersWrapper = new Panel();
-            commandersWrapper.CssClass = "table-responsive";
-            commandersUpdatePanel.ContentTemplateContainer.Controls.Add(commandersWrapper);
-            _commandersHolder = new Table();
-            _commandersHolder.ID = "commandersHolder";
-            ((Table)_commandersHolder).CssClass = "";
-            commandersWrapper.Controls.Add(_commandersHolder);
-            target.Controls.Add(commandersUpdatePanel);
-
-            _selectorsHolder = new Table();
-            _selectorsHolder.ID = "selectorsHolder";
-            target.Controls.Add(this._selectorsHolder);
-            if (null == this._container)
+            UpdatePanel messageUpdatePanel = target.FindControl("messageUpdatePanel") as UpdatePanel;
+            if (null == messageUpdatePanel)
             {
-                UpdatePanel updatePanel = new UpdatePanel();
+                messageUpdatePanel = new UpdatePanel();
+                messageUpdatePanel.ID = "messageUpdatePanel";
+                target.Controls.Add(messageUpdatePanel);
+                Table messageTable = new Table();
+                TableRow messageRow = new TableRow();
+                TableCell messageCell = new TableCell();
+                messageCell.ApplyStyle(messageStyle);
+                _message = new Label();
+                messageCell.Controls.Add(this._message);
+                messageRow.Cells.Add(messageCell);
+                messageTable.Rows.Add(messageRow);
+                messageUpdatePanel.ContentTemplateContainer.Controls.Add(messageTable);
+            }
+
+            UpdatePanel commandersUpdatePanel = target.FindControl("commandersUpdatePanel") as UpdatePanel;
+            if (null == commandersUpdatePanel)
+            {
+                commandersUpdatePanel = new UpdatePanel();
+                commandersUpdatePanel.ID = "commandersUpdatePanel";
+                target.Controls.Add(commandersUpdatePanel);
+            }
+
+            Panel commandersWrapper = commandersUpdatePanel.FindControl("commandersWrapper") as Panel;
+            if (null == commandersWrapper)
+            {
+                commandersWrapper = new Panel();
+                commandersWrapper.ID = "commandersWrapper";
+                commandersWrapper.CssClass = "table-responsive";
+                commandersUpdatePanel.ContentTemplateContainer.Controls.Add(commandersWrapper);
+            }
+
+            _commandersHolder = commandersWrapper.FindControl("commandersHolder");
+            if (null == _commandersHolder)
+            {
+                _commandersHolder = new Table();
+                _commandersHolder.ID = "commandersHolder";
+                ((Table)_commandersHolder).CssClass = "";
+                commandersWrapper.Controls.Add(_commandersHolder);
+            }
+
+            _selectorsHolder = target.FindControl("selectorsHolder");
+            if (null == _selectorsHolder)
+            {
+                _selectorsHolder = new Table();
+                _selectorsHolder.ID = "selectorsHolder";
+                target.Controls.Add(this._selectorsHolder);
+            }
+
+            UpdatePanel updatePanel = target.FindControl("containerUpdatePanel") as UpdatePanel;
+            if (null == updatePanel)
+            {
+                updatePanel = new UpdatePanel();
                 updatePanel.ID = "containerUpdatePanel";
-                Panel wrapper = new Panel();
+                target.Controls.Add(updatePanel);
+            }
+
+            Panel wrapper = updatePanel.FindControl("containerWrapper") as Panel;
+            if (null == wrapper)
+            {
+                wrapper = new Panel();
+                wrapper.ID = "containerWrapper";
                 wrapper.CssClass = "table-responsive";
                 updatePanel.ContentTemplateContainer.Controls.Add(wrapper);
-                Table innerTable = new Table();
+            }
+
+            Table innerTable = wrapper.FindControl("innerTable") as Table;
+            if (null == innerTable)
+            {
+                innerTable = new Table();
                 innerTable.ID = "innerTable";
                 innerTable.CssClass = "table table-striped table-hover table-condensed";
                 wrapper.Controls.Add(innerTable);
-                target.Controls.Add(updatePanel);
+            }
+
+            if (null == this._container)
+            {
                 _container = innerTable;
             }
         }
