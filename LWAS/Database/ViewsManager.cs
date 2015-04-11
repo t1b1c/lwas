@@ -30,7 +30,7 @@ namespace LWAS.Database
 {
     public class ViewsManager
     {
-        string configFile;
+        public string configFile;
         IStorageAgent agent;
 
         public ViewsCollection Views { get; set; }

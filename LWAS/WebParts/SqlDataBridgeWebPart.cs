@@ -20,6 +20,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Xml;
+using System.Linq;
 
 using LWAS.CustomControls.DataControls;
 using LWAS.Extensible.Exceptions;
@@ -72,6 +73,18 @@ namespace LWAS.WebParts
 						this._monitor.Register(this, this._monitor.NewEventInstance("open connection error", null, ex, EVENT_TYPE.Error));
 					}
 				}
+                else   // empty means reset connection
+                {
+                    try
+                    {
+                        this._dataBridge.ConnectionString = this.ConnectionsRegistry.Values.First();
+                    }
+                    catch (Exception ex)
+                    {
+                        this._monitor.Register(this, this._monitor.NewEventInstance("open connection error", null, ex, EVENT_TYPE.Error));
+                    }
+
+                }
 			}
 		}
 		public DataSet LastResult

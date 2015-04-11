@@ -26,13 +26,13 @@ namespace LWAS.Infrastructure.Security
 	public class Authorizer : IAuthorizer
 	{
 		private string super_role = string.Empty;
-		private Dictionary<string, List<string>> roles;
+		private Dictionary<string, List<string>> roles = new Dictionary<string,List<string>>();
 		public Authorizer()
 		{
 			this.super_role = ConfigurationManager.AppSettings["SUPER_ROLE"];
 			if (!Roles.Enabled)
 			{
-				this.roles = new RoleManager().LoadRoles();
+				//this.roles = new RoleManager().LoadRoles();
 			}
 		}
 		protected virtual bool UserInRole(string user, string role)
