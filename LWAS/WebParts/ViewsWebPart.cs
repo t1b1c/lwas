@@ -170,7 +170,7 @@ namespace LWAS.WebParts
                             {
                                 database = new Database.Database(key, views_config, this.Agent, this.ExpressionsManager);
 
-                                cache.Insert(views_config, this.Databases, new CacheDependency(views_config));
+                                cache.Insert(views_config, database, new CacheDependency(views_config));
                             }
 
                             this.Databases.Add(database.Name, database);
