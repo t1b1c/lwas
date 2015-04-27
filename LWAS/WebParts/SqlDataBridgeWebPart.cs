@@ -21,6 +21,9 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Xml;
 using System.Linq;
+using System.Web;
+using System.Web.Caching;
+using System.IO;
 
 using LWAS.CustomControls.DataControls;
 using LWAS.Extensible.Exceptions;
@@ -32,6 +35,8 @@ namespace LWAS.WebParts
 {
 	public class SqlDataBridgeWebPart : EditableWebPart, IReporter
 	{
+        static object SyncRoot = new object();
+
 		private IBinder _binder;
 		private SqlDataBridge _dataBridge = new SqlDataBridge();
 		private IMonitor _monitor;
@@ -149,21 +154,29 @@ namespace LWAS.WebParts
 		protected void LoadConnections()
 		{
 			string file = ConfigurationManager.AppSettings["CONNECTIONS_FILE"];
-			if (string.IsNullOrEmpty(file))
-			{
-				throw new ArgumentNullException("CONNECTIONS_FILE config not set");
-			}
-			XmlDocument doc = new XmlDocument();
-			doc.LoadXml(this._agent.Read(file));
-			XmlNode rootNode = doc.SelectSingleNode("connections");
-			if (null == rootNode)
-			{
-				throw new InvalidOperationException(string.Format("File '{0}' has no 'connections' node", file));
-			}
-			foreach (XmlNode connNode in rootNode.ChildNodes)
-			{
-				this.ConnectionsRegistry.Add(connNode.Attributes["key"].Value, connNode.Attributes["string"].Value);
-			}
+			if (string.IsNullOrEmpty(file)) throw new ArgumentNullException("CONNECTIONS_FILE config not set");
+            if (!Path.IsPathRooted(file))
+                file = HttpContext.Current.Server.MapPath(file);
+
+            Cache cache = HttpContext.Current.Cache;
+            lock (SyncRoot)
+            {
+                XmlDocument doc = cache[file] as XmlDocument;
+
+                if (null == doc)
+                {
+                    doc = new XmlDocument();
+                    doc.LoadXml(this._agent.Read(file));
+                    cache.Insert(file, doc, new CacheDependency(file));
+                }
+                XmlNode rootNode = doc.SelectSingleNode("connections");
+                if (null == rootNode) throw new InvalidOperationException(string.Format("File '{0}' has no 'connections' node", file));
+
+                foreach (XmlNode connNode in rootNode.ChildNodes)
+                {
+                    this.ConnectionsRegistry.Add(connNode.Attributes["key"].Value, connNode.Attributes["string"].Value);
+                }
+            }
 		}
         public void Execute(string key)
         {
@@ -197,26 +210,12 @@ namespace LWAS.WebParts
 		}
 		public override void Initialize()
 		{
-			if (null == this.Configuration)
-			{
-				throw new MissingProviderException("Configuration");
-			}
-			if (null == this.ConfigurationParser)
-			{
-				throw new MissingProviderException("Configuration parser");
-			}
-			if (null == this._binder)
-			{
-				throw new MissingProviderException("Binder");
-			}
-			if (null == this._monitor)
-			{
-				throw new MissingProviderException("Monitor");
-			}
-			if (null == this._agent)
-			{
-				throw new MissingProviderException("Agent");
-			}
+			if (null == this.Configuration) throw new MissingProviderException("Configuration"); 
+			if (null == this.ConfigurationParser) throw new MissingProviderException("Configuration parser");
+			if (null == this._binder) throw new MissingProviderException("Binder");
+			if (null == this._monitor) throw new MissingProviderException("Monitor");
+			if (null == this._agent) throw new MissingProviderException("Agent");
+
 			this.ConfigurationParser.Parse(this);
 			base.Initialize();
 			this.LoadConnections();

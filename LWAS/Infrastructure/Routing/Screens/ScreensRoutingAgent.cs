@@ -22,6 +22,7 @@ using System.Web;
 using System.Configuration;
 using System.Xml;
 using System.Xml.Linq;
+using System.Web.Caching;
 
 using LWAS.Extensible.Interfaces.Routing;
 using LWAS.Extensible.Interfaces.Storage;
@@ -32,6 +33,7 @@ namespace LWAS.Infrastructure.Routing.Screens
 {
     public class ScreensRoutingAgent : BaseAgent
     {
+        static object SyncRoot = new object();
         public IStorageAgent Agent { get; set; }
 
         public ScreensRoutingAgent()
@@ -46,29 +48,38 @@ namespace LWAS.Infrastructure.Routing.Screens
             string routes_config = manager.SettingsRoutes["ROUTES_CONFIG"].Path;
             if (String.IsNullOrEmpty(routes_config)) throw new ApplicationException("ROUTES_CONFIG not set");
 
-            if (!this.Agent.HasKey(routes_config))
-                CreateEmptyConfigFile(routes_config);
-
-            XDocument doc = XDocument.Parse(this.Agent.Read(routes_config));
-
-            XElement routesElement = doc.Element("routes");
-            if (null != routesElement)
+            Cache cache = HttpContext.Current.Cache;
+            lock (SyncRoot)
             {
-                XAttribute appRouteAttribute = routesElement.Attribute("name");
-                if (null != appRouteAttribute && !String.IsNullOrEmpty(appRouteAttribute.Value))
+                XDocument doc = cache[routes_config] as XDocument;
+                if (null == doc)
                 {
-                    string name = appRouteAttribute.Value;
-                    manager.ApplicationsRoutes.Add(new ApplicationRoute(name));
-                }
-            }
+                    if (!this.Agent.HasKey(routes_config))
+                        CreateEmptyConfigFile(routes_config);
 
-            IEnumerable<XElement> leaves = doc.Descendants()
-                                              .Where(e => !e.HasElements && e.Name != "routes");
-            foreach (XElement element in leaves)
-            {
-                string name = element.Attribute("name").Value;
-                string path = GetPath(element);
-                manager.ScreensRoutes.Add(new ScreenRoute(name, path));
+                    doc = XDocument.Parse(this.Agent.Read(routes_config));
+                    cache.Insert(routes_config, doc, new CacheDependency(routes_config));
+                }
+
+                XElement routesElement = doc.Element("routes");
+                if (null != routesElement)
+                {
+                    XAttribute appRouteAttribute = routesElement.Attribute("name");
+                    if (null != appRouteAttribute && !String.IsNullOrEmpty(appRouteAttribute.Value))
+                    {
+                        string name = appRouteAttribute.Value;
+                        manager.ApplicationsRoutes.Add(new ApplicationRoute(name));
+                    }
+                }
+
+                IEnumerable<XElement> leaves = doc.Descendants()
+                                                  .Where(e => !e.HasElements && e.Name != "routes");
+                foreach (XElement element in leaves)
+                {
+                    string name = element.Attribute("name").Value;
+                    string path = GetPath(element);
+                    manager.ScreensRoutes.Add(new ScreenRoute(name, path));
+                }
             }
         }
 
