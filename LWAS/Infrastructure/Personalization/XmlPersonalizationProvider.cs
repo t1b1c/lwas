@@ -181,9 +181,9 @@ namespace LWAS.Infrastructure.Personalization
                                                 if (reader.HasValue)
                                                 {
                                                     Type type = Type.GetType(reader.Value);
-                                                    if (type == null)
+                                                    if (type == null && name == "Configuration")
                                                     {
-                                                        var stop = 1;
+                                                        type = Type.GetType("LWAS.Infrastructure.Configuration.Configuration, LWAS");
                                                     }
                                                     reader.MoveToContent();
                                                     value = SerializationServices.Deserialize(type, reader);
@@ -211,7 +211,7 @@ namespace LWAS.Infrastructure.Personalization
                     string fileToMonitor = PersonalizationStorage.Instance.BuildPath(StorageKey);
                     if (!PersonalizationStorage.Instance.Agent.HasKey(fileToMonitor))
                         fileToMonitor = PersonalizationStorage.Instance.BuildPath(StorageTemplate);
-                    cache.Insert(suid, state, new CacheDependency(HttpContext.Current.Server.MapPath(fileToMonitor)));
+                    cache.Insert(suid, state.States, new CacheDependency(HttpContext.Current.Server.MapPath(fileToMonitor)));
                 }
                 else
                     state.States = cachedstates;
