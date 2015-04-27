@@ -143,7 +143,6 @@ namespace LWAS.WebParts
             if (this.RuntimeAware && null != this.RoutingManager.RuntimeSettingsRoutes["VIEWS_CONFIG"])
                 views_config = this.RoutingManager.RuntimeSettingsRoutes["VIEWS_CONFIG"].Path;
 
-            Cache cache = HttpRuntime.Cache;
             string connections_config = this.RoutingManager.SettingsRoutes["CONNECTIONS_FILE"].Path;
 
             if (this.RuntimeAware && null != this.RoutingManager.RuntimeSettingsRoutes["CONNECTIONS_FILE"])
@@ -151,12 +150,19 @@ namespace LWAS.WebParts
 
             if (String.IsNullOrEmpty(connections_config)) throw new ApplicationException("CONNECTIONS_FILE not found or not set");
 
+            Cache cache = HttpRuntime.Cache;
             lock (SyncRoot)
             {
                 this.Databases = new Dictionary<string, LWAS.Database.Database>();
+
                 if (this.Agent.HasKey(connections_config))
                 {
-                    XDocument dbs = XDocument.Parse(this.Agent.Read(connections_config));
+                    XDocument dbs = cache["XDocument: " + connections_config] as XDocument;
+                    if (null == dbs)
+                    {
+                        dbs = XDocument.Parse(this.Agent.Read(connections_config));
+                        cache.Insert("XDocument: " + connections_config, dbs, new CacheDependency(connections_config));
+                    }
                     foreach (XElement element in dbs.Element("connections").Elements("connection"))
                     {
                         string key = element.Attribute("key").Value;
