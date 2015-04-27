@@ -148,6 +148,8 @@ namespace LWAS.WorkFlow
                     _data = null;
 				}
 			}
+
+            _agent.CleanUp();
 		}
 	}
 }

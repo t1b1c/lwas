@@ -291,6 +291,7 @@
     <Compile Include="Infrastructure\Storage\BaseContainer.cs" />
     <Compile Include="Infrastructure\Storage\DirectoryContainer.cs" />
     <Compile Include="Infrastructure\Storage\FileAgent.cs" />
+    <Compile Include="Infrastructure\Storage\InMemoryStorageAgent.cs" />
     <Compile Include="Infrastructure\Storage\UserDataAgent.cs" />
     <Compile Include="Infrastructure\Translation\StringsStorage.cs" />
     <Compile Include="Infrastructure\Translation\StringsStorageEntry.cs" />
