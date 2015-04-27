@@ -211,7 +211,7 @@ namespace LWAS.Infrastructure.Personalization
                     string fileToMonitor = PersonalizationStorage.Instance.BuildPath(StorageKey);
                     if (!PersonalizationStorage.Instance.Agent.HasKey(fileToMonitor))
                         fileToMonitor = PersonalizationStorage.Instance.BuildPath(StorageTemplate);
-                    cache.Insert(suid, state, new CacheDependency(HttpContext.Current.Server.MapPath(fileToMonitor)));
+                    cache.Insert(suid, state.States, new CacheDependency(HttpContext.Current.Server.MapPath(fileToMonitor)));
                 }
                 else
                     state.States = cachedstates;
