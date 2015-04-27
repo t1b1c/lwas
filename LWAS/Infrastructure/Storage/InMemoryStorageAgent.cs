@@ -31,15 +31,17 @@ namespace LWAS.Infrastructure.Storage
     public class InMemoryStorageAgent : IStorageAgent
     {
         static object SyncRoot = new object();
+        readonly string CACHEKEY;
         Dictionary<string, string> Data;
         Cache cache;
 
         public InMemoryStorageAgent()
         {
+            this.CACHEKEY = HttpContext.Current.User.Identity.Name + ".InMemoryStorageAgent";
             cache = HttpContext.Current.Cache;
             lock(SyncRoot)
             {
-                this.Data = cache["InMemoryStorageAgent"] as Dictionary<string, string>;
+                this.Data = cache[this.CACHEKEY] as Dictionary<string, string>;
                 if (null == this.Data)
                     this.Data = new Dictionary<string, string>();
             }
@@ -99,8 +101,8 @@ namespace LWAS.Infrastructure.Storage
         {
             lock(SyncRoot)
             {
-                cache.Remove("InMemoryStorageAgent");
-                cache.Insert("InMemoryStorageAgent", this.Data);
+                cache.Remove(this.CACHEKEY);
+                cache.Insert(this.CACHEKEY, this.Data);
             }
         }
 
