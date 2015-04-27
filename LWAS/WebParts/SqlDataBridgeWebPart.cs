@@ -35,7 +35,7 @@ namespace LWAS.WebParts
 		private IBinder _binder;
 		private SqlDataBridge _dataBridge = new SqlDataBridge();
 		private IMonitor _monitor;
-		protected Dictionary<string, string> ConnectionsRegistry = new Dictionary<string, string>();
+		public Dictionary<string, string> ConnectionsRegistry = new Dictionary<string, string>();
 		private DataSet _lastResult;
 		private SqlDataReader _lastReader;
 		private IStorageAgent _agent;

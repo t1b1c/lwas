@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using LWAS.Extensible.Interfaces.Configuration;
 using LWAS.Infrastructure;
@@ -90,6 +91,20 @@ namespace LWAS.CustomControls
                                     values.Add(push, ReflectionServices.ExtractValue(fieldControl, member));
                                 }
                             }
+                        }
+
+                        if (!values.Contains(fieldElement.ConfigKey))
+                        {
+                            object value = null;
+                            if (fieldControl is DateTextBox)
+                                value = ((DateTextBox)fieldControl).Date;
+                            else if (fieldControl is ITextControl)
+                                value = ((ITextControl)fieldControl).Text;
+                            else if (fieldControl is ICheckBoxControl)
+                                value = ((ICheckBoxControl)fieldControl).Checked;
+                            else if (fieldControl is ListControl)
+                                value = ((ListControl)fieldControl).SelectedValue;
+                            values.Add(fieldElement.ConfigKey, value);
                         }
                     }
 					ccount++;

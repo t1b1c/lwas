@@ -128,7 +128,7 @@ namespace LWAS.WorkFlow.Conditions
 		}
 		public override bool Check()
 		{
-			return base.Check() && this.IsMilestoneReached;
+			return this.IsMilestoneReached && base.Check();
 		}
 	}
 }

@@ -443,8 +443,12 @@ namespace LWAS.WebParts.Templating
 									bindingItem.SourceProperty = pull;
 									bindingItem.Target = cellControl;
 									bindingItem.TargetProperty = propertyName;
-									if (string.IsNullOrEmpty(cellControlName) || propertyName != this.KnownTypes[cellControlName].ReadOnlyProperty)
-										bindingItem.DefaultValue = defaultValue;
+                                    if (String.IsNullOrEmpty(cellControlName) ||
+                                        (this.KnownTypes.ContainsKey(cellControlName) && propertyName != this.KnownTypes[cellControlName].ReadOnlyProperty)
+                                        )
+                                    {
+                                        bindingItem.DefaultValue = defaultValue;
+                                    }
                                     bindingItem.Expression = expression;
 									binder.BindingItems.Add(bindingItem);
 									if (item.InvalidMember == bindingItem.SourceProperty)

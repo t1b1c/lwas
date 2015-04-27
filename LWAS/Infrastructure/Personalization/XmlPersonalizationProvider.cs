@@ -181,9 +181,9 @@ namespace LWAS.Infrastructure.Personalization
                                                 if (reader.HasValue)
                                                 {
                                                     Type type = Type.GetType(reader.Value);
-                                                    if (type == null)
+                                                    if (type == null && name == "Configuration")
                                                     {
-                                                        var stop = 1;
+                                                        type = Type.GetType("LWAS.Infrastructure.Configuration.Configuration, LWAS");
                                                     }
                                                     reader.MoveToContent();
                                                     value = SerializationServices.Deserialize(type, reader);

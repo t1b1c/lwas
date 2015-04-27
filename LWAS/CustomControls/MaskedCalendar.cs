@@ -78,11 +78,11 @@ namespace LWAS.CustomControls
 			}
 		}
 
-		public string Date
+		public object Date
 		{
 			get
 			{
-				string result = null;
+				object result = null;
 				if (string.IsNullOrEmpty(this.txtDate.Text))
 				{
 					result = null;
@@ -92,7 +92,7 @@ namespace LWAS.CustomControls
 					string dtstring = (this.txtDate.Text + " " + this.txtTime.Text).Trim();
                     try
                     {
-                        result = DateTime.Parse(dtstring, Thread.CurrentThread.CurrentCulture.DateTimeFormat).ToString();
+                        result = DateTime.Parse(dtstring, Thread.CurrentThread.CurrentCulture.DateTimeFormat);
                     }
                     catch { }
 				}

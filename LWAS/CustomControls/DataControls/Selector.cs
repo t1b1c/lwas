@@ -238,7 +238,8 @@ namespace LWAS.CustomControls.DataControls
 			set
 			{
 				_selectedItem = value;
-				this.OnMilestone("item");
+                if (selectRaised)
+                    this.OnMilestone("item");
 			}
 		}
 
@@ -474,10 +475,12 @@ namespace LWAS.CustomControls.DataControls
 				_results.SelectedIndex = selidx;
 		}
 
+        bool selectRaised = false;
 		private void Results_SelectedIndexChanged(object sender, EventArgs e)
 		{
             this.Container.Attributes["data-show"] = "false";
             this.OnMilestone("select");
+            selectRaised = true;
 			this.resultsSelectedIndexHidden.Value = _results.SelectedIndex.ToString();
 			this.ResetSelectIndex = true;
 		}
