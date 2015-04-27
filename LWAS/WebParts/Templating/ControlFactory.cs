@@ -293,6 +293,7 @@ namespace LWAS.WebParts.Templating
                             }
 
                             IExpression expression = null;
+                            LWAS.Extensible.Interfaces.IResult expressionResult = null;
                             if (controlPropertyElement.Elements.ContainsKey("expression"))
                             {
                                 IConfigurationElement expressionElement = controlPropertyElement.GetElementReference("expression");
@@ -305,7 +306,7 @@ namespace LWAS.WebParts.Templating
                                         try
                                         {
                                             expression.Make(expressionElement, sysmanager.ExpressionsManager);
-                                            expression.Evaluate();
+                                            expressionResult = expression.Evaluate();
                                         }
                                         catch (ArgumentException ax)
                                         {
@@ -348,6 +349,7 @@ namespace LWAS.WebParts.Templating
                                     bindingItem.Target = cellControl;
                                     bindingItem.TargetProperty = propertyName;
                                     bindingItem.Expression = expression;
+                                    bindingItem.ExpressionEvaluationResult = expressionResult;
                                     binder.BindingItems.Add(bindingItem);
                                 }
 							}

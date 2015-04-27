@@ -51,6 +51,7 @@ namespace LWAS.Extensible.Interfaces.DataBinding
             get;
             set;
         }
+        IResult ExpressionEvaluationResult { get; set; }
 		IResult Bind();
 		object ExtractValue(object source, string propertyName);
 		void SetValue(object target, string propertyName, object value);
