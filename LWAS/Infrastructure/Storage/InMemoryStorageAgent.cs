@@ -30,21 +30,11 @@ namespace LWAS.Infrastructure.Storage
 {
     public class InMemoryStorageAgent : IStorageAgent
     {
-        static object SyncRoot = new object();
-        readonly string CACHEKEY;
         Dictionary<string, string> Data;
-        Cache cache;
 
         public InMemoryStorageAgent()
         {
-            this.CACHEKEY = HttpContext.Current.User.Identity.Name + ".InMemoryStorageAgent";
-            cache = HttpContext.Current.Cache;
-            lock(SyncRoot)
-            {
-                this.Data = cache[this.CACHEKEY] as Dictionary<string, string>;
-                if (null == this.Data)
-                    this.Data = new Dictionary<string, string>();
-            }
+            this.Data = InMemoryStorage.Instance.UserData(HttpContext.Current.User.Identity.Name);
         }
 
         public Stream OpenStream(string key)
@@ -64,6 +54,8 @@ namespace LWAS.Infrastructure.Storage
 
         public void Write(string key, string content)
         {
+            if (!this.Data.ContainsKey(key))
+                this.Data.Add(key, null);
             this.Data[key] = content;
         }
 
@@ -75,7 +67,7 @@ namespace LWAS.Infrastructure.Storage
 
         public IList<string> List()
         {
-            return this.Data.Values.ToList();
+            return this.Data.Keys.ToList();
         }
 
         public IEnumerable<string> ListAll(string filter)
@@ -99,11 +91,6 @@ namespace LWAS.Infrastructure.Storage
 
         public void CleanUp()
         {
-            lock(SyncRoot)
-            {
-                cache.Remove(this.CACHEKEY);
-                cache.Insert(this.CACHEKEY, this.Data);
-            }
         }
 
         public string Sanitize(string key)

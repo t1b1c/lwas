@@ -148,17 +148,17 @@ namespace LWAS.CustomControls.DataControls
 		{
 			get
 			{
-				ITemplatingItem result;
-				for (int i = 0; i < this._items.Count; i++)
-				{
-					if (this._items[i].IsCurrent)
-					{
-						result = this._items[i];
-						return result;
-					}
-				}
-				result = null;
-				return result;
+                if (null != _items)
+                {
+                    for (int i = 0; i < this._items.Count; i++)
+                    {
+                        if (this._items[i].IsCurrent)
+                        {
+                            return this._items[i];
+                        }
+                    }
+                }
+				return null;
 			}
 		}
         public ITemplatingItem ContextItem
