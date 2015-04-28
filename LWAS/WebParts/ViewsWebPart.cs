@@ -179,7 +179,8 @@ namespace LWAS.WebParts
                                 cache.Insert(views_config, database, new CacheDependency(views_config));
                             }
 
-                            this.Databases.Add(database.Name, database);
+                            if (!this.Databases.ContainsKey(database.Name))
+                                this.Databases.Add(database.Name, database);
                         }
                     }
                 }
