@@ -75,7 +75,7 @@ namespace LWAS.Infrastructure.Storage
 
         public IList<string> List()
         {
-            return this.Data.Values.ToList();
+            return this.Data.Keys.ToList();
         }
 
         public IEnumerable<string> ListAll(string filter)
