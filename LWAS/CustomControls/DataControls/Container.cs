@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2013 TIBIC SOLUTIONS
+ * Copyright 2006-2015 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -148,17 +148,17 @@ namespace LWAS.CustomControls.DataControls
 		{
 			get
 			{
-				ITemplatingItem result;
-				for (int i = 0; i < this._items.Count; i++)
-				{
-					if (this._items[i].IsCurrent)
-					{
-						result = this._items[i];
-						return result;
-					}
-				}
-				result = null;
-				return result;
+                if (null != _items)
+                {
+                    for (int i = 0; i < this._items.Count; i++)
+                    {
+                        if (this._items[i].IsCurrent)
+                        {
+                            return this._items[i];
+                        }
+                    }
+                }
+				return null;
 			}
 		}
         public ITemplatingItem ContextItem

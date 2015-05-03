@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2013 TIBIC SOLUTIONS
+ * Copyright 2006-2015 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +64,8 @@ namespace LWAS.WebParts.DataBinding
             set { _expression = value; }
         }
 
+        public IResult ExpressionEvaluationResult { get; set; }
+
 		public BindingItem()
 		{
 		}
@@ -84,7 +86,9 @@ namespace LWAS.WebParts.DataBinding
 				if (null == this._source) throw new MissingBindingElementException("source object");
 				if (string.IsNullOrEmpty(this._sourceProperty)) throw new MissingBindingElementException("source property name");
 
-                if (null == this.Expression || this.Expression.Evaluate().IsSuccessful())
+                if (null == this.Expression || 
+                    (null != this.ExpressionEvaluationResult && this.ExpressionEvaluationResult.IsSuccessful()) ||
+                    (null == this.ExpressionEvaluationResult && this.Expression.Evaluate().IsSuccessful()))
                 {
                     object val = this.ExtractValue(this._source, this._sourceProperty);
                     if ((val == null || (val is string && string.IsNullOrEmpty((string)val))) && null != this._defaultValue)

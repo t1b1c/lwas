@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2013 TIBIC SOLUTIONS
+ * Copyright 2006-2015 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,10 @@ using System.Web.UI.WebControls.WebParts;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Text;
+using System.Linq;
+using System.Xml;
+using System.Xml.Linq;
+using System.Web.Caching;
 
 using LWAS.Extensible.Exceptions;
 using LWAS.Extensible.Interfaces;
@@ -41,7 +45,9 @@ namespace LWAS.WebParts
 {
     public class ViewsWebPart : ConfigurableWebPart
     {
-        string views_config;
+        private static object SyncRoot = new object();
+
+        public Dictionary<string, LWAS.Database.Database> Databases;
 
         public IExpressionsManager ExpressionsManager { get; set; }
         public IStorageAgent Agent { get; set; }
@@ -51,6 +57,18 @@ namespace LWAS.WebParts
 
         public bool RuntimeAware { get; set; }
 
+        LWAS.Database.Database _currentDatabase;
+        public LWAS.Database.Database CurrentDatabase
+        {
+            get { return _currentDatabase; }
+            set
+            {
+                _currentDatabase = value;
+                this.ViewsManager = _currentDatabase.ViewsManager;
+                this.CurrentView = null;
+            }
+        }
+
         public string SelectView 
         {
             set
@@ -58,6 +76,23 @@ namespace LWAS.WebParts
                 if (!this.ViewsManager.Views.ContainsKey(value))
                     throw new InvalidOperationException(String.Format("view '{0}' not found", value));
                 this.CurrentView = this.ViewsManager.Views[value];
+            }
+        }
+
+        public string SelectDatabase
+        {
+            set
+            {
+                if (!String.IsNullOrEmpty(value))
+                {
+                    if (!this.Databases.ContainsKey(value)) 
+                        throw new InvalidOperationException(String.Format("Unknown database '{0}'", value));
+                    this.CurrentDatabase = this.Databases[value];
+                }
+                else
+                {
+                    this.CurrentDatabase = this.Databases.First().Value;
+                }
             }
         }
 
@@ -104,14 +139,59 @@ namespace LWAS.WebParts
             if (null == this.Agent) throw new MissingProviderException("Agent");
             if (null == this.RoutingManager) throw new MissingProviderException("RoutingManager");
 
-            views_config = this.RoutingManager.SettingsRoutes["VIEWS_CONFIG"].Path;
-
+            string views_config = this.RoutingManager.SettingsRoutes["VIEWS_CONFIG"].Path;
             if (this.RuntimeAware && null != this.RoutingManager.RuntimeSettingsRoutes["VIEWS_CONFIG"])
                 views_config = this.RoutingManager.RuntimeSettingsRoutes["VIEWS_CONFIG"].Path;
-            
-            if (String.IsNullOrEmpty(views_config)) throw new ApplicationException("VIEWS_CONFIG not found or not set");
-            if (this.Agent.HasKey(views_config))
-                this.ViewsManager = new ViewsManager(views_config, this.Agent, this.ExpressionsManager);
+
+            string connections_config = this.RoutingManager.SettingsRoutes["CONNECTIONS_FILE"].Path;
+
+            if (this.RuntimeAware && null != this.RoutingManager.RuntimeSettingsRoutes["CONNECTIONS_FILE"])
+                connections_config = this.RoutingManager.RuntimeSettingsRoutes["CONNECTIONS_FILE"].Path;
+
+            if (String.IsNullOrEmpty(connections_config)) throw new ApplicationException("CONNECTIONS_FILE not found or not set");
+
+            Cache cache = HttpRuntime.Cache;
+            lock (SyncRoot)
+            {
+                this.Databases = new Dictionary<string, LWAS.Database.Database>();
+
+                if (this.Agent.HasKey(connections_config))
+                {
+                    XDocument dbs = cache["XDocument: " + connections_config] as XDocument;
+                    if (null == dbs)
+                    {
+                        dbs = XDocument.Parse(this.Agent.Read(connections_config));
+                        cache.Insert("XDocument: " + connections_config, dbs, new CacheDependency(connections_config));
+                    }
+                    foreach (XElement element in dbs.Element("connections").Elements("connection"))
+                    {
+                        string key = element.Attribute("key").Value;
+                        if (null != element.Attribute("views"))
+                            views_config = element.Attribute("views").Value;
+
+                        if (!String.IsNullOrEmpty(views_config))
+                        {
+                            LWAS.Database.Database database = cache[views_config] as LWAS.Database.Database;
+                            if (null == database)
+                            {
+                                database = new Database.Database(key, views_config, this.Agent, this.ExpressionsManager);
+
+                                cache.Insert(views_config, database, new CacheDependency(views_config));
+                            }
+
+                            if (!this.Databases.ContainsKey(database.Name))
+                                this.Databases.Add(database.Name, database);
+                        }
+                    }
+                }
+                else
+                {
+                    LWAS.Database.Database database = new Database.Database(views_config, views_config, this.Agent, this.ExpressionsManager);
+                    this.Databases.Add(database.Name, database);
+                }
+            }
+
+            this.CurrentDatabase = this.Databases.First().Value;
 
             base.Initialize();
         }

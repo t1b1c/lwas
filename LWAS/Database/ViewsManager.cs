@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2013 TIBIC SOLUTIONS
+ * Copyright 2006-2015 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ namespace LWAS.Database
 {
     public class ViewsManager
     {
-        string configFile;
+        public string configFile;
         IStorageAgent agent;
 
         public ViewsCollection Views { get; set; }

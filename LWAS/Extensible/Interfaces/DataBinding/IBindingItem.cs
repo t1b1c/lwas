@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2013 TIBIC SOLUTIONS
+ * Copyright 2006-2015 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ namespace LWAS.Extensible.Interfaces.DataBinding
             get;
             set;
         }
+        IResult ExpressionEvaluationResult { get; set; }
 		IResult Bind();
 		object ExtractValue(object source, string propertyName);
 		void SetValue(object target, string propertyName, object value);

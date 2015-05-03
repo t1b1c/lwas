@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2013 TIBIC SOLUTIONS
+ * Copyright 2006-2015 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,16 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Data;
+using System.Linq;
 
 using LWAS.Infrastructure;
 
 namespace LWAS.CustomControls
 {
-	public class Lookup : DataBoundControl
+	public class Lookup : DataBoundControl, INamingContainer
     {
+        IEnumerable Data { get; set; }
+
         public string LookFor
         {
             get;
@@ -61,20 +64,32 @@ namespace LWAS.CustomControls
 
         protected override void PerformDataBinding(IEnumerable data)
         {
-            DataSet dataSet = data as DataSet;
-            if (null != dataSet && dataSet.Tables.Count > 0)
+            this.Data = data;
+        }
+
+        protected override void Render(HtmlTextWriter writer)
+        {
+            DataView dataView = this.Data as DataView;
+            if (null != dataView && dataView.Count > 0)
             {
-                DataTable table = dataSet.Tables[0];
+                DataTable table = dataView.Table;
                 if (String.IsNullOrEmpty(this.LookBy)) throw new InvalidOperationException("LookBy is empty");
                 if (!table.Columns.Contains(this.LookBy)) throw new InvalidOperationException(String.Format("Invalid LookBy. Data has no '{0}' propery", this.LookBy));
                 if (String.IsNullOrEmpty(this.LookFor)) throw new InvalidOperationException("LookFor is empty");
                 if (!table.Columns.Contains(this.LookFor)) throw new InvalidOperationException(String.Format("Invalid LookFor. Data has no '{0}' property", this.LookFor));
 
-                string val = this.LookByValue == null ? String.Empty : ReflectionServices.ToString(this.LookByValue);
-                DataRow[] found = table.Select(this.LookBy + "='" + val + "'");
-                if (found.Length > 0)
-                    Display(found[0][this.LookFor]);
+                //string val = this.LookByValue == null ? String.Empty : ReflectionServices.ToString(this.LookByValue);
+                var found = table.Rows.Cast<DataRow>()
+                                      .FirstOrDefault(dr => {
+                                          var left = dr[this.LookBy] == null ? "" : dr[this.LookBy].ToString();
+                                          var right = this.LookByValue == null ? "" : this.LookByValue.ToString();
+                                          return left == right;
+                                      });
+                if (null != found)
+                    Display(found[this.LookFor]);
             }
+
+            base.Render(writer);
         }
 
         protected virtual void Display(object value)

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006-2013 TIBIC SOLUTIONS
+ * Copyright 2006-2015 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using System.Text;
+using System.Web;
+using System.Web.Caching;
 
 using LWAS.Extensible.Interfaces.Expressions;
 
@@ -65,6 +67,8 @@ namespace LWAS.Database
         public ViewsManager Manager { get; set; }
         public ViewSorting Sorting { get; private set; }
         public Dictionary<View, Dictionary<string, Field>> Subviews { get; set; }
+
+        static object SyncRoot = new object();
 
         public View(ViewsManager manager)
         {
@@ -282,6 +286,76 @@ namespace LWAS.Database
 
         public void ToSql(StringBuilder builder, bool isFilterSubview)
         {
+            string target = isFilterSubview ? "filter" : "select";
+            string compiledSql = CompiledSqlFromCache(this.Name, target);
+
+            if (String.IsNullOrEmpty(compiledSql))
+            {
+                CompileSql(builder, isFilterSubview);
+                CompiledSqlToCache(this.Name, target, builder.ToString(), this.Manager.configFile);
+            }
+            else
+                builder.Append(compiledSql);
+
+            if (!this.Parameters.IsEmpty && !isFilterSubview)
+            {
+                // parameters values
+                bool firstParameter = true;
+                foreach (string parameter in this.Parameters)
+                {
+                    if (!String.IsNullOrEmpty(parameter)) // can be empty if this is a subview and this parameter is linked with a field of the superview
+                    {
+                        string identifier = this.Parameters.SqlIdentifier(parameter);
+
+                        if (!firstParameter)
+                            builder.Append(", ");
+                        else
+                            firstParameter = false;
+
+                        string pval = CastToDbType(this.Parameters[parameter] ?? "", InferParamType(parameter), false);
+                        if (pval == "null")
+                            builder.AppendFormat("{0} = null", identifier);
+                        else
+                            builder.AppendFormat("{0} = '{1}'", identifier, pval);
+                    }
+                }
+            }
+        }
+
+        static void CompiledSqlToCache(string viewName, string target, string sql, string dependency)
+        {
+            Cache cache = HttpContext.Current.Cache;
+            lock (SyncRoot)
+            {
+                Dictionary<string, Dictionary<string, string>> compiledviews = cache["CompiledViews"] as Dictionary<string, Dictionary<string, string>>;
+                if (null == compiledviews)
+                    compiledviews = new Dictionary<string, Dictionary<string, string>>();
+                if (!compiledviews.ContainsKey(viewName))
+                    compiledviews.Add(viewName, new Dictionary<string, string>());
+                if (!compiledviews[viewName].ContainsKey(target))
+                    compiledviews[viewName].Add(target, sql);
+                else
+                    compiledviews[viewName][target] = sql;
+
+                cache.Insert("CompiledViews", compiledviews, new CacheDependency(dependency));
+            }
+        }
+
+        static string CompiledSqlFromCache(string viewName, string target)
+        {
+            Cache cache = HttpContext.Current.Cache;
+            lock(SyncRoot)
+            {
+                Dictionary<string, Dictionary<string, string>> compiledviews = cache["CompiledViews"] as Dictionary<string, Dictionary<string, string>>;
+                if (null != compiledviews && compiledviews.ContainsKey(viewName) && compiledviews[viewName].ContainsKey(target))
+                    return compiledviews[viewName][target];
+
+                return null;
+            }
+        }
+
+        public void CompileSql(StringBuilder builder, bool isFilterSubview)
+        {
             if (null == builder) throw new ArgumentNullException("builder");
 
             SetUpTokens(!isFilterSubview);
@@ -354,27 +428,6 @@ namespace LWAS.Database
                 }
 
                 builder.AppendLine("',");
-
-                // parameters values
-                firstParameter = true;
-                foreach (string parameter in this.Parameters)
-                {
-                    if (!String.IsNullOrEmpty(parameter)) // can be empty if this is a subview and this parameter is linked with a field of the superview
-                    {
-                        string identifier = this.Parameters.SqlIdentifier(parameter);
-
-                        if (!firstParameter)
-                            builder.Append(", ");
-                        else
-                            firstParameter = false;
-
-                        string pval = CastToDbType(this.Parameters[parameter] ?? "", InferParamType(parameter), false);
-                        if (pval == "null")
-                            builder.AppendFormat("{0} = null", identifier);
-                        else
-                            builder.AppendFormat("{0} = '{1}'", identifier, pval);
-                    }
-                }
             }
         }
 

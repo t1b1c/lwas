@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2013 TIBIC SOLUTIONS
+ * Copyright 2006-2015 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ using System;
 using System.IO;
 using System.Xml;
 using System.Text;
+using System.Web;
+using System.Web.Caching;
 
 using LWAS.Extensible.Interfaces.Storage;
 
@@ -25,6 +27,7 @@ namespace LWAS.Infrastructure.Translation
 {
 	public class StringsStorage
 	{
+        static object SyncRoot = new object();
         string strings;
 		private IStorageAgent _agent;
 		private string _filePath;
@@ -48,8 +51,19 @@ namespace LWAS.Infrastructure.Translation
 		{
 			if (null == this._agent) throw new InvalidOperationException("Agent not set");
 			if (string.IsNullOrEmpty(this._filePath)) throw new InvalidOperationException("Unknown file path");
+            if (!Path.IsPathRooted(_filePath))
+                _filePath = HttpContext.Current.Server.MapPath(_filePath);
 
-			strings = this._agent.Read(this._filePath);
+            Cache cache = HttpContext.Current.Cache;
+            lock(SyncRoot)
+            {
+                strings = cache[_filePath] as string;
+                if (null == strings)
+                {
+                    strings = this._agent.Read(this._filePath);
+                    cache.Insert(_filePath, strings, new CacheDependency(_filePath));
+                }
+            }
 		}
 		public virtual StringsStorageEntry GetEntryByKey(string key, string source)
 		{

@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2013 TIBIC SOLUTIONS
+ * Copyright 2006-2015 TIBIC SOLUTIONS
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,23 +41,21 @@ namespace LWAS.Expressions
 		public override IResult Evaluate()
 		{
 			IResult result = base.Evaluate();
-            if (!this.IsValid)
-            {
-                try
-                {
-                    if (null == this.Source) throw new InvalidOperationException("Source is not defined");
-                    if (null == this.Member)
-                        this.Value = this.Source;
-                    else
-                        this.Value = ReflectionServices.ExtractValue(this.Source, this.Member);
 
-                    result.Status = ResultStatus.Successful;
-                }
-                catch (Exception e)
-                {
-                    result.Exceptions.Add(e);
-                    result.Status = ResultStatus.Unsuccessful;
-                }
+            try
+            {
+                if (null == this.Source) throw new InvalidOperationException("Source is not defined");
+                if (null == this.Member)
+                    this.Value = this.Source;
+                else
+                    this.Value = ReflectionServices.ExtractValue(this.Source, this.Member);
+
+                result.Status = ResultStatus.Successful;
+            }
+            catch (Exception e)
+            {
+                result.Exceptions.Add(e);
+                result.Status = ResultStatus.Unsuccessful;
             }
 
 			return result;
