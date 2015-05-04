@@ -292,7 +292,8 @@ namespace LWAS.Database
             if (String.IsNullOrEmpty(compiledSql))
             {
                 CompileSql(builder, isFilterSubview);
-                CompiledSqlToCache(this.Name, target, builder.ToString(), this.Manager.configFile);
+                if (!isFilterSubview)   // prevent caching the filter version (i.e. w/o param declaration)
+                    CompiledSqlToCache(this.Name, target, builder.ToString(), this.Manager.configFile);
             }
             else
                 builder.Append(compiledSql);
