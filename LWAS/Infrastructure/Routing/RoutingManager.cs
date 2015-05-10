@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Web;
 
 using LWAS.Extensible.Interfaces.Routing;
 
@@ -58,8 +59,12 @@ namespace LWAS.Infrastructure.Routing
             set { _agents.Add(value); }
         }
 
+        public string ApplicationName { get; private set; }
+
         public RoutingManager()
         {
+            this.ApplicationName = HttpContext.Current.Request["a"];
+
             _settingsRoutes = new RoutesCollection();
             _runtimeSettingsRoutes = new RoutesCollection();
             _screensRoutes = new RoutesCollection();
@@ -85,6 +90,12 @@ namespace LWAS.Infrastructure.Routing
                 route.Resolve();
             foreach (IRoute route in _applicationsRoutes)
                 route.Resolve();
+        }
+
+        public void Load(string application)
+        {
+            this.ApplicationName = application;
+            Load();
         }
     }
 }

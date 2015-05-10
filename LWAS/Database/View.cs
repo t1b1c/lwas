@@ -287,16 +287,19 @@ namespace LWAS.Database
         public void ToSql(StringBuilder builder, bool isFilterSubview)
         {
             string target = isFilterSubview ? "filter" : "select";
-            string compiledSql = CompiledSqlFromCache(this.Name, target);
 
-            if (String.IsNullOrEmpty(compiledSql))
+            lock (SyncRoot)
             {
-                CompileSql(builder, isFilterSubview);
-                if (!isFilterSubview)   // prevent caching the filter version (i.e. w/o param declaration)
+                string compiledSql = CompiledSqlFromCache(this.Name, target);
+
+                if (String.IsNullOrEmpty(compiledSql))
+                {
+                    CompileSql(builder, isFilterSubview);
                     CompiledSqlToCache(this.Name, target, builder.ToString(), this.Manager.configFile);
+                }
+                else
+                    builder.Append(compiledSql);
             }
-            else
-                builder.Append(compiledSql);
 
             if (!this.Parameters.IsEmpty && !isFilterSubview)
             {
