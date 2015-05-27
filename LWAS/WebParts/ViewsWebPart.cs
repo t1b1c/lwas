@@ -76,6 +76,9 @@ namespace LWAS.WebParts
                 if (!this.ViewsManager.Views.ContainsKey(value))
                     throw new InvalidOperationException(String.Format("view '{0}' not found", value));
                 this.CurrentView = this.ViewsManager.Views[value];
+
+                // reset update parameters
+                this.CurrentView.UpdateParameters = new ParametersCollection();
             }
         }
 
