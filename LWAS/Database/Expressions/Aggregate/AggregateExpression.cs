@@ -52,20 +52,10 @@ namespace LWAS.Database.Expressions.Aggregate
             if (null != this.ViewToken)
             {
                 this.ViewToken.Reset();
-                this.ViewToken.BeginAggregation += new EventHandler<ViewToken.ViewTokenEventArgs>(ViewToken_BeginAggregation);
-                this.ViewToken.EndAggregation += new EventHandler<ViewToken.ViewTokenEventArgs>(ViewToken_EndAggregation);
+                this.ViewToken.BeginAggregation = BeginAggregation;
+                this.ViewToken.EndAggregation = EndAggregation;
                 this.ViewToken.ToSql(builder, true);
             }
-        }
-
-        void ViewToken_BeginAggregation(object sender, ViewToken.ViewTokenEventArgs e)
-        {
-            BeginAggregation(e.Builder);
-        }
-
-        void ViewToken_EndAggregation(object sender, ViewToken.ViewTokenEventArgs e)
-        {
-            EndAggregation(e.Builder);
         }
 
         public abstract void BeginAggregation(StringBuilder builder);

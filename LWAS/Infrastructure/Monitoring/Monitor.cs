@@ -20,12 +20,13 @@ using System.Text;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
+using System.Web;
 
 using LWAS.Extensible.Interfaces.Monitoring;
 
 namespace LWAS.Infrastructure.Monitoring
 {
-	public class Monitor : IMonitor, IXmlSerializable
+	public class Monitor : IMonitor, IXmlSerializable, IReporter
 	{
 		private bool _isDisabled = false;
         public bool IsDisabled
@@ -58,6 +59,7 @@ namespace LWAS.Infrastructure.Monitoring
 		public void Start()
 		{
 			this.IsMonitoring = true;
+            Register(this, NewEventInstance("started", null, HttpContext.Current.Request.RawUrl, EVENT_TYPE.Trace));
 		}
 
 		public void Register(IReporter reporter, IEvent e)
@@ -158,5 +160,28 @@ namespace LWAS.Infrastructure.Monitoring
 			if (!_isDisabled)
 				this.Records.WriteXml(writer);
 		}
-	}
+
+        public string Title
+        {
+            get
+            {
+                return "Monitor";
+            }
+            set
+            {
+                
+            }
+        }
+
+        IMonitor IReporter.Monitor
+        {
+            get
+            {
+                return this;
+            }
+            set
+            {
+            }
+        }
+    }
 }

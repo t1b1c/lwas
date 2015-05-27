@@ -31,10 +31,7 @@ namespace LWAS.Database
 {
     public class ViewToken : FieldToken
     {
-        public class ViewTokenEventArgs : EventArgs
-        {
-            public StringBuilder Builder;
-        }
+        public delegate void Aggregation(StringBuilder builder);
 
         public override string Key
         {
@@ -43,8 +40,8 @@ namespace LWAS.Database
 
         public ViewsManager ViewsManager { get; set; }
         public string ViewName { get; set; }
-        public event EventHandler<ViewTokenEventArgs> BeginAggregation;
-        public event EventHandler<ViewTokenEventArgs> EndAggregation;
+        public Aggregation BeginAggregation;
+        public Aggregation EndAggregation;
         View view = null;
         Field field = null;
 
@@ -112,14 +109,14 @@ namespace LWAS.Database
             builder.AppendLine("(select");
             
             if (null != this.BeginAggregation)
-                BeginAggregation(this, new ViewTokenEventArgs() { Builder = builder });
+                BeginAggregation(builder);
             string alias = view.Aliases.ContainsKey(field) ? view.Aliases[field] : null;
             if (ignoreAlias)
                 field.ToSql(builder);
             else
                 field.ToSql(builder, alias);
             if (null != this.EndAggregation)
-                EndAggregation(this, new ViewTokenEventArgs() { Builder = builder });
+                EndAggregation(builder);
             builder.AppendLine();
             builder.AppendLine("from");
             builder.Append("    ");

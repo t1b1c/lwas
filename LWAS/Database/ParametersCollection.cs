@@ -28,12 +28,18 @@ namespace LWAS.Database
         Dictionary<string, object> parameters = new Dictionary<string, object>();
         ParametersCollection linked_collection;
 
+        public bool DisableAddInIndex { get; set; }
+
         public ParametersCollection()
         {
         }
 
         public ParametersCollection(ParametersCollection collection)
         {
+            // if this constructor is used, make the collection readonly
+            // to avoide adding parameters at runtime
+            this.DisableAddInIndex = true;
+
             linked_collection = collection;
             foreach (string key in collection)
                 parameters.Add(key, collection[key]);
@@ -43,15 +49,21 @@ namespace LWAS.Database
         {
             get
             {
-                if (!parameters.ContainsKey(key))
+                if (!this.DisableAddInIndex && !parameters.ContainsKey(key))
                     parameters.Add(key, null);
-                return parameters[key];
+                if (parameters.ContainsKey(key))
+                    return parameters[key];
+                else
+                    throw new ArgumentException(String.Format("Unknown parameter '{0}'", key));
             }
             set
             {
-                if (!parameters.ContainsKey(key))
+                if (!this.DisableAddInIndex && !parameters.ContainsKey(key))
                     parameters.Add(key, null);
-                parameters[key] = value;
+                if (parameters.ContainsKey(key))
+                    parameters[key] = value;
+                else
+                    throw new ArgumentException(String.Format("Unknown parameter '{0}'", key));
 
                 if (null != linked_collection)
                     linked_collection[key] = value;

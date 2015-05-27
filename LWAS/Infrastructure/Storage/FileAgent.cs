@@ -87,7 +87,7 @@ namespace LWAS.Infrastructure.Storage
 			Stream result;
 			try
 			{
-				if (this.Streams.ContainsKey(key))
+				if (null != this.Streams && this.Streams.ContainsKey(key))
 				{
 					this.CloseStream(key);
 				}
@@ -231,6 +231,8 @@ namespace LWAS.Infrastructure.Storage
 		}
 		public override IList<string> List()
 		{
+            if (null == this.Streams)
+                return new List<string>();
 			string[] keys = new string[this.Streams.Count];
 			this.Streams.Keys.CopyTo(keys, 0);
 			return keys;
@@ -285,6 +287,8 @@ namespace LWAS.Infrastructure.Storage
 		}
 		public override void CleanUp()
 		{
+            if (null == this.Streams) return;
+
 			foreach (string key in this.List())
 			{
 				if (this.Streams.ContainsKey(key))
