@@ -116,22 +116,22 @@ namespace LWAS.WebParts.Parsers
                                     list.Add(new ListItem(listItemElement.GetAttributeReference("text").Value.ToString(), listItemElement.GetAttributeReference("value").Value.ToString()));
                                 }
                             }
-
-                            string pull = controlElement.ConfigKey;
                             if (controlPropertyElement.Attributes.ContainsKey("pull"))
-                                pull = controlPropertyElement.GetAttributeReference("pull").Value.ToString();
-                            IBindingItem bindingItem = binder.NewBindingItemInstance();
-                            bindingItem.Source = null;
-                            bindingItem.SourceProperty = pull;
-                            bindingItem.Target = cellControl;
-                            bindingItem.TargetProperty = propertyName;
-                            binder.BindingItems.Add(bindingItem);
-                            if (cellControl is BaseDataBoundControl)
                             {
-                                this._boundControls.Add(pull, cellControl);
-                                if (!this._dataSources.ContainsKey(pull))
+                                string pull = controlPropertyElement.GetAttributeReference("pull").Value.ToString();
+                                IBindingItem bindingItem = binder.NewBindingItemInstance();
+                                bindingItem.Source = null;
+                                bindingItem.SourceProperty = pull;
+                                bindingItem.Target = cellControl;
+                                bindingItem.TargetProperty = propertyName;
+                                binder.BindingItems.Add(bindingItem);
+                                if (cellControl is BaseDataBoundControl)
                                 {
-                                    this._dataSources.Add(pull, null);
+                                    this._boundControls.Add(pull, cellControl);
+                                    if (!this._dataSources.ContainsKey(pull))
+                                    {
+                                        this._dataSources.Add(pull, null);
+                                    }
                                 }
                             }
                         }
