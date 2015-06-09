@@ -38,6 +38,7 @@ namespace LWAS.Database.Expressions
             var function = this.Operands.FirstOrDefault();
             if (null == function) throw new ArgumentException("The function expression requires a first operand for the sql function name");
 
+            function.Evaluate();    // BasicToken has no value until Evaluate
             builder.AppendFormat("dbo.{0}(", function.Value);
 
             foreach(var param in this.Operands.Where(o => o != function))
