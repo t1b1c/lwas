@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CustomControls\Autocomplete.cs" />
     <Compile Include="CustomControls\Breadcrumb.cs" />
     <Compile Include="CustomControls\NumberBoundField.cs" />
     <Compile Include="CustomControls\DataControls\Container.cs" />
@@ -247,6 +248,7 @@
     <Compile Include="Extensible\Interfaces\WorkFlow\IWorkFlow.cs" />
     <Compile Include="Extensible\Interfaces\WorkFlow\IWorkFlowsCollection.cs" />
     <Compile Include="Extensible\Interfaces\WorkFlow\MilestoneEventHandler.cs" />
+    <Compile Include="Handlers\ExecuteViewHandler.cs" />
     <Compile Include="Infrastructure\Configuration\Configuration.cs" />
     <Compile Include="Infrastructure\Configuration\ConfigurationElement.cs" />
     <Compile Include="Infrastructure\Configuration\ConfigurationElementAttribute.cs" />
