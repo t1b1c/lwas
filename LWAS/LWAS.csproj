@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CustomControls\Autocomplete.cs" />
     <Compile Include="CustomControls\Breadcrumb.cs" />
     <Compile Include="CustomControls\ComboBoxLessBuggy.cs" />
     <Compile Include="CustomControls\NumberBoundField.cs" />
