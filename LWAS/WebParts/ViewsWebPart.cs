@@ -199,6 +199,7 @@ namespace LWAS.WebParts
                 }
             }
 
+            // this is buggy
             this.CurrentDatabase = this.Databases.First().Value;
 
             base.Initialize();
