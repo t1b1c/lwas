@@ -323,18 +323,23 @@ namespace LWAS.WebParts.Templating
                                 {
                                     try
                                     {
-                                        if (string.IsNullOrEmpty(cellControlName) ||
-                                            propertyName != this.KnownTypes[cellControlName].ReadOnlyProperty ||
-                                            (propertyName == this.KnownTypes[cellControlName].ReadOnlyProperty && defaultValue != null && !string.IsNullOrEmpty(defaultValue.ToString())))
+                                        if (this.KnownTypes.ContainsKey(cellControlName))
                                         {
-                                            if (propertyName == "Watermark")
+                                            if (string.IsNullOrEmpty(cellControlName) ||
+                                                propertyName != this.KnownTypes[cellControlName].ReadOnlyProperty ||
+                                                (propertyName == this.KnownTypes[cellControlName].ReadOnlyProperty && defaultValue != null && !string.IsNullOrEmpty(defaultValue.ToString())))
                                             {
-                                                if (null != defaultValue && !String.IsNullOrEmpty(defaultValue.ToString()))
+                                                if (propertyName == "Watermark")
+                                                {
+                                                    if (null != defaultValue && !String.IsNullOrEmpty(defaultValue.ToString()))
+                                                        ReflectionServices.SetValue(cellControl, propertyName, defaultValue);
+                                                }
+                                                else
                                                     ReflectionServices.SetValue(cellControl, propertyName, defaultValue);
                                             }
-                                            else
-                                                ReflectionServices.SetValue(cellControl, propertyName, defaultValue);
                                         }
+                                        else
+                                            ReflectionServices.SetValue(cellControl, propertyName, defaultValue);
                                     }
                                     catch (Exception ex)
                                     {

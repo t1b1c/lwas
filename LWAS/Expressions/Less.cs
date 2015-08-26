@@ -62,6 +62,8 @@ namespace LWAS.Expressions
                     {
                         if (DateTime.TryParse(operand.Value.ToString(), out dtvalue))
                             value = dtvalue.Ticks;
+                        else
+                            decimal.TryParse(operand.Value.ToString(), out value);
                     }
                     else if (operand.Value == null || (dtvalue != DateTime.MinValue && !decimal.TryParse(operand.Value.ToString(), out value)))
                     {
