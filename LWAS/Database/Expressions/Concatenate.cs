@@ -22,6 +22,7 @@ using System.Text;
 using LWAS.Extensible.Interfaces.Expressions;
 using LWAS.Expressions;
 using LWAS.Expressions.Extensions;
+using LWAS.Extensible.Interfaces;
 
 namespace LWAS.Database.Expressions
 {
@@ -30,6 +31,20 @@ namespace LWAS.Database.Expressions
         public override string Key
         {
             get { return "concatenate"; }
+        }
+
+        public override IResult Evaluate()
+        {
+            IResult result = base.Evaluate();
+
+            this.Value = String.Empty;
+            foreach (IToken operand in this.Operands)
+            {
+                this.Value = (string)this.Value + operand.Value ?? "";
+            }
+
+            result.Status = ResultStatus.Successful;
+            return result;
         }
 
         public override void ToSql(StringBuilder builder)

@@ -95,7 +95,24 @@ namespace LWAS.CustomControls
         public bool UseUploadedFileName { get; set; }
         public bool RedirectAfterUpload { get; set; }
 
-		static Uploader()
+        public override Unit Width
+        {
+            get
+            {
+                if (null != uploader)
+                    return uploader.Width;
+                return base.Width;
+            }
+
+            set
+            {
+                if (null != uploader)
+                    uploader.Width = value;
+                base.Width = value;
+            }
+        }
+
+        static Uploader()
 		{
 			Uploader._storagePath = ConfigurationManager.AppSettings["UPLOADS_REPO"];
 			if (string.IsNullOrEmpty(Uploader._storagePath))
@@ -117,9 +134,10 @@ namespace LWAS.CustomControls
 
 			this.uploader = new AsyncFileUpload();
 			this.uploader.ID = "uploader";
+            this.uploader.CssClass = "uploader";
 			this.Controls.Add(this.uploader);
             if (this.Width == default(Unit))
-                this.Width = Unit.Pixel(100);
+                this.Width = Unit.Pixel(250);
             this.uploader.Width = Unit.Pixel((int)this.Width.Value - 5);
 			this.uploader.UploadedComplete += new EventHandler<AsyncFileUploadEventArgs>(this.uploader_UploadedComplete);
 
@@ -137,7 +155,8 @@ namespace LWAS.CustomControls
             base.OnInit(e);
             EnsureChildControls();
 
-            this.FileName = uploader.FileName;
+            if (UseUploadedFileName)
+                this.FileName = uploader.FileName;
         }
 
         protected override void OnLoad(EventArgs e)
