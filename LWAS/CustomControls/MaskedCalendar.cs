@@ -45,7 +45,18 @@ namespace LWAS.CustomControls
 			set { this._readOnlyStyle = value; }
 		}
 
-		public string Text
+        protected override HtmlTextWriterTag TagKey
+        {
+            get { return HtmlTextWriterTag.Div; }
+        }
+
+        public override Unit Width
+        {
+            get { return base.Width; }
+            set {; } // make width readonly for backward compatibility with erp
+        }
+
+        public string Text
 		{
 			get
 			{

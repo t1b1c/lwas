@@ -24,7 +24,7 @@ namespace LWAS.CustomControls
 	public class NumberTextBox : StyledTextBox
 	{
 		private string _format = string.Empty;
-		private NumberType _numberType = NumberType.WholeNumber;
+		private NumberType _numberType = NumberType.Money; // backward compatible with erp
 		private object _autoIncrementScope = null;
 		
         private static Dictionary<object, int> CurrentIncrements = new Dictionary<object, int>();
@@ -179,7 +179,22 @@ namespace LWAS.CustomControls
 			{
 				base.Text = NumberTextBox.Increment(this._autoIncrementScope).ToString();
 			}
-			base.Render(writer);
+
+            switch(_numberType)
+            {
+                case NumberType.AutoIncrement:
+                case NumberType.WholeNumber:
+                    this.CssClass += " number wholeNumber";
+                    break;
+                case NumberType.Percentage  :
+                    this.CssClass += " number percentage";
+                    break;
+                case NumberType.Money:
+                    this.CssClass += " number money";
+                    break;
+            }
+
+            base.Render(writer);
 		}
 		private void Page_Unload(object sender, EventArgs e)
 		{

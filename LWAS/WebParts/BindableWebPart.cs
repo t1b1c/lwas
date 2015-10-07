@@ -160,12 +160,21 @@ namespace LWAS.WebParts
 				}
 				if (null != values)
 				{
-					foreach (DictionaryEntry entry in values)
-					{
-						if (prepared.ContainsKey(entry.Key.ToString()))
-						{
-							prepared[entry.Key.ToString()] = entry.Value;
-						}
+                    foreach (DictionaryEntry entry in values)
+                    {
+                        var key = entry.Key.ToString();
+                        var val = entry.Value;
+                        if (prepared.ContainsKey(key))
+							prepared[key] = val;
+
+                        int i;
+                        decimal d;
+                        if (null != val && !Int32.TryParse(val.ToString(), out i) && Decimal.TryParse(val.ToString(), out d))
+                        {
+                            var p = parameters[key];
+                            if (null != p)
+                                p.DbType = DbType.Decimal;
+                        }
 					}
 				}
 				result = prepared;
