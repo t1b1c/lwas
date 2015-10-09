@@ -25,31 +25,32 @@ using LWAS.Expressions.Extensions;
 
 namespace LWAS.Database.Expressions
 {
-    public class Function : DatabaseExpression
+    public class WholeNumber : DatabaseExpression
     {
         public override string Key
         {
-            get { return "function"; }
+            get { return "wholeNumber"; }
         }
 
         public override void ToSql(StringBuilder builder)
         {
-            var operandsList = this.Operands.ToList();
-            var function = this.Operands.FirstOrDefault();
-            if (null == function) throw new ArgumentException("The function expression requires a first operand for the sql function name");
+            IToken token = this.Operands.First();
 
-            function.Evaluate();    // BasicToken has no value until Evaluate
-            builder.AppendFormat("dbo.{0}(", function.Value);
-
-            foreach(var param in this.Operands.Where(o => o != function))
+            if (token is IBasicToken)
+                builder.AppendFormat("cast('{0}' as int", ((IBasicToken)token).Source);
+            else if (token is IExpression)
             {
-                param.ToSql(builder);
+                builder.Append("cast( (");
+                token.ToSql(builder);
+                builder.Append(") as int )");
 
-                if (operandsList.IndexOf(param) < operandsList.Count - 1)
-                    builder.Append(", ");
             }
-
-            builder.Append(")");
+            else
+            {
+                builder.Append("cast(");
+                token.ToSql(builder);
+                builder.Append(" as int )");
+            }
         }
     }
 }

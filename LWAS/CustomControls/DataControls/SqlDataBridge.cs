@@ -23,6 +23,12 @@ namespace LWAS.CustomControls.DataControls
 {
 	public class SqlDataBridge
 	{
+        public class ExecuteSqlEventArgs : EventArgs
+        {
+            public SqlCommand Command;
+        }
+        public event EventHandler<ExecuteSqlEventArgs> ExecuteSql;
+
 		private SqlConnection _connection;
 		private string _connectionString;
 		private Dictionary<string, SqlCommand> _commands = new Dictionary<string, SqlCommand>();
@@ -77,8 +83,14 @@ namespace LWAS.CustomControls.DataControls
 			{
 				throw new InvalidOperationException("Invalid connection");
 			}
-			this._commands[key].Connection = this._connection;
-			return this._commands[key].ExecuteReader();
+
+            var cmd = _commands[key];
+			cmd.Connection = _connection;
+
+            if (this.ExecuteSql != null)
+                ExecuteSql(this, new ExecuteSqlEventArgs() { Command = cmd });
+
+			return cmd.ExecuteReader();
 		}
 		public SqlCommand DiscoverCommand(string name)
 		{

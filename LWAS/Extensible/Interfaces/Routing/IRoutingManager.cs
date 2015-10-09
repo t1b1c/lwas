@@ -21,11 +21,13 @@ namespace LWAS.Extensible.Interfaces.Routing
 {
     public interface IRoutingManager
     {
+        string ApplicationName { get; }
         IRoutesCollection SettingsRoutes { get; }
         IRoutesCollection RuntimeSettingsRoutes { get; }
         IRoutesCollection ScreensRoutes { get; }
         IRoutesCollection ApplicationsRoutes { get; }
         IRoutingAgentsCollection Agents { get; }
         void Load();
+        void Load(string application);
     }
 }

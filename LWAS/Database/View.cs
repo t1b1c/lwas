@@ -35,6 +35,7 @@ namespace LWAS.Database
     {
         public string Name { get; set; }
         public string Description { get; set; }
+        public bool Distinct { get; set; }
         public Table Source { get; set; }
         public RelationsCollection Relationship { get; set; }
         public FiltersCollection Filters { get; set; }
@@ -145,6 +146,7 @@ namespace LWAS.Database
             writer.WriteStartElement("view");
             writer.WriteAttributeString("name", this.Name);
             writer.WriteAttributeString("description", this.Description);
+            writer.WriteAttributeString("distinct", this.Distinct.ToString());
 
             writer.WriteStartElement(TableField.XML_KEY);
             foreach (TableField field in this.Fields)
@@ -212,6 +214,8 @@ namespace LWAS.Database
             if (null == element) throw new ArgumentNullException("element");
             this.Name = element.Attribute("name").Value;
             this.Description = element.Attribute("description").Value;
+            if (null != element.Attribute("distinct"))
+                this.Distinct = bool.Parse(element.Attribute("distinct").Value);
 
             foreach (XElement fieldElement in element.Element(TableField.XML_KEY).Elements("field"))
             {
@@ -287,15 +291,19 @@ namespace LWAS.Database
         public void ToSql(StringBuilder builder, bool isFilterSubview)
         {
             string target = isFilterSubview ? "filter" : "select";
-            string compiledSql = CompiledSqlFromCache(this.Name, target);
 
-            if (String.IsNullOrEmpty(compiledSql))
+            lock (SyncRoot)
             {
-                CompileSql(builder, isFilterSubview);
-                CompiledSqlToCache(this.Name, target, builder.ToString(), this.Manager.configFile);
+                string compiledSql = CompiledSqlFromCache(this.Name, target);
+
+                if (String.IsNullOrEmpty(compiledSql))
+                {
+                    CompileSql(builder, isFilterSubview);
+                    CompiledSqlToCache(this.Name, target, builder.ToString(), this.Manager.configFile);
+                }
+                else
+                    builder.Append(compiledSql);
             }
-            else
-                builder.Append(compiledSql);
 
             if (!this.Parameters.IsEmpty && !isFilterSubview)
             {
@@ -363,7 +371,7 @@ namespace LWAS.Database
             // cmd
             if (!isFilterSubview)
                 builder.AppendLine("exec sp_executesql N'");
-            builder.AppendLine("select");
+            builder.AppendLine("select " + (this.Distinct ? "distinct" : ""));
             this.Fields.ToSql(builder, this.Aliases);
             if (this.ComputedFields.Count > 0)
                 builder.AppendLine(",");

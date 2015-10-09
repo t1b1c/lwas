@@ -226,7 +226,7 @@ namespace LWAS.CustomControls
 
         string ToID(string name)
         {
-            return name.Replace(" ", "-");
+            return name.Replace(" ", "-").Replace("/", "-");
         }
     }
 }

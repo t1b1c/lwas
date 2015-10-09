@@ -17,6 +17,7 @@
 using System;
 
 using LWAS.Extensible.Interfaces;
+using LWAS.Extensible.Interfaces.Expressions;
 
 namespace LWAS.Expressions
 {
@@ -28,12 +29,30 @@ namespace LWAS.Expressions
 			{
 				return "when";
 			}
-		}
-		public override IResult Evaluate()
-		{
-			IResult result = base.Evaluate();
-			this.Value = result.IsSuccessful();
-			return result;
-		}
-	}
+        }
+
+        public override IResult Evaluate()
+        {
+            IResult result = base.Evaluate();
+            this.Value = true;
+            foreach (IToken operand in this.Operands)
+            {
+                if (!(operand.Value is bool))
+                    throw new InvalidOperationException(string.Format("Operand '{0}' didn't evaluate to boolean.", operand.Key));
+
+                if (!(bool)operand.Value)
+                {
+                    this.Value = false;
+                    break;
+                }
+            }
+            if ((bool)this.Value)
+                result.Status = ResultStatus.Successful;
+            else
+
+                result.Status = ResultStatus.Unsuccessful;
+
+            return result;
+        }
+    }
 }
