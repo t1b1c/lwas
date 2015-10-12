@@ -305,6 +305,29 @@ namespace LWAS.Database
                     builder.Append(compiledSql);
             }
 
+            StringBuilder orderby = new StringBuilder();
+            for (int i = 0; i < this.Sorting.SortedFields.Count; i++)
+            {
+                FieldSorting sorting = this.Sorting.SortedFields[i];
+                string op = null;
+                if (sorting.Direction == SortingOptions.Up)
+                    op = "asc";
+                else if (sorting.Direction == SortingOptions.Down)
+                    op = "desc";
+                if (String.IsNullOrEmpty(op))
+                    continue;
+
+                if (i == 0)
+                {
+                    orderby.AppendLine();
+                    orderby.Append("order by ");
+                }
+                else
+                    orderby.AppendLine(", ");
+                orderby.AppendFormat("[{0}].[{1}] {2}", sorting.Field.Table.Name, sorting.Field.Name, op);
+            }
+            builder.Replace("{orderby}", orderby.ToString());
+
             if (!this.Parameters.IsEmpty && !isFilterSubview)
             {
                 // parameters values
@@ -389,26 +412,10 @@ namespace LWAS.Database
                 builder.AppendLine("where");
                 this.Filters.ToSql(builder);
             }
-            for (int i = 0; i < this.Sorting.SortedFields.Count; i++)
-            {
-                FieldSorting sorting = this.Sorting.SortedFields[i];
-                string op = null;
-                if (sorting.Direction == SortingOptions.Up)
-                    op = "asc";
-                else if (sorting.Direction == SortingOptions.Down)
-                    op = "desc";
-                if (String.IsNullOrEmpty(op))
-                    continue;
 
-                if (i == 0)
-                {
-                    builder.AppendLine();
-                    builder.Append("order by ");
-                }
-                else
-                    builder.AppendLine(", ");
-                builder.AppendFormat("[{0}].[{1}] {2}", sorting.Field.Table.Name, sorting.Field.Name, op);
-            }
+            // add a marker for ordering, to be setup on each execution
+            builder.AppendLine("{orderby}");
+
             if (!isFilterSubview)
                 builder.Append("'");
 
