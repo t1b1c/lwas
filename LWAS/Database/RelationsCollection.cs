@@ -26,7 +26,7 @@ namespace LWAS.Database
 {
     public class RelationsCollection : IEnumerable<Relation>
     {
-        List<Relation> Relations { get; set; }
+        LinkedList<Relation> Relations { get; set; }
         public ViewsManager Manager { get; set; }
 
         public int Count
@@ -36,13 +36,13 @@ namespace LWAS.Database
 
         public RelationsCollection(ViewsManager manager) 
         {
-            this.Relations = new List<Relation>();
+            this.Relations = new LinkedList<Relation>();
             this.Manager = manager;
         }
 
         public void Add(Relation relation)
         {
-            this.Relations.Add(relation);
+            this.Relations.AddLast(relation);
         }
         public Relation Add(TableField masterField, TableField detailsField)
         {

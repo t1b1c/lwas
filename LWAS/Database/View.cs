@@ -172,6 +172,10 @@ namespace LWAS.Database
             {
                 writer.WriteStartElement("relation");
                 writer.WriteAttributeString("name", relation.Name);
+                if (null != relation.HookTable)
+                {
+                    writer.WriteAttributeString("hookTable", relation.HookTable.Name);
+                }
                 writer.WriteEndElement();   // relation
             }
             writer.WriteEndElement();   // relationship
@@ -246,6 +250,12 @@ namespace LWAS.Database
                 Relation relation = this.Manager.Relations[relationName];
                 if (null == relation) throw new ApplicationException(String.Format("Cannot find the relation '{0}' to add it to view '{1}'", relationName, this.Name));
                 this.Relationship.Add(relation);
+
+                if (null != relationElement.Attribute("hookTable"))
+                {
+                    Table hookTable = this.Manager.Tables[relationElement.Attribute("hookTable").Value];
+                    relation.HookTable = hookTable;
+                }
             }
 
             this.Filters.FromXml(element.Element("filters"));
@@ -315,6 +325,10 @@ namespace LWAS.Database
                 else if (sorting.Direction == SortingOptions.Down)
                     op = "desc";
                 if (String.IsNullOrEmpty(op))
+                    continue;
+
+                // skip duplicate ordering
+                if (orderby.ToString().Contains(String.Format("[{0}].[{1}]", sorting.Field.Table.Name, sorting.Field.Name)))
                     continue;
 
                 if (i == 0)
@@ -662,14 +676,22 @@ namespace LWAS.Database
                 foreach (string p in subviewReferences.Keys)
                 {
                     Field referenceField = subviewReferences[p];
-                    ParameterToken subviewParamToken = subviewparams.FirstOrDefault(pt => pt.ParameterName == p);
-                    if (null != subviewParamToken)
+
+                    if (null != referenceField)
+                        subview.Parameters.LinkedWithSuperView.Add(p);  // mark this parameter in the collection to avoid bugs in Position()
+
+                    foreach (var subviewParamToken in subviewparams.Where(pt => pt.ParameterName == p))
                     {
-                        subviewParamToken.ReferenceField = referenceField;
-                        if (null != referenceField && this.Aliases.ContainsKey(referenceField))
-                            subviewParamToken.ReferenceFieldAlias = this.Aliases[referenceField];
-                        if (allparams.Contains(subviewParamToken.ParameterName))
-                            subviewParamToken.Identifier = allparams.SqlIdentifier(subviewParamToken.ParameterName);
+                        if (null != subviewParamToken)
+                        {
+                            subviewParamToken.ReferenceField = referenceField;
+                            if (null != referenceField && this.Aliases.ContainsKey(referenceField))
+                                subviewParamToken.ReferenceFieldAlias = this.Aliases[referenceField];
+                            if (allparams.Contains(subviewParamToken.ParameterName))
+                            {
+                                subviewParamToken.Identifier = allparams.SqlIdentifier(subviewParamToken.ParameterName);
+                            }
+                        }
                     }
                 }
             }

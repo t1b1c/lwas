@@ -31,6 +31,9 @@ namespace LWAS.Database
         public TableField MasterField { get; set; }
         public Table DetailsTable { get; set; }
         public TableField DetailsField { get; set; }
+
+        public Table HookTable { get; set; }
+
         public ViewsManager Manager { get; set; }
 
         public Relation(ViewsManager manager)
