@@ -35,6 +35,7 @@ namespace LWAS.Database
     {
         public string Name { get; set; }
         public string Description { get; set; }
+        public bool Distinct { get; set; }
         public Table Source { get; set; }
         public RelationsCollection Relationship { get; set; }
         public FiltersCollection Filters { get; set; }
@@ -145,6 +146,7 @@ namespace LWAS.Database
             writer.WriteStartElement("view");
             writer.WriteAttributeString("name", this.Name);
             writer.WriteAttributeString("description", this.Description);
+            writer.WriteAttributeString("distinct", this.Distinct.ToString());
 
             writer.WriteStartElement(TableField.XML_KEY);
             foreach (TableField field in this.Fields)
@@ -170,6 +172,10 @@ namespace LWAS.Database
             {
                 writer.WriteStartElement("relation");
                 writer.WriteAttributeString("name", relation.Name);
+                if (null != relation.HookTable)
+                {
+                    writer.WriteAttributeString("hookTable", relation.HookTable.Name);
+                }
                 writer.WriteEndElement();   // relation
             }
             writer.WriteEndElement();   // relationship
@@ -212,6 +218,8 @@ namespace LWAS.Database
             if (null == element) throw new ArgumentNullException("element");
             this.Name = element.Attribute("name").Value;
             this.Description = element.Attribute("description").Value;
+            if (null != element.Attribute("distinct"))
+                this.Distinct = bool.Parse(element.Attribute("distinct").Value);
 
             foreach (XElement fieldElement in element.Element(TableField.XML_KEY).Elements("field"))
             {
@@ -242,6 +250,12 @@ namespace LWAS.Database
                 Relation relation = this.Manager.Relations[relationName];
                 if (null == relation) throw new ApplicationException(String.Format("Cannot find the relation '{0}' to add it to view '{1}'", relationName, this.Name));
                 this.Relationship.Add(relation);
+
+                if (null != relationElement.Attribute("hookTable"))
+                {
+                    Table hookTable = this.Manager.Tables[relationElement.Attribute("hookTable").Value];
+                    relation.HookTable = hookTable;
+                }
             }
 
             this.Filters.FromXml(element.Element("filters"));
@@ -300,6 +314,33 @@ namespace LWAS.Database
                 else
                     builder.Append(compiledSql);
             }
+
+            StringBuilder orderby = new StringBuilder();
+            for (int i = 0; i < this.Sorting.SortedFields.Count; i++)
+            {
+                FieldSorting sorting = this.Sorting.SortedFields[i];
+                string op = null;
+                if (sorting.Direction == SortingOptions.Up)
+                    op = "asc";
+                else if (sorting.Direction == SortingOptions.Down)
+                    op = "desc";
+                if (String.IsNullOrEmpty(op))
+                    continue;
+
+                // skip duplicate ordering
+                if (orderby.ToString().Contains(String.Format("[{0}].[{1}]", sorting.Field.Table.Name, sorting.Field.Name)))
+                    continue;
+
+                if (i == 0)
+                {
+                    orderby.AppendLine();
+                    orderby.Append("order by ");
+                }
+                else
+                    orderby.AppendLine(", ");
+                orderby.AppendFormat("[{0}].[{1}] {2}", sorting.Field.Table.Name, sorting.Field.Name, op);
+            }
+            builder.Replace("{orderby}", orderby.ToString());
 
             if (!this.Parameters.IsEmpty && !isFilterSubview)
             {
@@ -367,7 +408,7 @@ namespace LWAS.Database
             // cmd
             if (!isFilterSubview)
                 builder.AppendLine("exec sp_executesql N'");
-            builder.AppendLine("select");
+            builder.AppendLine("select " + (this.Distinct ? "distinct" : ""));
             this.Fields.ToSql(builder, this.Aliases);
             if (this.ComputedFields.Count > 0)
                 builder.AppendLine(",");
@@ -385,26 +426,10 @@ namespace LWAS.Database
                 builder.AppendLine("where");
                 this.Filters.ToSql(builder);
             }
-            for (int i = 0; i < this.Sorting.SortedFields.Count; i++)
-            {
-                FieldSorting sorting = this.Sorting.SortedFields[i];
-                string op = null;
-                if (sorting.Direction == SortingOptions.Up)
-                    op = "asc";
-                else if (sorting.Direction == SortingOptions.Down)
-                    op = "desc";
-                if (String.IsNullOrEmpty(op))
-                    continue;
 
-                if (i == 0)
-                {
-                    builder.AppendLine();
-                    builder.Append("order by ");
-                }
-                else
-                    builder.AppendLine(", ");
-                builder.AppendFormat("[{0}].[{1}] {2}", sorting.Field.Table.Name, sorting.Field.Name, op);
-            }
+            // add a marker for ordering, to be setup on each execution
+            builder.AppendLine("{orderby}");
+
             if (!isFilterSubview)
                 builder.Append("'");
 
@@ -589,11 +614,16 @@ namespace LWAS.Database
                         return "null";
                     else
                     {
-                        DateTime dt = DateTime.Parse(strval);
-                        if (includeSqlCast)
-                            return String.Format("cast(''{0}'' as smalldatetime)", dt.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                        DateTime dt;
+                        if (DateTime.TryParse(strval, out dt))
+                        {
+                            if (includeSqlCast)
+                                return String.Format("cast(''{0}'' as smalldatetime)", dt.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                            else
+                                return dt.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                        }
                         else
-                            return dt.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                            return strval;  // the param type detection could be faulty at this point so return a string, such as when there's a sql function involved (e.g. datepart returns an int but takes a datetime)
                     }
                 case "Boolean":
                     if (includeSqlCast)
@@ -651,14 +681,22 @@ namespace LWAS.Database
                 foreach (string p in subviewReferences.Keys)
                 {
                     Field referenceField = subviewReferences[p];
-                    ParameterToken subviewParamToken = subviewparams.FirstOrDefault(pt => pt.ParameterName == p);
-                    if (null != subviewParamToken)
+
+                    if (null != referenceField)
+                        subview.Parameters.LinkedWithSuperView.Add(p);  // mark this parameter in the collection to avoid bugs in Position()
+
+                    foreach (var subviewParamToken in subviewparams.Where(pt => pt.ParameterName == p))
                     {
-                        subviewParamToken.ReferenceField = referenceField;
-                        if (null != referenceField && this.Aliases.ContainsKey(referenceField))
-                            subviewParamToken.ReferenceFieldAlias = this.Aliases[referenceField];
-                        if (allparams.Contains(subviewParamToken.ParameterName))
-                            subviewParamToken.Identifier = allparams.SqlIdentifier(subviewParamToken.ParameterName);
+                        if (null != subviewParamToken)
+                        {
+                            subviewParamToken.ReferenceField = referenceField;
+                            if (null != referenceField && this.Aliases.ContainsKey(referenceField))
+                                subviewParamToken.ReferenceFieldAlias = this.Aliases[referenceField];
+                            if (allparams.Contains(subviewParamToken.ParameterName))
+                            {
+                                subviewParamToken.Identifier = allparams.SqlIdentifier(subviewParamToken.ParameterName);
+                            }
+                        }
                     }
                 }
             }

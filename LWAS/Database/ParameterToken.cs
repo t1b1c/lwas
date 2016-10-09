@@ -92,7 +92,7 @@ namespace LWAS.Database
             if (null == this.ReferenceField)
             {
                 if (String.IsNullOrEmpty(this.Identifier))
-                    this.Identifier = this.View.Parameters.SqlIdentifier(this.ParameterName);
+                    this.Identifier = this.View.Parameters.SqlIdentifier(this.ParameterName); // BUGGY cause some params are linked with the superview
                 builder.AppendFormat("{0}", this.Identifier);
             }
             else

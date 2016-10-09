@@ -59,7 +59,7 @@ namespace LWAS.Infrastructure.Routing
             set { _agents.Add(value); }
         }
 
-        public string ApplicationName { get; private set; }
+        public string ApplicationName { get; set; }
 
         public RoutingManager()
         {

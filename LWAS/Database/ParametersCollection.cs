@@ -27,6 +27,7 @@ namespace LWAS.Database
     {
         Dictionary<string, object> parameters = new Dictionary<string, object>();
         ParametersCollection linked_collection;
+        public List<string> LinkedWithSuperView = new List<string>();
 
         public bool DisableAddInIndex { get; set; }
 
@@ -118,19 +119,23 @@ namespace LWAS.Database
             if (String.IsNullOrEmpty(parameter)) throw new ArgumentNullException("parameter");
             if (!parameters.ContainsKey(parameter)) throw new ArgumentException(String.Format("Unknown parameter '{0}'", parameter));
 
+            // this shouldn't be called for parameters linked with the superview
+            if (this.LinkedWithSuperView.Contains(parameter))
+                throw new ApplicationException(String.Format("The parameter '{0}' is linked with the superview and shouldn't be sql'd here", parameter));
+
             return String.Format("@p{0}", Position(parameter).ToString());
         }
 
+        List<string> UnidentifedParameters = null;
         int Position(string parameter)
         {
-            int count = 0;
-            foreach (string key in parameters.Keys)
-            {
-                if (key == parameter)
-                    return count;
-                count++;
-            }
-            return -1;
+            if (null == UnidentifedParameters)
+                UnidentifedParameters = parameters.Keys.Except(this.LinkedWithSuperView).ToList();
+
+            if (!UnidentifedParameters.Contains(parameter))
+                throw new ApplicationException(String.Format("The parameter '{0}' is not unidentified", parameter));
+
+            return UnidentifedParameters.IndexOf(parameter);
         }
 
         public void ToXml(XmlWriter writer)

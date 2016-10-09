@@ -76,6 +76,9 @@ namespace LWAS.WebParts
                 if (!this.ViewsManager.Views.ContainsKey(value))
                     throw new InvalidOperationException(String.Format("view '{0}' not found", value));
                 this.CurrentView = this.ViewsManager.Views[value];
+
+                // reset update parameters
+                this.CurrentView.UpdateParameters = new ParametersCollection();
             }
         }
 
@@ -176,11 +179,16 @@ namespace LWAS.WebParts
                             {
                                 database = new Database.Database(key, views_config, this.Agent, this.ExpressionsManager);
 
+                                // do not cache reference to current page!
+                                database.ViewsManager.ExpressionsManager.Page = null;
                                 cache.Insert(views_config, database, new CacheDependency(views_config));
                             }
 
                             if (!this.Databases.ContainsKey(database.Name))
                                 this.Databases.Add(database.Name, database);
+
+                            // assign proper reference to current page
+                            database.ViewsManager.ExpressionsManager.Page = this.Page;
                         }
                     }
                 }
@@ -191,6 +199,7 @@ namespace LWAS.WebParts
                 }
             }
 
+            // this is buggy
             this.CurrentDatabase = this.Databases.First().Value;
 
             base.Initialize();

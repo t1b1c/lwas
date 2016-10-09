@@ -38,7 +38,7 @@ namespace LWAS.WebParts
         static object SyncRoot = new object();
 
 		private IBinder _binder;
-		private SqlDataBridge _dataBridge = new SqlDataBridge();
+		private SqlDataBridge _dataBridge;
 		private IMonitor _monitor;
 		public Dictionary<string, string> ConnectionsRegistry = new Dictionary<string, string>();
 		private DataSet _lastResult;
@@ -59,6 +59,8 @@ namespace LWAS.WebParts
 			get { return this._monitor; }
 			set { this._monitor = value; }
 		}
+
+        string defaultConnectionKey = null;
 		public string Connection
 		{
 			get
@@ -72,6 +74,8 @@ namespace LWAS.WebParts
 					try
 					{
 						this._dataBridge.ConnectionString = this.ConnectionsRegistry[value];
+                        if (String.IsNullOrEmpty(defaultConnectionKey))
+                            defaultConnectionKey = value;
 					}
 					catch (Exception ex)
 					{
@@ -82,7 +86,10 @@ namespace LWAS.WebParts
                 {
                     try
                     {
-                        this._dataBridge.ConnectionString = this.ConnectionsRegistry.Values.First();
+                        if (!String.IsNullOrEmpty(defaultConnectionKey))
+                            _dataBridge.ConnectionString = this.ConnectionsRegistry[defaultConnectionKey];
+                        else
+                            this._dataBridge.ConnectionString = this.ConnectionsRegistry.Values.First();
                     }
                     catch (Exception ex)
                     {
@@ -150,7 +157,19 @@ namespace LWAS.WebParts
 		public SqlDataBridgeWebPart()
 		{
 			this.Hidden = true;
+            _dataBridge = new SqlDataBridge();
+            _dataBridge.ExecuteSql += _dataBridge_ExecuteSql;
 		}
+
+        void _dataBridge_ExecuteSql(object sender, SqlDataBridge.ExecuteSqlEventArgs e)
+        {
+            string sql = e.Command.CommandText;
+            foreach (SqlParameter param in e.Command.Parameters)
+                sql += String.Format(" {0}='{1}',", param.ParameterName, param.Value ?? "");
+
+            this.Monitor.Register(this, this.Monitor.NewEventInstance("execute sql", null, sql, EVENT_TYPE.Trace));
+
+        }
 		protected void LoadConnections()
 		{
 			string file = ConfigurationManager.AppSettings["CONNECTIONS_FILE"];
