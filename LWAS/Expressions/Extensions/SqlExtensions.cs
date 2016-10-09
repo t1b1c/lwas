@@ -304,6 +304,8 @@ namespace LWAS.Expressions.Extensions
             if (null == expression) throw new ArgumentNullException("expression");
             if (null == builder) throw new ArgumentNullException("builder");
 
+            expression.Evaluate();  // make sure that date part token reads the value
+
             if (expression.Operands.Count > 0)
             {
                 DatePartToken operand1 = expression.Operands

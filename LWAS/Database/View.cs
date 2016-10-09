@@ -614,11 +614,16 @@ namespace LWAS.Database
                         return "null";
                     else
                     {
-                        DateTime dt = DateTime.Parse(strval);
-                        if (includeSqlCast)
-                            return String.Format("cast(''{0}'' as smalldatetime)", dt.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                        DateTime dt;
+                        if (DateTime.TryParse(strval, out dt))
+                        {
+                            if (includeSqlCast)
+                                return String.Format("cast(''{0}'' as smalldatetime)", dt.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                            else
+                                return dt.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                        }
                         else
-                            return dt.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                            return strval;  // the param type detection could be faulty at this point so return a string, such as when there's a sql function involved (e.g. datepart returns an int but takes a datetime)
                     }
                 case "Boolean":
                     if (includeSqlCast)

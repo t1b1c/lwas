@@ -187,6 +187,11 @@ namespace LWAS.WebParts
             set { _container.PassLastCheck = value; }
         }
 
+        public Container.OperationType Operation
+        {
+            get { return _container.Operation; }
+        }
+
 		public ContainerWebPart()
 		{
             this.ExportMode = WebPartExportMode.All;

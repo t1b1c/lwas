@@ -71,6 +71,12 @@ namespace LWAS.WebParts.Parsers
 				{
 					foreach (IConfigurationElement propertyElement in controlElement.Elements.Values)
 					{
+                        if (!table.Columns.Contains(controlElement.ConfigKey))
+                        {
+                            table.Columns.Add(controlElement.ConfigKey);
+                            columnsToRemove.Remove(table.Columns[controlElement.ConfigKey]);
+                        }
+
 						if (propertyElement.Attributes.ContainsKey("pull"))
 						{
 							string pull = propertyElement.GetAttributeReference("pull").Value.ToString();
