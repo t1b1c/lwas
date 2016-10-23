@@ -184,7 +184,7 @@ namespace LWAS.CustomControls
             container.Controls.Add(this.txtDate);
             txtDate.Attributes.Add("data-mask", DateMask);
             txtDate.Attributes.Add("placeholder", Thread.CurrentThread.CurrentCulture.DateTimeFormat.ShortDatePattern);
-            this.txtDate.CssClass += " masked_calendar_date";
+            this.txtDate.CssClass += " form-control masked_calendar_date";
 
 			this.txtTime = new StyledTextBox();
 			this.txtTime.ID = "txtTime";

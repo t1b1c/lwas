@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="CustomControls\Autocomplete.cs" />
     <Compile Include="CustomControls\Breadcrumb.cs" />
+    <Compile Include="CustomControls\LabelEx.cs" />
     <Compile Include="CustomControls\NumberBoundField.cs" />
     <Compile Include="CustomControls\DataControls\Container.cs" />
     <Compile Include="CustomControls\DataControls\DataTableDataSource.cs" />
@@ -88,8 +89,10 @@
     <Compile Include="CustomControls\Uploader2.cs" />
     <Compile Include="Database\ComputedField.cs" />
     <Compile Include="Database\Database.cs" />
+    <Compile Include="Database\Expressions\Concatenate.cs" />
     <Compile Include="Database\Expressions\Eval.cs" />
     <Compile Include="Database\Expressions\Function.cs" />
+    <Compile Include="Database\Expressions\wholeNumber.cs" />
     <Compile Include="Database\FieldToken.cs" />
     <Compile Include="Database\Expressions\Add.cs" />
     <Compile Include="Database\Expressions\Divide.cs" />

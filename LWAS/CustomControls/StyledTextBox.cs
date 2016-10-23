@@ -84,5 +84,18 @@ namespace LWAS.CustomControls
             }
             return false;
         }
-	}
+
+        protected override void Render(HtmlTextWriter writer)
+        {
+            if (!this.ReadOnly)
+                base.Render(writer);
+            else
+            {
+                if (this.TextMode == TextBoxMode.MultiLine)
+                    writer.Write("<span id='{0}' class='{1}'>{2}</span>", this.ClientID, "", this.Text);
+                else
+                    writer.Write("<span id='{0}' class='{1}'>{2}</span>", this.ClientID, "form-control-static", this.Text);
+            }
+        }
+    }
 }

@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Specialized;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace LWAS.CustomControls
@@ -110,5 +111,16 @@ namespace LWAS.CustomControls
 				base.SelectedIndex = selidx;
 			}
 		}
+
+        protected override void Render(HtmlTextWriter writer)
+        {
+            if (this.Enabled)
+                base.Render(writer);
+            else
+            {
+                writer.Write("<span class='{0}'>{1}</span>", "form-control-static", this.SelectedItem.Text);
+                writer.Write("<input type='hidden' id='{0}' name='ctl00${1}' value='{2}' />", this.ClientID, this.ClientID.Replace("_", "$"), this.SelectedItem.Value);
+            }
+        }
     }
 }

@@ -15,18 +15,82 @@
 */
 
 using System;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace LWAS.CustomControls
 {
-	public class OneClickButton : Button
+	public class OneClickButton : LinkButton
 	{
 		protected override void OnPreRender(EventArgs e)
 		{
-			string script = "this.disabled=true";
+			string script = "this.class += ' disabled'";
 			this.OnClientClick = script;
-			this.UseSubmitBehavior = false;
-			base.OnPreRender(e);
+            //this.UseSubmitBehavior = false;
+
+            base.OnPreRender(e);
 		}
-	}
+
+        protected override void Render(HtmlTextWriter writer)
+        {
+            if (this.CommandName.Contains("save"))
+                this.CssClass += " btn-success";
+            else if (this.CommandName.Contains("delete"))
+                this.CssClass += " btn-danger";
+
+                base.Render(writer);
+        }
+
+        protected override void RenderContents(HtmlTextWriter writer)
+        {
+            if (this.CommandName.Contains("save"))
+            {
+                writer.Write(@"<span class='glyphicon glyphicon-floppy-disk'></span> ");
+                writer.Write(@"<span class='hidden-xs hidden-sm'>" + this.Text + "</span> ");
+            }
+            else if (this.CommandName.Contains("insert"))
+            {
+                writer.Write(@"<span class='glyphicon glyphicon-plus-sign'></span> ");
+                writer.Write(@"<span class='hidden-xs hidden-sm'>" + this.Text + "</span> ");
+            }
+            else if (this.CommandName.Contains("view"))
+            {
+                writer.Write(@"<span class='glyphicon glyphicon-refresh'></span> ");
+                writer.Write(@"<span class='hidden-xs hidden-sm'>" + this.Text + "</span> ");
+            }
+            else if (this.CommandName.Contains("delete"))
+            {
+                writer.Write(@"<span class='glyphicon glyphicon-remove'></span> ");
+                writer.Write(@"<span class='hidden-xs hidden-sm'>" + this.Text + "</span> ");
+            }
+            else if (this.CommandName.Contains("edit"))
+            {
+                writer.Write(@"<span class='glyphicon glyphicon-edit'></span> ");
+                writer.Write(@"<span class='hidden-xs hidden-sm'>" + this.Text + "</span> ");
+            }
+            else if (this.CommandName.Equals("select"))
+            {
+                writer.Write(@"<span class='glyphicon glyphicon-edit'></span> ");
+                writer.Write(@"<span class='hidden-xs hidden-sm'></span> ");
+            }
+            else if (this.CommandName.Contains("paginater:first"))
+            {
+                writer.Write(@"<span class='glyphicon glyphicon-step-backward'></span>");
+            }
+            else if (this.CommandName.Contains("paginater:left"))
+            {
+                writer.Write(@"<span class='glyphicon glyphicon-backward'></span>");
+            }
+            else if (this.CommandName.Contains("paginater:right"))
+            {
+                writer.Write(@"<span class='glyphicon glyphicon-forward'></span>");
+            }
+            else if (this.CommandName.Contains("paginater:last"))
+            {
+                writer.Write(@"<span class='glyphicon glyphicon-step-forward'></span>");
+            }
+            else
+                base.RenderContents(writer);
+        }
+    }
 }

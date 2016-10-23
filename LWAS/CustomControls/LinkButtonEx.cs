@@ -22,30 +22,26 @@ namespace LWAS.CustomControls
 {
 	public class LinkButtonEx : LinkButton
 	{
-		private bool _readOnly = false;
-		public bool ReadOnly
-		{
-			get
-			{
-				return this._readOnly;
-			}
-			set
-			{
-				this._readOnly = value;
-			}
-		}
-		public override void RenderBeginTag(HtmlTextWriter writer)
-		{
-			if (this._readOnly)
-			{
-				this.CssClass = "linkButton_readonly";
-				this.AddAttributesToRender(writer);
-				writer.RenderBeginTag(HtmlTextWriterTag.Span);
-			}
-			else
-			{
-				base.RenderBeginTag(writer);
-			}
-		}
-	}
+		public bool ReadOnly { get; set; }
+        public override Unit Width
+        {
+            get { return base.Width; }
+            set { ; }
+        }
+
+        protected override void Render(HtmlTextWriter writer)
+        {
+            if (this.ReadOnly)
+                return;
+
+            base.Render(writer);
+        }
+
+        protected override void RenderContents(HtmlTextWriter writer)
+        {
+            writer.Write(@"<span class='glyphicon glyphicon-link'></span> ");
+            writer.Write(@"<span>" + this.Text + "</span> ");
+        }
+
+    }
 }
