@@ -176,26 +176,16 @@ namespace LWAS.CustomControls
 		protected override void Render(HtmlTextWriter writer)
 		{
 			if (this._numberType == NumberType.AutoIncrement)
-			{
 				base.Text = NumberTextBox.Increment(this._autoIncrementScope).ToString();
-			}
 
-            switch(_numberType)
+            if (!this.ReadOnly)
             {
-                case NumberType.AutoIncrement:
-                case NumberType.WholeNumber:
-                    this.CssClass += " number wholeNumber";
-                    break;
-                case NumberType.Percentage  :
-                    this.CssClass += " number percentage";
-                    break;
-                case NumberType.Money:
-                    this.CssClass += " number money";
-                    break;
+                this.TextMode = System.Web.UI.WebControls.TextBoxMode.Number;
+                base.Render(writer);
             }
-
-            base.Render(writer);
-		}
+            else
+                writer.Write("<span id='{0}' class='{1}'>{2}</span>", this.ClientID, "form-control-static form-control-number", this.Text);
+        }
 		private void Page_Unload(object sender, EventArgs e)
 		{
 			NumberTextBox.CurrentIncrements.Clear();

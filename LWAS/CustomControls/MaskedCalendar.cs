@@ -170,38 +170,29 @@ namespace LWAS.CustomControls
             container.CssClass = "maskedcalendar-container";
             this.Controls.Add(container);
 
-			this.txtDate = new StyledTextBox();
-			this.txtDate.ID = "txtDate";
-			this.txtDate.ReadOnly = this._readOnly;
-			if (this._readOnly)
-			{
-				this.txtDate.ApplyStyle(this._readOnlyStyle);
-			}
-			else
-			{
-				this.txtDate.ApplyStyle(this._normalStyle);
-			}
+			txtDate = new StyledTextBox();
+			txtDate.ID = "txtDate";
+            txtDate.ReadOnly = _readOnly;
+            var div_input_group = new LiteralControl(String.Format(@"<div class=""input-group masked_calendar_date {0}"">", _readOnly ? "" : "date"));
+            container.Controls.Add(div_input_group);
             container.Controls.Add(this.txtDate);
-            txtDate.Attributes.Add("data-mask", DateMask);
-            txtDate.Attributes.Add("placeholder", Thread.CurrentThread.CurrentCulture.DateTimeFormat.ShortDatePattern);
-            this.txtDate.CssClass += " form-control masked_calendar_date";
+            txtDate.Attributes.Add("readonly", "readonly");
+            txtDate.CssClass = "form-control disabled";
+            if (!_readOnly)
+                container.Controls.Add(new LiteralControl(@"<span class=""input-group-addon""><i class=""glyphicon glyphicon-calendar""></i></span>"));
+            else
+                container.Controls.Add(new LiteralControl(" "));
+            container.Controls.Add(new LiteralControl("</div>"));
 
-			this.txtTime = new StyledTextBox();
-			this.txtTime.ID = "txtTime";
-			this.txtTime.Visible = false;
-			this.txtTime.ReadOnly = this._readOnly;
-			if (this._readOnly)
-			{
-				this.txtTime.ApplyStyle(this._readOnlyStyle);
-			}
-			else
-			{
-				this.txtTime.ApplyStyle(this._normalStyle);
-			}
+			txtTime = new StyledTextBox();
+			txtTime.ID = "txtTime";
+			txtTime.Visible = false;
+			txtTime.ReadOnly = _readOnly;
             container.Controls.Add(this.txtTime);
             txtTime.Attributes.Add("data-mask", TimeMask);
             txtTime.Attributes.Add("placeholder", Thread.CurrentThread.CurrentCulture.DateTimeFormat.ShortTimePattern);
-            this.txtTime.CssClass += " masked_calendar_time";
+            txtTime.CssClass += " masked_calendar_time";
+            txtTime.TextMode = TextBoxMode.Time;
 		}
 	}
 }

@@ -28,5 +28,6 @@ namespace LWAS.Extensible.Interfaces.WebParts
 		}
 		ITemplatingItem Add(bool readOnly, bool isNew, bool isCurrent, bool isValid);
 		ITemplatingItem Add(bool readOnly, bool isNew, bool isCurrent, bool isValid, object data);
-	}
+        ITemplatingItem Insert(int index, bool readOnly, bool isNew, bool isCurrent, bool isValid);
+    }
 }

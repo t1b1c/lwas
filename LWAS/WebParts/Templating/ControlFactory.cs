@@ -471,6 +471,10 @@ namespace LWAS.WebParts.Templating
                                     else
                                         container.Attributes.Add("watermark", pull);
                                 }
+
+                                var labelEx = cellControl as LabelEx;
+                                if (null != labelEx)
+                                    labelEx.HasData = true;
 							}
 						}
 					}

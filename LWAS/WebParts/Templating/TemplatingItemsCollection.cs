@@ -69,5 +69,15 @@ namespace LWAS.WebParts.Templating
 			base.Add(item);
 			return item;
 		}
-	}
+        public ITemplatingItem Insert(int index, bool readOnly, bool isNew, bool isCurrent, bool isValid)
+        {
+            ITemplatingItem item = new TemplatingItem();
+            item.IsReadOnly = readOnly;
+            item.IsNew = isNew;
+            item.IsCurrent = isCurrent;
+            item.IsValid = isValid;
+            base.Insert(index, item);
+            return item;
+        }
+    }
 }

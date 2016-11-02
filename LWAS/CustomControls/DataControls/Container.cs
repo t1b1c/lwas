@@ -870,7 +870,7 @@ namespace LWAS.CustomControls.DataControls
 		}
 		protected virtual void OnInsert()
 		{
-			ITemplatingItem newItem = this._items.Add(false, true, true, true);
+			ITemplatingItem newItem = this._items.Insert(0, false, true, true, true);
 			this._template.PopulateItem(this._templateConfig, newItem, null);
 			newItem.HasChanges = true;
 			this.Operation = OperationType.Inserting;
