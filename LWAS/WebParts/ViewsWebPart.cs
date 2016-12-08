@@ -99,14 +99,28 @@ namespace LWAS.WebParts
             }
         }
 
+        public int Offset { get; set; }
+        public int Limit { get; set; }
+        public string AdditionalFilter { get; set; }
+
         public string[] Command
         {
             get
             {
                 if (null == this.CurrentView) throw new InvalidOperationException("CurrentView not set");
                 StringBuilder sb = new StringBuilder();
-                this.CurrentView.ToSql(sb);
+                this.CurrentView.ToSql(sb, this.Offset, this.Limit, this.AdditionalFilter);
                 return new string[] { this.CurrentView.Name, sb.ToString() };
+            }
+        }
+
+        public string[] CountCommand
+        {
+            get
+            {
+                if (null == this.CurrentView) throw new InvalidOperationException("CurrentView not set");
+                string text = this.CurrentView.ToSqlCount(this.AdditionalFilter);
+                return new string[] { "count ("+ this.CurrentView.Name + ")",  text};
             }
         }
 

@@ -128,21 +128,21 @@ namespace LWAS.CustomControls.DataControls
 		{
 			set
 			{
-				this._filter = value.Split(new char[] { ',' });
+				_filter = value.Split(new char[] { ',' });
 				Dictionary<string, object> data = new Dictionary<string, object>();
-				string[] filter = this._filter;
+				string[] filter = _filter;
 				for (int i = 0; i < filter.Length; i++)
 				{
 					string member = filter[i];
 					data.Add(member, null);
 				}
-				this._filterItems.Add(false, true, true, true, data);
+				_filterItems.Add(false, true, true, true, data);
 			}
 		}
 		public ITemplatingItemsCollection FilterItems
 		{
-			get { return this._filterItems; }
-			set { this._filterItems = value; }
+			get { return _filterItems; }
+			set { _filterItems = value; }
 		}
 		public ITemplatingItem CurrentItem
 		{
