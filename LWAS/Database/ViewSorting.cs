@@ -40,7 +40,23 @@ namespace LWAS.Database
             get
             {
                 if (String.IsNullOrEmpty(fieldNameOrAlias)) throw new ArgumentNullException("fieldNameOrAlias");
-                TableField field = this.View.Fields.SingleOrDefault(f => f.Alias == fieldNameOrAlias || f.Name == fieldNameOrAlias);
+                
+                // find by alias
+                var tableFieldAliases = this.View.Aliases.Where(kvp => kvp.Key is TableField);
+                var alias = tableFieldAliases
+                    .SingleOrDefault(kvp => kvp.Value == fieldNameOrAlias)
+                    .Key;
+                TableField field = alias as TableField;
+
+                // find by field name
+                if (field == null)
+                {
+                    var listAliases = tableFieldAliases.Select(kvp => kvp.Key as TableField);
+                    field = this.View.Fields
+                        .Except(listAliases)
+                        .SingleOrDefault(f => f.Name == fieldNameOrAlias);
+                }
+
                 if (null == field) throw new ArgumentException(String.Format("View '{0}' doesn't have a field '{1}'", this.View.Name, fieldNameOrAlias));
 
                 FieldSorting sortedField = this.SortedFields.SingleOrDefault(sf => sf.Field == field);

@@ -144,6 +144,18 @@ namespace LWAS.WebParts
             }
         }
 
+        public string ReadSorting
+        {
+            set
+            {
+                if (null != value)
+                {
+                    var option = value.Split(' ');
+                    this.CurrentView.Sorting[option[0]].Direction = (SortingOptions)Enum.Parse(typeof(SortingOptions), option[1]);
+                }
+            }
+        }
+
         public ViewsWebPart()
         {
             this.Hidden = true;

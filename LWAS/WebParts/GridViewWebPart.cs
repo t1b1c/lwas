@@ -19,11 +19,13 @@ using System.Data;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 using LWAS.CustomControls.DataControls;
 
 namespace LWAS.WebParts
 {
-	public class GridViewWebPart : ContainerWebPart
+	public class GridViewWebPart : ContainerWebPart, IPostBackEventHandler
 	{
         public int SkipRecords
         {
@@ -74,6 +76,8 @@ namespace LWAS.WebParts
             }
         }
 
+        public string GridSorting { get; set; }
+
         public IEnumerable ReceiveData2
         {
             set { ((Grid)this.Container).OnReceiveFilteredPaginatedData(value); }
@@ -83,5 +87,46 @@ namespace LWAS.WebParts
         {
             return new Grid();
         }
-	}
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            ScriptManager.GetCurrent(this.Page).RegisterAsyncPostBackControl(this);
+        }
+
+        protected override void OnPreRender(EventArgs e)
+        {
+            base.OnPreRender(e);
+
+            this.Attributes.Add("data-grid-sort", Page.ClientScript.GetPostBackEventReference(this, "{col} {dir}"));
+        }
+
+        public void RaisePostBackEvent(string eventArgument)
+        {
+            string[] args = eventArgument.Split(' ');
+            int index = -1;
+            if (Int32.TryParse(args[0], out index))
+            {
+                var firstItem = this.Items.FirstOrDefault();
+                if (firstItem != null)
+                {
+                    var data = firstItem.Data as Dictionary<string, object>;
+                    if (null != data)
+                    {
+                        var columnName = data.Keys.ElementAtOrDefault(index);
+                        if (!String.IsNullOrEmpty(columnName))
+                        {
+                            var dir = "Up";
+                            if (args[1].ToLower() == "down")
+                                dir = "Down";
+
+                            this.GridSorting = String.Format("{0} {1}", columnName, dir);
+                            this.Milestone = "view";
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
