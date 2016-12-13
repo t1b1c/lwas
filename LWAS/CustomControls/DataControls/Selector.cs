@@ -44,8 +44,8 @@ namespace LWAS.CustomControls.DataControls
 		private Panel _buttonsPanel;
 		private LinkButton _link;
 		private OneClickButton _searchButton;
-		private Button _okButton;
-		private Button _cancelButton;
+		private OneClickButton _okButton;
+		private OneClickButton _cancelButton;
 
         protected UpdatePanelDynamic UpdatePanel;
 		
@@ -149,14 +149,14 @@ namespace LWAS.CustomControls.DataControls
 		}
 
 		[Themeable(true)]
-		public Button OkButton
+		public OneClickButton OkButton
 		{
 			get { return _okButton; }
 			set { _okButton = value; }
 		}
 
 		[Themeable(true)]
-		public Button CancelButton
+		public OneClickButton CancelButton
 		{
 			get { return _cancelButton; }
 			set { _cancelButton = value; }
@@ -340,36 +340,21 @@ namespace LWAS.CustomControls.DataControls
       <div class=""modal-header"">
 "));
             _container.Controls.Add(new LiteralControl(@"<div class=""row"">"));
-            _container.Controls.Add(new LiteralControl(@"<div class=""col-xs-12"">"));
-            _container.Controls.Add(new LiteralControl("<h3>"));
+
+            _container.Controls.Add(new LiteralControl(@"<div class=""col-xs-10"">"));
 			_titleLabel = new Label();
-            _titleLabel.CssClass = "modal-title";
+            _titleLabel.CssClass = "h3 modal-title";
             _container.Controls.Add(_titleLabel);
-            _container.Controls.Add(new LiteralControl("</h3>"));
             _container.Controls.Add(new LiteralControl(@"</div>")); // col
-            _container.Controls.Add(new LiteralControl(@"</div>")); // row
 
-            _container.Controls.Add(new LiteralControl(@"<div class=""row"">"));
-            Panel criteriaPanel = new Panel();
-			criteriaPanel.CssClass = "col-xs-12";
-			_criteria = new FormView();
-			_criteria.ID = "Criteria";
-			_criteria.DefaultMode = FormViewMode.Edit;
-			criteriaPanel.Controls.Add(_criteria);
-            _container.Controls.Add(criteriaPanel);
-
-            _container.Controls.Add(new LiteralControl(@"</div>")); // row
-            _container.Controls.Add(new LiteralControl(@"<div class=""row"">"));
-
-			Panel searchButtonPanel = new Panel();
-            searchButtonPanel.CssClass = "col-xs-12";
-			_searchButton = new OneClickButton();
-			_searchButton.ID = "searchButton";
-			_searchButton.Text = _searchText;
-			_searchButton.Click += new EventHandler(this.searchButton_Click);
-            _searchButton.CssClass = "btn btn-primary";
-			searchButtonPanel.Controls.Add(_searchButton);
-            _container.Controls.Add(searchButtonPanel);
+            _container.Controls.Add(new LiteralControl(@"<div class=""col-xs-2"">"));
+            _searchButton = new OneClickButton();
+            _searchButton.ID = "searchButton";
+            _searchButton.Text = _searchText;
+            _searchButton.CommandName = "modal:search";
+            _searchButton.Click += new EventHandler(this.searchButton_Click);
+            _container.Controls.Add(_searchButton);
+            _container.Controls.Add(new LiteralControl(@"</div>")); // col
 
             _container.Controls.Add(new LiteralControl(@"</div>")); // row
 
@@ -377,9 +362,28 @@ namespace LWAS.CustomControls.DataControls
       </div>
       <div class=""modal-body"">
 "));
-			Panel resultsContainer = new Panel();
+            _container.Controls.Add(new LiteralControl(@"<div class=""row"">"));
+            Panel criteriaCell = new Panel();
+            criteriaCell.CssClass = "col-xs-12";
+            Panel criteriaWrapper = new Panel();
+            criteriaWrapper.CssClass = "selector-criteria-wrapper table-responsive";
+            criteriaCell.Controls.Add(criteriaWrapper);
+            _criteria = new FormView();
+            _criteria.RenderOuterTable = false;
+            _criteria.ID = "Criteria";
+            _criteria.DefaultMode = FormViewMode.Edit;
+            criteriaWrapper.Controls.Add(_criteria);
+            _container.Controls.Add(criteriaCell);
+
+            _container.Controls.Add(new LiteralControl(@"</div>")); // row
+            _container.Controls.Add(new LiteralControl(@"<div class=""row"">"));
+
+            Panel resultsCell = new Panel();
+            resultsCell.CssClass = "col-xs-12";
+            Panel resultsContainer = new Panel();
 			resultsContainer.ID = "resultsContainer";
             resultsContainer.CssClass = "table-responsive";
+            resultsCell.Controls.Add(resultsContainer);
 			_results = new DataGridView();
 			_results.ID = "Results";
             _results.CssClass = "table table-striped table-condensed gridview lwas-selector-results";
@@ -389,7 +393,9 @@ namespace LWAS.CustomControls.DataControls
 				_results.DataSource = _selectorSource;
 
             resultsContainer.Controls.Add(_results);
-			_container.Controls.Add(resultsContainer);
+			_container.Controls.Add(resultsCell);
+
+            _container.Controls.Add(new LiteralControl(@"</div>")); // row
 
             _container.Controls.Add(new LiteralControl(@"
       </div>
@@ -400,25 +406,15 @@ namespace LWAS.CustomControls.DataControls
             _buttonsPanel.ID = "buttonsPanel";
             _container.Controls.Add(_buttonsPanel);
 
-			_okButton = new Button();
+			_okButton = new OneClickButton();
 			_okButton.ID = "okButton";
 			_okButton.Text = _okText;
-            _okButton.CssClass = "btn btn-default";
+            _okButton.CommandName = "modal:close";
 			_buttonsPanel.Controls.Add(_okButton);
             _okButton.Click += (s, ee) =>
                         {
                             this.Hide();
                         };
-
-			_cancelButton = new Button();
-			_cancelButton.ID = "cancelButton";
-			_cancelButton.Text = _cancelText;
-            _cancelButton.CssClass = "btn btn-default";
-            _buttonsPanel.Controls.Add(_cancelButton);
-            _cancelButton.Click += (s, ee) =>
-                            {
-                                this.Hide();
-                            };
 
             _container.DefaultButton = "searchButton";
 

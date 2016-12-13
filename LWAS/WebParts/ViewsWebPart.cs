@@ -75,10 +75,23 @@ namespace LWAS.WebParts
             {
                 if (!this.ViewsManager.Views.ContainsKey(value))
                     throw new InvalidOperationException(String.Format("view '{0}' not found", value));
-                this.CurrentView = this.ViewsManager.Views[value];
 
-                // reset update parameters
+                // create a shadow view to thread safe params and sorting
+                var original = this.ViewsManager.Views[value];
+                this.CurrentView = new LWAS.Database.View(this.ViewsManager) {
+                    Name = original.Name,
+                    Source = original.Source,
+                    Distinct = original.Distinct,
+                    Relationship = original.Relationship,
+                    Filters = original.Filters,
+                    Fields = original.Fields,
+                    ComputedFields = original.ComputedFields,
+                    Aliases = original.Aliases,
+                    OwnParameters = original.OwnParameters,
+                    Subviews = original.Subviews
+                };
                 this.CurrentView.UpdateParameters = new ParametersCollection();
+                this.CurrentView.Sorting = new ViewSorting(this.CurrentView);
             }
         }
 
@@ -99,14 +112,28 @@ namespace LWAS.WebParts
             }
         }
 
+        public int Offset { get; set; }
+        public int Limit { get; set; }
+        public string AdditionalFilter { get; set; }
+
         public string[] Command
         {
             get
             {
                 if (null == this.CurrentView) throw new InvalidOperationException("CurrentView not set");
                 StringBuilder sb = new StringBuilder();
-                this.CurrentView.ToSql(sb);
+                this.CurrentView.ToSql(sb, this.Offset, this.Limit, this.AdditionalFilter);
                 return new string[] { this.CurrentView.Name, sb.ToString() };
+            }
+        }
+
+        public string[] CountCommand
+        {
+            get
+            {
+                if (null == this.CurrentView) throw new InvalidOperationException("CurrentView not set");
+                string text = this.CurrentView.ToSqlCount(this.AdditionalFilter);
+                return new string[] { "count ("+ this.CurrentView.Name + ")",  text};
             }
         }
 
@@ -127,6 +154,18 @@ namespace LWAS.WebParts
             {
                 if (null == this.CurrentView) throw new InvalidOperationException("CurrentView not set");
                 return this.CurrentView.Sorting;
+            }
+        }
+
+        public string ReadSorting
+        {
+            set
+            {
+                if (!String.IsNullOrEmpty(value))
+                {
+                    var option = value.Split(' ');
+                    this.CurrentView.Sorting[option[0]].Direction = (SortingOptions)Enum.Parse(typeof(SortingOptions), option[1]);
+                }
             }
         }
 

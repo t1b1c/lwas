@@ -66,7 +66,7 @@ namespace LWAS.Database
         }
         public ParametersCollection UpdateParameters { get; set; }
         public ViewsManager Manager { get; set; }
-        public ViewSorting Sorting { get; private set; }
+        public ViewSorting Sorting { get; set; }
         public Dictionary<View, Dictionary<string, Field>> Subviews { get; set; }
 
         static object SyncRoot = new object();
@@ -295,10 +295,35 @@ namespace LWAS.Database
 
         public void ToSql(StringBuilder builder)
         {
-            ToSql(builder, false);
+            ToSql(builder, 0, 0, null);
         }
 
-        public void ToSql(StringBuilder builder, bool isFilterSubview)
+        public void ToSql(StringBuilder builder, int offset, int limit, string additionalFilter)
+        {
+            ToSql(builder, false, offset, limit, additionalFilter);
+        }
+
+        public string ToSqlCount(string additionalFilter = null)
+        {
+            StringBuilder builder = new StringBuilder();
+            ToSql(builder, false, 0, 0, additionalFilter);
+            string result = builder.ToString();
+            int startfields = result.IndexOf("--startfields");
+            int endfields = result.IndexOf("--endfields") + "--endfields".Length;
+            string fields = result.Substring(startfields, endfields - startfields);
+
+            result = result.Replace(fields, "select count(*) from (");
+
+            int startorderby = result.IndexOf("--startorderby");
+            int endorderby = result.IndexOf("--endorderby") + "--endorderby".Length;
+            string orderby = result.Substring(startorderby, endorderby - startorderby);
+
+            result = result.Replace(orderby, " ");
+
+            return result;
+        }
+
+        public void ToSql(StringBuilder builder, bool isFilterSubview, int offset = 0, int limit = 0, string additionalFilter = null)
         {
             string target = isFilterSubview ? "filter" : "select";
 
@@ -315,32 +340,55 @@ namespace LWAS.Database
                     builder.Append(compiledSql);
             }
 
-            StringBuilder orderby = new StringBuilder();
-            for (int i = 0; i < this.Sorting.SortedFields.Count; i++)
+            if (!isFilterSubview)
             {
-                FieldSorting sorting = this.Sorting.SortedFields[i];
-                string op = null;
-                if (sorting.Direction == SortingOptions.Up)
-                    op = "asc";
-                else if (sorting.Direction == SortingOptions.Down)
-                    op = "desc";
-                if (String.IsNullOrEmpty(op))
-                    continue;
+                // additional filter
+                if (!String.IsNullOrEmpty(additionalFilter))
+                {
+                    builder.Replace("--startfilters", "where");
+                    builder.Replace("--endfilters", additionalFilter.Replace("'", "''") + " ");
+                }
 
-                // skip duplicate ordering
-                if (orderby.ToString().Contains(String.Format("[{0}].[{1}]", sorting.Field.Table.Name, sorting.Field.Name)))
-                    continue;
+                // sort
+                StringBuilder orderby = new StringBuilder();
+                for (int i = 0; i < this.Sorting.SortedFields.Count; i++)
+                {
+                    FieldSorting sorting = this.Sorting.SortedFields[i];
+                    string op = null;
+                    if (sorting.Direction == SortingOptions.Up)
+                        op = "asc";
+                    else if (sorting.Direction == SortingOptions.Down)
+                        op = "desc";
+                    if (String.IsNullOrEmpty(op))
+                        continue;
 
-                if (i == 0)
+                    // skip duplicate ordering
+                    if (orderby.ToString().Contains(String.Format("[{0}]", sorting.Field.Name)))
+                        continue;
+
+                    if (i == 0)
+                    {
+                        orderby.AppendLine();
+                        orderby.Append("order by ");
+                    }
+                    else
+                        orderby.AppendLine(", ");
+                    orderby.AppendFormat("[{0}] {1}", sorting.Field.Name, op);
+                }
+                // default sort by source ID asc
+                if (orderby.Length == 0)
                 {
                     orderby.AppendLine();
-                    orderby.Append("order by ");
+                    orderby.Append("order by ID asc");
                 }
-                else
-                    orderby.AppendLine(", ");
-                orderby.AppendFormat("[{0}].[{1}] {2}", sorting.Field.Table.Name, sorting.Field.Name, op);
+                builder.Replace("{orderby}", orderby.ToString());
+
+                // paginate
+                string pagination = "";
+                if (offset >= 0 && limit > 0)
+                    pagination = String.Format("OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY", offset, limit);
+                builder.Replace("{pagination}", pagination);
             }
-            builder.Replace("{orderby}", orderby.ToString());
 
             if (!this.Parameters.IsEmpty && !isFilterSubview)
             {
@@ -407,8 +455,14 @@ namespace LWAS.Database
 
             // cmd
             if (!isFilterSubview)
+            {
                 builder.AppendLine("exec sp_executesql N'");
-            builder.AppendLine("select " + (this.Distinct ? "distinct" : ""));
+                builder.AppendLine("--startfields");
+                builder.AppendLine("select * from (");
+                builder.AppendLine("--endfields");
+            }
+            builder.AppendLine("select");
+            builder.AppendLine(this.Distinct ? "distinct" : "");
             this.Fields.ToSql(builder, this.Aliases);
             if (this.ComputedFields.Count > 0)
                 builder.AppendLine(",");
@@ -420,18 +474,31 @@ namespace LWAS.Database
             builder.AppendLine();
             if (this.Relationship.Count > 0)
                 this.Relationship.ToSql(builder, this.Source);
+
+            // filters
             if (this.Filters.Count > 0)
             {
                 builder.AppendLine();
-                builder.AppendLine("where");
+                builder.AppendLine("where ");
                 this.Filters.ToSql(builder);
             }
 
-            // add a marker for ordering, to be setup on each execution
-            builder.AppendLine("{orderby}");
-
             if (!isFilterSubview)
-                builder.Append("'");
+            {
+                builder.AppendLine(") as results");
+                builder.AppendLine("--startfilters");
+                builder.AppendLine("--endfilters");
+
+                // add a marker for ordering, to be setup on each execution
+                builder.AppendLine("--startorderby");
+                builder.AppendLine("{orderby}");
+                builder.AppendLine("--endorderby");
+
+                // add a marker for pagination, to be setup on each execution
+                builder.AppendLine("{pagination}");
+
+                builder.AppendLine("'");    // sp_execute
+            }
 
             if (!this.Parameters.IsEmpty && !isFilterSubview)
             {

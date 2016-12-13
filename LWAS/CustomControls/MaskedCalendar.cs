@@ -26,6 +26,8 @@ namespace LWAS.CustomControls
 	{
 		private StyledTextBox txtDate;
 		private StyledTextBox txtTime;
+        private LiteralControl div_input_group;
+        private LiteralControl span_icon;
 		private Style _normalStyle = new Style();
 		private Style _readOnlyStyle = new Style();
 		private bool _readOnly = false;
@@ -173,15 +175,13 @@ namespace LWAS.CustomControls
 			txtDate = new StyledTextBox();
 			txtDate.ID = "txtDate";
             txtDate.ReadOnly = _readOnly;
-            var div_input_group = new LiteralControl(String.Format(@"<div class=""input-group masked_calendar_date {0}"">", _readOnly ? "" : "date"));
+            div_input_group = new LiteralControl(@"<div class=""input-group"">");
             container.Controls.Add(div_input_group);
             container.Controls.Add(this.txtDate);
             txtDate.Attributes.Add("readonly", "readonly");
             txtDate.CssClass = "form-control disabled";
-            if (!_readOnly)
-                container.Controls.Add(new LiteralControl(@"<span class=""input-group-addon""><i class=""glyphicon glyphicon-calendar""></i></span>"));
-            else
-                container.Controls.Add(new LiteralControl(" "));
+            span_icon = new LiteralControl(" ");
+            container.Controls.Add(span_icon);
             container.Controls.Add(new LiteralControl("</div>"));
 
 			txtTime = new StyledTextBox();
@@ -194,5 +194,16 @@ namespace LWAS.CustomControls
             txtTime.CssClass += " masked_calendar_time";
             txtTime.TextMode = TextBoxMode.Time;
 		}
-	}
+
+        protected override void Render(HtmlTextWriter writer)
+        {
+            if (!_readOnly)
+            {
+                div_input_group.Text = @"<div class=""input-group masked_calendar_date date"">";
+                span_icon.Text = @"<span class=""input-group-addon""><i class=""glyphicon glyphicon-calendar""></i></span>";
+            }
+
+            base.Render(writer);
+        }
+    }
 }

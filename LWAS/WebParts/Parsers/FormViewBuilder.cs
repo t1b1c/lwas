@@ -54,6 +54,7 @@ namespace LWAS.WebParts.Parsers
 		{
 			Table table = new Table();
 			table.ID = "table";
+            table.CssClass = "table table-condensed";
 			foreach (IConfigurationElement rowElement in section.Elements.Values)
 			{
 				string[] span = null;

@@ -180,7 +180,7 @@ namespace LWAS.CustomControls
 
             if (!this.ReadOnly)
             {
-                this.TextMode = System.Web.UI.WebControls.TextBoxMode.Number;
+                //this.TextMode = System.Web.UI.WebControls.TextBoxMode.Number;
                 base.Render(writer);
             }
             else

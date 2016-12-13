@@ -15,6 +15,7 @@
 */
 
 using System;
+using System.Collections;
 using System.Web.UI.WebControls;
 using LWAS.Extensible.Interfaces.WebParts;
 
@@ -76,5 +77,21 @@ namespace LWAS.CustomControls.DataControls
             }
             return base.OnBubbleEvent(source, args);
         }
+
+        public virtual void OnReceiveFilteredPaginatedData(IEnumerable data)
+        {
+            this.Items.Clear();
+            if (null == data)
+                this.Paginater.Reset();
+            else if (null != data)
+            {
+                IEnumerator enumerator = data.GetEnumerator();
+                while (enumerator.MoveNext())
+                {
+                    ITemplatingItem item = this.Items.Add(true, false, false, true, enumerator.Current);
+                }
+            }
+        }
+
     }
 }

@@ -37,8 +37,10 @@ namespace LWAS.CustomControls
                 this.CssClass += " btn-success";
             else if (this.CommandName.Contains("delete"))
                 this.CssClass += " btn-danger";
+            else if (this.CommandName.Contains("search"))
+                this.CssClass += " btn-primary";
 
-                base.Render(writer);
+            base.Render(writer);
         }
 
         protected override void RenderContents(HtmlTextWriter writer)
@@ -72,6 +74,16 @@ namespace LWAS.CustomControls
             {
                 writer.Write(@"<span class='glyphicon glyphicon-edit'></span> ");
                 writer.Write(@"<span class='hidden-xs hidden-sm'></span> ");
+            }
+            else if (this.CommandName.Equals("modal:search"))
+            {
+                writer.Write(@"<span class='glyphicon glyphicon-search'></span> ");
+                writer.Write(@"<span class='hidden-xs hidden-sm'>" + this.Text + "</span> ");
+            }
+            else if (this.CommandName.Equals("modal:close"))
+            {
+                writer.Write(@"<span class='glyphicon glyphicon-ok'></span> ");
+                writer.Write(@"<span>" + this.Text + "</span> ");
             }
             else if (this.CommandName.Contains("paginater:first"))
             {
