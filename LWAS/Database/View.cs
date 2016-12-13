@@ -66,7 +66,7 @@ namespace LWAS.Database
         }
         public ParametersCollection UpdateParameters { get; set; }
         public ViewsManager Manager { get; set; }
-        public ViewSorting Sorting { get; private set; }
+        public ViewSorting Sorting { get; set; }
         public Dictionary<View, Dictionary<string, Field>> Subviews { get; set; }
 
         static object SyncRoot = new object();

@@ -75,10 +75,20 @@ namespace LWAS.WebParts
             {
                 if (!this.ViewsManager.Views.ContainsKey(value))
                     throw new InvalidOperationException(String.Format("view '{0}' not found", value));
-                this.CurrentView = this.ViewsManager.Views[value];
 
-                // reset update parameters
+                // create a shadow view to thread safe params and sorting
+                var original = this.ViewsManager.Views[value];
+                this.CurrentView = new LWAS.Database.View(this.ViewsManager) {
+                    Relationship = original.Relationship,
+                    Filters = original.Filters,
+                    Fields = original.Fields,
+                    ComputedFields = original.ComputedFields,
+                    Aliases = original.Aliases,
+                    OwnParameters = original.OwnParameters,
+                    Subviews = original.Subviews
+                };
                 this.CurrentView.UpdateParameters = new ParametersCollection();
+                this.CurrentView.Sorting = new ViewSorting(this.CurrentView);
             }
         }
 
@@ -148,7 +158,7 @@ namespace LWAS.WebParts
         {
             set
             {
-                if (null != value)
+                if (!String.IsNullOrEmpty(value))
                 {
                     var option = value.Split(' ');
                     this.CurrentView.Sorting[option[0]].Direction = (SortingOptions)Enum.Parse(typeof(SortingOptions), option[1]);

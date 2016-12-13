@@ -76,11 +76,58 @@ namespace LWAS.WebParts
             }
         }
 
-        public string GridSorting { get; set; }
+        HiddenField gridSortingField;
+        public string GridSortingValue
+        {
+            get { return gridSortingField.Value; }
+            set { gridSortingField.Value = value; }
+        }
+
+        public string GridSorting
+        {
+            get
+            {
+                var args = this.GridSortingValue.Split(' ');
+                var index = -1;
+                if (Int32.TryParse(args[0], out index))
+                {
+                    var firstItem = this.Items.FirstOrDefault();
+                    if (firstItem != null)
+                    {
+                        var data = firstItem.Data as Dictionary<string, object>;
+                        if (null != data)
+                        {
+                            var columnName = data.Keys.ElementAtOrDefault(index);
+                            if (!String.IsNullOrEmpty(columnName))
+                            {
+                                var dir = "Up";
+                                if (args[1].ToLower() == "down")
+                                    dir = "Down";
+
+                                return String.Format("{0} {1}", columnName, dir);
+                            }
+                        }
+                    }
+                }
+
+                return null;
+            }
+        }
 
         public IEnumerable ReceiveData2
         {
             set { ((Grid)this.Container).OnReceiveFilteredPaginatedData(value); }
+        }
+
+        protected override void OnInit(EventArgs e)
+        {
+            base.OnInit(e);
+
+            UpdatePanel updatePanel = new UpdatePanel();
+            gridSortingField = new HiddenField();
+            gridSortingField.ID = "gridSortingField";
+            updatePanel.ContentTemplateContainer.Controls.Add(gridSortingField);
+            this.Controls.Add(updatePanel);
         }
 
         protected override Container InstantiateContainer()
@@ -100,6 +147,7 @@ namespace LWAS.WebParts
             base.OnPreRender(e);
 
             this.Attributes.Add("data-grid-sort", Page.ClientScript.GetPostBackEventReference(this, "{col} {dir}"));
+            this.Attributes.Add("data-grid-sorting-hidden", gridSortingField.ClientID);
         }
 
         public void RaisePostBackEvent(string eventArgument)
@@ -108,24 +156,12 @@ namespace LWAS.WebParts
             int index = -1;
             if (Int32.TryParse(args[0], out index))
             {
-                var firstItem = this.Items.FirstOrDefault();
-                if (firstItem != null)
-                {
-                    var data = firstItem.Data as Dictionary<string, object>;
-                    if (null != data)
-                    {
-                        var columnName = data.Keys.ElementAtOrDefault(index);
-                        if (!String.IsNullOrEmpty(columnName))
-                        {
-                            var dir = "Up";
-                            if (args[1].ToLower() == "down")
-                                dir = "Down";
+                var dir = "Up";
+                if (args[1].ToLower() == "down")
+                    dir = "Down";
 
-                            this.GridSorting = String.Format("{0} {1}", columnName, dir);
-                            this.Milestone = "view";
-                        }
-                    }
-                }
+                this.GridSortingValue = String.Format("{0} {1}", index, dir);
+                this.Milestone = "view";
             }
         }
     }
