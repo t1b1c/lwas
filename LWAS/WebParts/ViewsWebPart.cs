@@ -79,6 +79,9 @@ namespace LWAS.WebParts
                 // create a shadow view to thread safe params and sorting
                 var original = this.ViewsManager.Views[value];
                 this.CurrentView = new LWAS.Database.View(this.ViewsManager) {
+                    Name = original.Name,
+                    Source = original.Source,
+                    Distinct = original.Distinct,
                     Relationship = original.Relationship,
                     Filters = original.Filters,
                     Fields = original.Fields,
