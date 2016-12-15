@@ -116,8 +116,13 @@ namespace LWAS.WebParts
 
         public IEnumerable ReceiveData2
         {
-            set { ((Grid)this.Container).OnReceiveFilteredPaginatedData(value); }
+            set
+            {
+                ((Grid)this.Container).OnReceiveFilteredPaginatedData(value);
+            }
         }
+
+        public bool EnableSorting { get; set; }
 
         protected override void OnInit(EventArgs e)
         {
@@ -142,12 +147,15 @@ namespace LWAS.WebParts
             ScriptManager.GetCurrent(this.Page).RegisterAsyncPostBackControl(this);
         }
 
-        protected override void OnPreRender(EventArgs e)
+        protected override void Render(HtmlTextWriter writer)
         {
-            base.OnPreRender(e);
+            if (this.EnableSorting)
+            {
+                this.Attributes.Add("data-grid-sort", Page.ClientScript.GetPostBackEventReference(this, "{col} {dir}"));
+                this.Attributes.Add("data-grid-sorting-hidden", gridSortingField.ClientID);
+            }
 
-            this.Attributes.Add("data-grid-sort", Page.ClientScript.GetPostBackEventReference(this, "{col} {dir}"));
-            this.Attributes.Add("data-grid-sorting-hidden", gridSortingField.ClientID);
+            base.Render(writer);
         }
 
         public void RaisePostBackEvent(string eventArgument)
