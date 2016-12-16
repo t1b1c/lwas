@@ -43,17 +43,24 @@ namespace LWAS.Database
                 
                 // find by alias
                 var tableFieldAliases = this.View.Aliases.Where(kvp => kvp.Key is TableField);
-                var alias = tableFieldAliases
+                var field = tableFieldAliases
                     .SingleOrDefault(kvp => kvp.Value == fieldNameOrAlias)
                     .Key;
-                TableField field = alias as TableField;
 
                 // find by field name
                 if (field == null)
                 {
-                    var listAliases = tableFieldAliases.Select(kvp => kvp.Key as TableField);
-                    field = this.View.Fields
+                    var listAliases = tableFieldAliases.Select(kvp => kvp.Key);
+                    field = this.View.Fields.Cast<Field>()
                         .Except(listAliases)
+                        .SingleOrDefault(f => f.Name == fieldNameOrAlias);
+                }
+
+                // look into computed fields
+                if (field == null)
+                {
+                    field = this.View
+                        .ComputedFields
                         .SingleOrDefault(f => f.Name == fieldNameOrAlias);
                 }
 

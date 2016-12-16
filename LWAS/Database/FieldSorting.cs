@@ -22,10 +22,10 @@ namespace LWAS.Database
 {
     public class FieldSorting
     {
-        public TableField Field { get;  private set; }
+        public Field Field { get;  private set; }
         public SortingOptions Direction { get; set; }
 
-        public FieldSorting(TableField field)
+        public FieldSorting(Field field)
         {
             if (null == field) throw new ArgumentNullException("field");
 
