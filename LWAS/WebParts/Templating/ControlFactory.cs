@@ -220,7 +220,7 @@ namespace LWAS.WebParts.Templating
 					}
 					catch (Exception ex)
 					{
-						this._monitor.Register(this, this._monitor.NewEventInstance("create proxy error", null, ex, EVENT_TYPE.Error));
+						this._monitor.Register(this, this._monitor.NewEventInstance("create proxy error", null, ex, EVENT_TYPE.ServerFailure));
 					}
 					if (cellControl == null && null != proxy)
 					{
@@ -241,7 +241,7 @@ namespace LWAS.WebParts.Templating
 					}
 					catch (Exception ex)
 					{
-						this._monitor.Register(this, this._monitor.NewEventInstance("create control error", null, ex, EVENT_TYPE.Error));
+						this._monitor.Register(this, this._monitor.NewEventInstance("create control error", null, ex, EVENT_TYPE.ServerFailure));
 					}
 				}
 				if (null == cellControl)
@@ -370,7 +370,7 @@ namespace LWAS.WebParts.Templating
 								}
 								catch (Exception ex)
 								{
-									this._monitor.Register(this, this._monitor.NewEventInstance("failed to retrive the list", null, ex, EVENT_TYPE.Error));
+									this._monitor.Register(this, this._monitor.NewEventInstance("failed to retrive the list", null, ex, EVENT_TYPE.ServerFailure));
 								}
 								if (null != list)
 								{
@@ -498,7 +498,7 @@ namespace LWAS.WebParts.Templating
 				}
 				catch (Exception ex)
 				{
-					this._monitor.Register(this, this._monitor.NewEventInstance("create readonly control error", null, ex, EVENT_TYPE.Error));
+					this._monitor.Register(this, this._monitor.NewEventInstance("create readonly control error", null, ex, EVENT_TYPE.ServerFailure));
 				}
 			}
 			else
@@ -509,7 +509,7 @@ namespace LWAS.WebParts.Templating
 				}
 				catch (Exception ex)
 				{
-					this._monitor.Register(this, this._monitor.NewEventInstance("create editable control error", null, ex, EVENT_TYPE.Error));
+					this._monitor.Register(this, this._monitor.NewEventInstance("create editable control error", null, ex, EVENT_TYPE.ServerFailure));
 				}
 			}
 			return ctrl;
@@ -531,7 +531,7 @@ namespace LWAS.WebParts.Templating
 			}
 			catch (Exception ex)
 			{
-				this._monitor.Register(this, this._monitor.NewEventInstance("create editable control error", null, ex, EVENT_TYPE.Error));
+				this._monitor.Register(this, this._monitor.NewEventInstance("create editable control error", null, ex, EVENT_TYPE.ServerFailure));
 			}
 			if (control is NumberTextBox)
 			{
@@ -557,7 +557,7 @@ namespace LWAS.WebParts.Templating
 			}
 			catch (Exception ex)
 			{
-				this._monitor.Register(this, this._monitor.NewEventInstance("create readonly control error", null, ex, EVENT_TYPE.Error));
+				this._monitor.Register(this, this._monitor.NewEventInstance("create readonly control error", null, ex, EVENT_TYPE.ServerFailure));
 			}
 			if (null != control)
 			{
@@ -569,7 +569,7 @@ namespace LWAS.WebParts.Templating
 					}
 					catch (Exception ex)
 					{
-						this._monitor.Register(this, this._monitor.NewEventInstance(string.Format("set readonly property error '{0}'.'{1}'='{2}'", key, descriptor.ReadOnlyProperty, descriptor.ReadOnlyValue), null, ex, EVENT_TYPE.Error));
+						this._monitor.Register(this, this._monitor.NewEventInstance(string.Format("set readonly property error '{0}'.'{1}'='{2}'", key, descriptor.ReadOnlyProperty, descriptor.ReadOnlyValue), null, ex, EVENT_TYPE.ServerFailure));
 					}
 				}
 			}

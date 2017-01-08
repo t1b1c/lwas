@@ -97,7 +97,7 @@ namespace LWAS.Expressions
 				}
 				catch (Exception ex)
 				{
-					this._monitor.Register(this, this._monitor.NewEventInstance(string.Format("failed to create token '{0}'", key), null, ex, EVENT_TYPE.Error));
+					this._monitor.Register(this, this._monitor.NewEventInstance(string.Format("failed to create token '{0}'", key), null, ex, EVENT_TYPE.ServerFailure));
 				}
 			}
 			return token;

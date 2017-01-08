@@ -265,7 +265,7 @@ namespace LWAS.WebParts
 			}
 			catch (Exception ex)
 			{
-                _container.Monitor.Register(this, _container.Monitor.NewEventInstance("request data error", null, ex, EVENT_TYPE.Error));
+                _container.Monitor.Register(this, _container.Monitor.NewEventInstance("request data error", null, ex, EVENT_TYPE.ServerFailure));
 			}
 		}
 		protected override void DataSourceSelectCallback(IEnumerable data)

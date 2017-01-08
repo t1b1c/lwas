@@ -23,6 +23,7 @@ namespace LWAS.Extensible.Interfaces.Monitoring
 		Unspecified,
 		Info,
 		Trace,
-		Error
+		Error,
+        ServerFailure
 	}
 }

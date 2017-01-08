@@ -680,7 +680,7 @@ namespace LWAS.CustomControls.DataControls
             }
             catch (Exception ex)
             {
-                this._monitor.Register(this.Reporter, this._monitor.NewEventInstance("bind controls error", null, ex, EVENT_TYPE.Error));
+                this._monitor.Register(this.Reporter, this._monitor.NewEventInstance("bind controls error", null, ex, EVENT_TYPE.ServerFailure));
             }
 		}
 		protected virtual void OnInstantiateTotals(ITemplatingItem item)
@@ -957,7 +957,7 @@ namespace LWAS.CustomControls.DataControls
 			}
 			catch (Exception ex)
 			{
-                this._monitor.Register(this.Reporter, this._monitor.NewEventInstance("save error", null, ex, EVENT_TYPE.Error));
+                this._monitor.Register(this.Reporter, this._monitor.NewEventInstance("save error", null, ex, EVENT_TYPE.ServerFailure));
 			}
 		}
 		protected virtual void OnValidate(ITemplatingItem item)
@@ -1033,7 +1033,7 @@ namespace LWAS.CustomControls.DataControls
 			}
 			catch (Exception ex)
 			{
-                this._monitor.Register(this.Reporter, this._monitor.NewEventInstance("delete error", null, ex, EVENT_TYPE.Error));
+                this._monitor.Register(this.Reporter, this._monitor.NewEventInstance("delete error", null, ex, EVENT_TYPE.ServerFailure));
 			}
 			foreach (ITemplatingItem item in itemsToRemove)
 			{

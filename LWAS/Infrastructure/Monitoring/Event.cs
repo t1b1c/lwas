@@ -112,7 +112,7 @@ namespace LWAS.Infrastructure.Monitoring
 					}
 					else
 					{
-						if (this._eventType == EVENT_TYPE.Error)
+						if (this._eventType == EVENT_TYPE.Error || _eventType == EVENT_TYPE.ServerFailure)
 						{
 							Exception ex = this._data as Exception;
 							if (null != this._data)

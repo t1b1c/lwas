@@ -124,7 +124,7 @@ namespace LWAS.WebParts.Templating
 						}
 						catch (Exception ex)
 						{
-							ControlFactory.Instance.Monitor.Register(ControlFactory.Instance, ControlFactory.Instance.Monitor.NewEventInstance("set cell attributes error", null, ex, EVENT_TYPE.Error));
+							ControlFactory.Instance.Monitor.Register(ControlFactory.Instance, ControlFactory.Instance.Monitor.NewEventInstance("set cell attributes error", null, ex, EVENT_TYPE.ServerFailure));
 						}
 					}
 					if (propertyElement.Attributes.ContainsKey("pull"))

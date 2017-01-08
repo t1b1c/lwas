@@ -98,7 +98,7 @@ namespace LWAS.WorkFlow
 					}
 					catch (Exception ex)
 					{
-						this._monitor.Register(this, this._monitor.NewEventInstance(string.Format("transit '{0}' failed", transit.Key), null, ex, EVENT_TYPE.Error));
+						this._monitor.Register(this, this._monitor.NewEventInstance(string.Format("transit '{0}' failed", transit.Key), null, ex, EVENT_TYPE.ServerFailure));
 					}
 				}
 				result = true;

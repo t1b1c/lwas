@@ -79,7 +79,7 @@ namespace LWAS.WebParts
 					}
 					catch (Exception ex)
 					{
-						this._monitor.Register(this, this._monitor.NewEventInstance("open connection error", null, ex, EVENT_TYPE.Error));
+						this._monitor.Register(this, this._monitor.NewEventInstance("open connection error", null, ex, EVENT_TYPE.ServerFailure));
 					}
 				}
                 else   // empty means reset connection
@@ -93,7 +93,7 @@ namespace LWAS.WebParts
                     }
                     catch (Exception ex)
                     {
-                        this._monitor.Register(this, this._monitor.NewEventInstance("open connection error", null, ex, EVENT_TYPE.Error));
+                        this._monitor.Register(this, this._monitor.NewEventInstance("open connection error", null, ex, EVENT_TYPE.ServerFailure));
                     }
 
                 }
@@ -211,7 +211,7 @@ namespace LWAS.WebParts
 			catch (Exception ex)
 			{
 				string translated = base.Translator.Translate(ex.Message, ex.Message, null).Translation;
-				this._monitor.Register(this, this._monitor.NewEventInstance(translated ?? ex.Message, EVENT_TYPE.Error));
+				this._monitor.Register(this, this._monitor.NewEventInstance(translated ?? ex.Message, EVENT_TYPE.ServerFailure));
 			}
 		}
 		protected void EnsureReaderClosed()
