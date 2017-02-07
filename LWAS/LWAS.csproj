@@ -333,6 +333,7 @@
     <Compile Include="WebParts\Editors\UsersView.cs" />
     <Compile Include="WebParts\EmptyConfiguration.cs" />
     <Compile Include="WebParts\FormViewWebPart.cs" />
+    <Compile Include="WebParts\GenericWebPart.cs" />
     <Compile Include="WebParts\GridViewWebPart.cs" />
     <Compile Include="WebParts\InitializableWebPart.cs" />
     <Compile Include="WebParts\Parsers\ConfigurationParser.cs" />
