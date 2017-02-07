@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>LWAS</RootNamespace>
     <AssemblyName>LWAS</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -330,6 +330,7 @@
     <Compile Include="WebParts\Editors\UsersView.cs" />
     <Compile Include="WebParts\EmptyConfiguration.cs" />
     <Compile Include="WebParts\FormViewWebPart.cs" />
+    <Compile Include="WebParts\GenericWebPart.cs" />
     <Compile Include="WebParts\GridViewWebPart.cs" />
     <Compile Include="WebParts\InitializableWebPart.cs" />
     <Compile Include="WebParts\Parsers\ConfigurationParser.cs" />

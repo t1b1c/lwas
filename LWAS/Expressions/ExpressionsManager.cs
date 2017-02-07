@@ -106,7 +106,8 @@ namespace LWAS.Expressions
 		{
 			if (null == this._page)
 			{
-				throw new InvalidOperationException("Page not set");
+                return null;
+				//throw new InvalidOperationException("Page not set");
 			}
 			WebPartManager manager = WebPartManager.GetCurrentWebPartManager(this._page);
 			if (null == manager)

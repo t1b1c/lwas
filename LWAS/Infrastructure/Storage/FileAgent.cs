@@ -39,8 +39,9 @@ namespace LWAS.Infrastructure.Storage
 			}
 			set
 			{
-				this._watchdog = value;
-				this._watchdog.WatchIt += new EventHandler(this._watchdog_WatchIt);
+				_watchdog = value;
+                if (null != _watchdog)
+                    this._watchdog.WatchIt += new EventHandler(this._watchdog_WatchIt);
 			}
 		}
 		public FileAgent()
