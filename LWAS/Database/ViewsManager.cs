@@ -30,6 +30,7 @@ namespace LWAS.Database
 {
     public class ViewsManager
     {
+        static object SyncRoot = new object();
         public string configFile;
         IStorageAgent agent;
 
@@ -73,12 +74,15 @@ namespace LWAS.Database
 
         public void LoadConfiguration()
         {
-            if (!agent.HasKey(configFile))
-                CreateEmptyConfiguration();
+            lock (SyncRoot)
+            {
+                if (!agent.HasKey(configFile))
+                    CreateEmptyConfiguration();
 
-            XDocument doc = XDocument.Parse(agent.Read(configFile));
-            XElement root = doc.Element("config");
-            FromXml(root);
+                XDocument doc = XDocument.Parse(agent.Read(configFile));
+                XElement root = doc.Element("config");
+                FromXml(root);
+            }
         }
 
         private void CreateEmptyConfiguration()
@@ -107,12 +111,15 @@ namespace LWAS.Database
 
         public void SaveConfiguration()
         {
-            agent.Erase(configFile);
-            using (XmlTextWriter writer = new XmlTextWriter(agent.OpenStream(configFile), Encoding.UTF8))
+            lock (SyncRoot)
             {
-                writer.Formatting = Formatting.Indented;
-                writer.WriteStartDocument();
-                ToXml(writer);
+                agent.Erase(configFile);
+                using (XmlTextWriter writer = new XmlTextWriter(agent.OpenStream(configFile), Encoding.UTF8))
+                {
+                    writer.Formatting = Formatting.Indented;
+                    writer.WriteStartDocument();
+                    ToXml(writer);
+                }
             }
         }
 
