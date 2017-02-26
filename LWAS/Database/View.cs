@@ -519,7 +519,7 @@ namespace LWAS.Database
                         else
                             firstParameter = false;
 
-                        builder.AppendFormat("{0} varchar(max)", identifier);
+                        builder.AppendFormat("{0} nvarchar(max)", identifier);
                     }
                 }
 
@@ -632,7 +632,7 @@ namespace LWAS.Database
                     else
                         firstParameter = false;
 
-                    builder.AppendFormat("{0} varchar(max)", identifier);
+                    builder.AppendFormat("{0} nvarchar(max)", identifier);
                 }
 
                 builder.AppendLine("',");
@@ -666,7 +666,7 @@ namespace LWAS.Database
                         return strval;
                 case "Text":
                     if (includeSqlCast)
-                        return String.Format("cast(''{0}'' as varchar(max))", strval);
+                        return String.Format("cast(''{0}'' as nvarchar(max))", strval);
                     else
                         return strval;
                 case "Number":
