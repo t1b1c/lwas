@@ -162,6 +162,10 @@ namespace LWAS.WebParts.Templating
 						}
 						item.BoundControls[pullpush].Add((BaseDataBoundControl)cellControl);
 					}
+                    if (pullpush == "ID")
+                    {
+                        tc.Attributes.Add("data-lwas-id-field", cellControl.ClientID);
+                    }
 				}
 			}
 		}
