@@ -61,14 +61,14 @@ namespace LWAS.Database.Expressions
                 {
                     builder.Append("cast( (");
                     token.ToSql(builder);
-                    builder.Append(") as varchar(max) )");
+                    builder.Append(") as nvarchar(max) )");
 
                 }
                 else
                 {
                     builder.Append("cast(");
                     token.ToSql(builder);
-                    builder.Append(" as varchar(max) )");
+                    builder.Append(" as nvarchar(max) )");
                 }
 
                 first = false; 
