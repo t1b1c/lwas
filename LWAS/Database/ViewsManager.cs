@@ -113,13 +113,21 @@ namespace LWAS.Database
         {
             lock (SyncRoot)
             {
-                agent.Erase(configFile);
-                using (XmlTextWriter writer = new XmlTextWriter(agent.OpenStream(configFile), Encoding.UTF8))
+                // create temp file
+                var guid = Guid.NewGuid();
+                var temp = configFile.Replace(Path.GetFileName(configFile), guid.ToString() + "." + Path.GetExtension(configFile));
+                
+                using (XmlTextWriter writer = new XmlTextWriter(agent.OpenStream(temp), Encoding.UTF8))
                 {
                     writer.Formatting = Formatting.Indented;
                     writer.WriteStartDocument();
                     ToXml(writer);
                 }
+
+                var contents = agent.Read(temp);
+                agent.Erase(configFile);
+                agent.Write(configFile, contents);
+                agent.Erase(temp);
             }
         }
 
