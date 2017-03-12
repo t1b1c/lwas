@@ -82,7 +82,7 @@ namespace LWAS.CustomControls
             }
             else if (this.CommandName.Equals("modal:close"))
             {
-                writer.Write(@"<span class='glyphicon glyphicon-ok'></span> ");
+                writer.Write(@"<span class='glyphicon glyphicon-remove'></span> ");
                 writer.Write(@"<span>" + this.Text + "</span> ");
             }
             else if (this.CommandName.Contains("paginater:first"))
